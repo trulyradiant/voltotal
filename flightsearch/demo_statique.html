@@ -18,251 +18,204 @@
     --accent-doux: #E8EDFD;
     --accent-encre: #FFFFFF;
     --vert: #0B7A4B;
+    --vert-doux: #E4F4EC;
     --ambre: #9C5E0B;
     --ambre-fond: #FFF6E4;
     --ambre-ligne: #EBD9B0;
   }
   @media (prefers-color-scheme: dark) {
     :root {
-      --fond: #0E1424;
-      --carte: #171F35;
-      --encre: #E8ECF7;
-      --sourdine: #96A0BC;
-      --ligne: #2A3453;
-      --accent: #7B96F4;
-      --accent-fonce: #A5B8F8;
-      --accent-doux: #1D2A52;
-      --accent-encre: #0E1424;
-      --vert: #4CC38A;
-      --ambre: #E4B063;
-      --ambre-fond: #241D0F;
-      --ambre-ligne: #4A3B1D;
+      --fond: #0E1424; --carte: #171F35; --encre: #E8ECF7; --sourdine: #96A0BC;
+      --ligne: #2A3453; --accent: #7B96F4; --accent-fonce: #A5B8F8;
+      --accent-doux: #1D2A52; --accent-encre: #0E1424; --vert: #4CC38A;
+      --vert-doux: #12301F; --ambre: #E4B063; --ambre-fond: #241D0F; --ambre-ligne: #4A3B1D;
     }
   }
   :root[data-theme="light"] {
     --fond: #F3F5FA; --carte: #FFFFFF; --encre: #1A2138; --sourdine: #5D6785;
     --ligne: #D9DFEC; --accent: #1E4BD8; --accent-fonce: #143795;
     --accent-doux: #E8EDFD; --accent-encre: #FFFFFF; --vert: #0B7A4B;
-    --ambre: #9C5E0B; --ambre-fond: #FFF6E4; --ambre-ligne: #EBD9B0;
+    --vert-doux: #E4F4EC; --ambre: #9C5E0B; --ambre-fond: #FFF6E4; --ambre-ligne: #EBD9B0;
   }
   :root[data-theme="dark"] {
     --fond: #0E1424; --carte: #171F35; --encre: #E8ECF7; --sourdine: #96A0BC;
     --ligne: #2A3453; --accent: #7B96F4; --accent-fonce: #A5B8F8;
     --accent-doux: #1D2A52; --accent-encre: #0E1424; --vert: #4CC38A;
-    --ambre: #E4B063; --ambre-fond: #241D0F; --ambre-ligne: #4A3B1D;
+    --vert-doux: #12301F; --ambre: #E4B063; --ambre-fond: #241D0F; --ambre-ligne: #4A3B1D;
   }
 
   body {
-    margin: 0;
-    background: var(--fond);
-    color: var(--encre);
+    margin: 0; background: var(--fond); color: var(--encre);
     font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-    line-height: 1.45;
-    font-size: 16px;
+    line-height: 1.45; font-size: 16px;
     -webkit-tap-highlight-color: transparent;
   }
-  .mono {
-    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-    font-variant-numeric: tabular-nums;
-  }
+  .mono { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+          font-variant-numeric: tabular-nums; }
 
-  .page {
-    max-width: 40rem; margin: 0 auto;
-    padding: 0 .9rem calc(6.5rem + env(safe-area-inset-bottom));
-  }
+  .page { max-width: 40rem; margin: 0 auto; padding: 0 .9rem 3rem; }
 
-  header { padding: 1.2rem 0 .9rem; }
+  header { padding: 1.1rem 0 .8rem; }
   header .marque {
     display: flex; align-items: baseline; gap: .45rem;
-    font-size: 1.55rem; font-weight: 750; letter-spacing: -.02em;
+    font-size: 1.5rem; font-weight: 750; letter-spacing: -.02em;
   }
   header .marque .total { color: var(--accent); }
-  header p {
-    margin: .3rem 0 0; color: var(--sourdine);
-    font-size: .92rem; max-width: 32rem; text-wrap: balance;
-  }
+  header p { margin: .28rem 0 0; color: var(--sourdine); font-size: .9rem;
+             max-width: 32rem; text-wrap: balance; }
 
-  .carte {
-    background: var(--carte);
-    border: 1px solid var(--ligne);
-    border-radius: 14px;
-    padding: 1rem;
-  }
+  .carte { background: var(--carte); border: 1px solid var(--ligne);
+           border-radius: 14px; padding: 1rem; }
 
-  /* Aller-retour / aller simple */
   .type-trajet {
     display: grid; grid-template-columns: 1fr 1fr; gap: 4px;
     background: var(--fond); border: 1px solid var(--ligne);
-    border-radius: 10px; padding: 4px; margin-bottom: .9rem;
+    border-radius: 10px; padding: 4px; margin-bottom: .85rem;
   }
   .type-trajet button {
-    border: 0; border-radius: 7px; padding: .55rem .5rem;
+    border: 0; border-radius: 7px; padding: .5rem;
     background: transparent; color: var(--sourdine);
-    font: inherit; font-size: .95rem; font-weight: 600; cursor: pointer;
-    min-height: 44px;
+    font: inherit; font-size: .95rem; font-weight: 600; cursor: pointer; min-height: 44px;
   }
   .type-trajet button[aria-pressed="true"] {
     background: var(--carte); color: var(--encre);
     box-shadow: 0 1px 3px rgba(10, 20, 50, .12);
   }
 
-  .trajet {
-    display: grid; grid-template-columns: 1fr auto 1fr;
-    gap: .5rem; align-items: end;
-  }
+  .trajet { display: grid; grid-template-columns: 1fr auto 1fr; gap: .5rem; align-items: end; }
   .dates { display: grid; grid-template-columns: 1fr 1fr; gap: .5rem; margin-top: .7rem; }
   .dates.simple { grid-template-columns: 1fr; }
   .rangee-pax { margin-top: .7rem; }
 
   .champ label {
-    display: block;
-    font-size: .7rem; font-weight: 650; letter-spacing: .07em;
-    text-transform: uppercase; color: var(--sourdine);
-    margin-bottom: .25rem;
+    display: block; font-size: .7rem; font-weight: 650; letter-spacing: .07em;
+    text-transform: uppercase; color: var(--sourdine); margin-bottom: .25rem;
   }
   .champ input {
-    width: 100%; box-sizing: border-box;
-    padding: .65rem .6rem;
+    width: 100%; box-sizing: border-box; padding: .65rem .6rem;
     border: 1px solid var(--ligne); border-radius: 10px;
     background: var(--fond); color: var(--encre);
-    font-size: 1rem; font-family: inherit;
-    min-height: 48px;
+    font-size: 1rem; font-family: inherit; min-height: 48px;
   }
   .champ input.iata { text-transform: uppercase; font-weight: 650; letter-spacing: .04em; }
-
   .inverser {
-    width: 44px; height: 48px;
-    border: 1px solid var(--ligne); border-radius: 10px;
-    background: var(--fond); color: var(--accent);
-    font-size: 1.15rem; cursor: pointer;
+    width: 44px; height: 48px; border: 1px solid var(--ligne); border-radius: 10px;
+    background: var(--fond); color: var(--accent); font-size: 1.15rem; cursor: pointer;
   }
-
-  .champ input:focus-visible, button:focus-visible, .options input:focus-visible,
-  details summary:focus-visible {
+  input:focus-visible, button:focus-visible, summary:focus-visible, .zone:focus-visible {
     outline: 2px solid var(--accent); outline-offset: 2px;
   }
 
   .options { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .9rem; }
   .options .legende {
-    flex-basis: 100%;
-    font-size: .7rem; font-weight: 650; letter-spacing: .07em;
+    flex-basis: 100%; font-size: .7rem; font-weight: 650; letter-spacing: .07em;
     text-transform: uppercase; color: var(--sourdine);
   }
   .options label.puce {
     display: inline-flex; align-items: center; gap: .45rem;
     padding: .55rem .85rem; min-height: 44px; box-sizing: border-box;
     border: 1px solid var(--ligne); border-radius: 999px;
-    background: var(--fond);
-    font-size: .95rem; cursor: pointer; user-select: none;
+    background: var(--fond); font-size: .95rem; cursor: pointer; user-select: none;
   }
-  .options label.puce:has(input[type="checkbox"]:checked) {
-    background: var(--accent); border-color: var(--accent);
-    color: var(--accent-encre);
+  .options label.puce.active {
+    background: var(--accent); border-color: var(--accent); color: var(--accent-encre);
   }
   .options input[type="checkbox"] { accent-color: var(--accent); margin: 0; width: 18px; height: 18px; }
+  .options label.puce.active input[type="checkbox"] { accent-color: var(--accent-encre); }
   .options input[type="number"] {
-    width: 3rem; padding: .2rem .3rem;
-    border: 1px solid var(--ligne); border-radius: 6px;
+    width: 3rem; padding: .2rem .3rem; border: 1px solid var(--ligne); border-radius: 6px;
     background: var(--carte); color: var(--encre); font-size: 1rem;
   }
 
-  button.principal {
-    margin-top: 1rem; width: 100%;
-    padding: .9rem 1rem; min-height: 52px;
-    border: 0; border-radius: 12px;
-    background: var(--accent); color: var(--accent-encre);
-    font-size: 1.08rem; font-weight: 650; font-family: inherit;
-    cursor: pointer;
+  .note-live {
+    margin-top: .9rem; font-size: .85rem; color: var(--sourdine);
+    display: flex; align-items: center; gap: .4rem;
   }
-  button.principal:active { background: var(--accent-fonce); }
-
-  .erreur {
-    margin-top: .8rem; padding: .7rem .9rem;
-    border-radius: 10px;
+  .avertissement {
+    margin-top: .8rem; padding: .65rem .85rem; border-radius: 10px;
     background: var(--ambre-fond); border: 1px solid var(--ambre-ligne);
-    color: var(--ambre); font-size: .95rem;
+    color: var(--ambre); font-size: .92rem;
   }
 
-  #resultats { margin-top: 1.2rem; display: flex; flex-direction: column; gap: .8rem; }
+  #resultats { margin-top: 1rem; display: flex; flex-direction: column; gap: .8rem; }
+
+  /* Le total, en tête des résultats : toujours visible sans scroller */
+  .sommaire {
+    background: var(--carte); border: 2px solid var(--vert); border-radius: 14px;
+    padding: .9rem 1rem;
+  }
+  .sommaire .entete {
+    display: flex; justify-content: space-between; align-items: baseline; gap: .8rem;
+  }
+  .sommaire .libelle {
+    font-size: .7rem; font-weight: 700; letter-spacing: .07em;
+    text-transform: uppercase; color: var(--sourdine);
+  }
+  .sommaire .montant { color: var(--vert); font-size: 1.75rem; font-weight: 750;
+                       letter-spacing: -.02em; white-space: nowrap; }
+  .sommaire .frais { font-size: .85rem; color: var(--sourdine); margin-top: .1rem; }
+  .sommaire .frais strong { color: var(--encre); }
+  .sommaire .lignes {
+    margin-top: .7rem; padding-top: .7rem; border-top: 1px dashed var(--ligne);
+    display: flex; flex-direction: column; gap: .3rem; font-size: .88rem;
+  }
+  .sommaire .lignes div { display: flex; justify-content: space-between; gap: .6rem; }
+  .sommaire .lignes .sens {
+    color: var(--sourdine); text-transform: uppercase; font-size: .68rem;
+    font-weight: 700; letter-spacing: .06em; min-width: 3.4rem;
+  }
+  .sommaire .lignes .desc { flex: 1; }
 
   .bandeau-demo {
-    padding: .6rem .85rem;
-    border-radius: 10px;
+    padding: .6rem .85rem; border-radius: 10px;
     background: var(--ambre-fond); border: 1px solid var(--ambre-ligne);
-    color: var(--ambre); font-size: .86rem;
+    color: var(--ambre); font-size: .84rem;
   }
+  .aide { font-size: .86rem; color: var(--sourdine); margin: 0; }
 
-  .titre-direction {
-    margin: .4rem 0 0; font-size: 1.02rem; font-weight: 700;
-  }
-  .titre-direction .sous { color: var(--sourdine); font-weight: 400; font-size: .88rem; }
+  .titre-direction { margin: .5rem 0 0; font-size: 1rem; font-weight: 700; }
+  .titre-direction .sous { color: var(--sourdine); font-weight: 400; font-size: .86rem; }
 
-  .billet { padding: 0; overflow: hidden; position: relative; }
-  .billet label.zone {
+  .billet { padding: 0; overflow: hidden; }
+  .billet.choisi { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+  .billet .zone {
     display: flex; justify-content: space-between; align-items: flex-start;
-    gap: .8rem; padding: .9rem 1rem .75rem;
-    cursor: pointer;
+    gap: .8rem; padding: .85rem 1rem .7rem; width: 100%; box-sizing: border-box;
+    background: none; border: 0; font: inherit; color: inherit;
+    text-align: left; cursor: pointer;
   }
-  .billet input[type="radio"] {
-    position: absolute; opacity: 0; pointer-events: none;
-  }
-  .billet:has(input:checked) { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
-  .billet:has(input:checked) .coche { opacity: 1; }
-  .billet .coche {
-    opacity: 0; color: var(--accent); font-size: .78rem; font-weight: 700;
-    letter-spacing: .05em; text-transform: uppercase;
-  }
+  .billet.choisi .zone { background: var(--accent-doux); }
   .billet .compagnie { font-weight: 650; font-size: .95rem; }
   .billet .numero { color: var(--sourdine); font-size: .82rem; font-weight: 400; }
-  .billet .horaires { font-size: 1.2rem; margin-top: .2rem; }
+  .billet .horaires { font-size: 1.18rem; margin-top: .2rem; }
   .billet .trajet-detail { color: var(--sourdine); font-size: .84rem; margin-top: .05rem; }
   .billet .prix { text-align: right; flex-shrink: 0; }
-  .billet .prix .appel {
-    color: var(--sourdine); text-decoration: line-through; font-size: .88rem;
-  }
-  .billet .prix .reel {
-    color: var(--vert); font-size: 1.35rem; font-weight: 750; letter-spacing: -.01em;
-  }
+  .billet .prix .appel { color: var(--sourdine); text-decoration: line-through; font-size: .86rem; }
+  .billet .prix .reel { color: var(--vert); font-size: 1.3rem; font-weight: 750; letter-spacing: -.01em; }
   .billet .prix .etiquette {
-    font-size: .68rem; letter-spacing: .06em; text-transform: uppercase;
-    color: var(--sourdine);
+    font-size: .66rem; letter-spacing: .06em; text-transform: uppercase; color: var(--sourdine);
+  }
+  .billet .prix .coche {
+    font-size: .7rem; font-weight: 700; letter-spacing: .05em;
+    text-transform: uppercase; color: var(--accent); margin-top: .1rem;
   }
   .billet .perforation { border: 0; border-top: 2px dashed var(--ligne); margin: 0 1rem; }
-  .billet details { padding: .55rem 1rem .8rem; }
+  .billet details { padding: .5rem 1rem .75rem; }
   .billet summary {
-    cursor: pointer; color: var(--accent); font-size: .9rem;
+    cursor: pointer; color: var(--accent); font-size: .89rem;
     list-style-position: inside; min-height: 32px; display: flex; align-items: center;
   }
-  .billet .sans-frais { padding: .55rem 1rem .8rem; color: var(--vert); font-size: .9rem; }
-  .billet table { margin-top: .45rem; border-collapse: collapse; font-size: .9rem; width: 100%; }
+  .billet .sans-frais { padding: .5rem 1rem .75rem; color: var(--vert); font-size: .89rem; }
+  .billet table { margin-top: .4rem; border-collapse: collapse; font-size: .89rem; width: 100%; }
   .billet td { padding: .18rem 0; }
   .billet td:first-child { color: var(--sourdine); }
   .billet td:last-child { text-align: right; }
-  .billet .estimation { color: var(--ambre); font-size: .84rem; margin-top: .35rem; }
-
-  /* Barre de total collée en bas */
-  .barre-total {
-    position: fixed; left: 0; right: 0; bottom: 0; z-index: 10;
-    background: var(--carte); border-top: 1px solid var(--ligne);
-    padding: .7rem .9rem calc(.7rem + env(safe-area-inset-bottom));
-    display: none;
-  }
-  .barre-total.visible { display: block; }
-  .barre-total .contenu {
-    max-width: 40rem; margin: 0 auto;
-    display: flex; justify-content: space-between; align-items: center; gap: 1rem;
-  }
-  .barre-total .libelle { font-size: .82rem; color: var(--sourdine); }
-  .barre-total .detail { font-size: .82rem; color: var(--sourdine); }
-  .barre-total .montant {
-    color: var(--vert); font-size: 1.45rem; font-weight: 750; white-space: nowrap;
-  }
+  .billet .estimation { color: var(--ambre); font-size: .83rem; margin-top: .35rem; }
 
   footer {
-    margin-top: 1.8rem; color: var(--sourdine); font-size: .8rem;
+    margin-top: 1.6rem; color: var(--sourdine); font-size: .8rem;
     border-top: 1px solid var(--ligne); padding-top: .9rem;
   }
-
   @media (prefers-reduced-motion: no-preference) {
     .billet { transition: box-shadow .12s ease, border-color .12s ease; }
   }
@@ -275,7 +228,9 @@
        d'enregistrement calculés à l'avance, avant de réserver.</p>
   </header>
 
-  <form id="recherche" class="carte">
+  <!-- novalidate : c'est le script qui contrôle la saisie, jamais le navigateur,
+       pour qu'aucune combinaison de dates ne puisse bloquer la recherche. -->
+  <form id="recherche" class="carte" novalidate>
     <div class="type-trajet" role="group" aria-label="Type de trajet">
       <button type="button" id="btn_ar" aria-pressed="true">Aller-retour</button>
       <button type="button" id="btn_as" aria-pressed="false">Aller simple</button>
@@ -285,20 +240,20 @@
       <div class="champ">
         <label for="origine">Départ</label>
         <input class="iata" id="origine" list="aeroports" placeholder="CDG" maxlength="3"
-               autocapitalize="characters" autocomplete="off" required pattern="[A-Za-z]{3}" value="CDG">
+               autocapitalize="characters" autocomplete="off" value="CDG">
       </div>
-      <button type="button" class="inverser" id="inverser" title="Inverser départ et arrivée" aria-label="Inverser départ et arrivée">⇄</button>
+      <button type="button" class="inverser" id="inverser" aria-label="Inverser départ et arrivée">⇄</button>
       <div class="champ">
         <label for="destination">Arrivée</label>
         <input class="iata" id="destination" list="aeroports" placeholder="BCN" maxlength="3"
-               autocapitalize="characters" autocomplete="off" required pattern="[A-Za-z]{3}" value="BCN">
+               autocapitalize="characters" autocomplete="off" value="BCN">
       </div>
     </div>
 
     <div class="dates" id="zone_dates">
       <div class="champ">
         <label for="date_aller">Aller</label>
-        <input type="date" id="date_aller" required>
+        <input type="date" id="date_aller">
       </div>
       <div class="champ" id="champ_retour">
         <label for="date_retour">Retour</label>
@@ -313,14 +268,14 @@
 
     <div class="options">
       <span class="legende">Ce que vous emportez vraiment</span>
-      <label class="puce"><input type="checkbox" id="bagage_cabine" checked> Bagage cabine</label>
+      <label class="puce active"><input type="checkbox" id="bagage_cabine" checked> Bagage cabine</label>
       <label class="puce">Soute <input type="number" id="bagages_soute" min="0" max="3" value="0" inputmode="numeric"></label>
       <label class="puce"><input type="checkbox" id="choix_siege"> Choix du siège</label>
       <label class="puce"><input type="checkbox" id="enregistrement_aeroport"> Enreg. à l'aéroport</label>
     </div>
 
-    <button class="principal" type="submit">Rechercher au prix réel</button>
-    <div id="erreur" class="erreur" hidden></div>
+    <p class="note-live">↻ Les prix se recalculent tout seuls à chaque changement.</p>
+    <div id="avertissement" class="avertissement" hidden></div>
   </form>
 
   <datalist id="aeroports">
@@ -364,16 +319,6 @@
   </footer>
 </div>
 
-<div class="barre-total" id="barre">
-  <div class="contenu">
-    <div>
-      <div class="libelle" id="barre_libelle">Total aller-retour, frais inclus</div>
-      <div class="detail" id="barre_detail"></div>
-    </div>
-    <div class="montant mono" id="barre_montant"></div>
-  </div>
-</div>
-
 <script>
 "use strict";
 
@@ -394,7 +339,7 @@ const DEFAUT = { nom: "Compagnie inconnue", cabine: 15, soute: 35, siege: 10, ae
 const LOW_COST = new Set(["FR", "U2", "VY", "TO", "V7", "W6"]);
 const CODES_DEMO = Object.keys(GRILLE);
 
-/* --- Moteur de surcoûts : options du voyageur × grille, par trajet --- */
+/* --- Moteur de surcoûts : options du voyageur × grille, pour un trajet --- */
 function calculerSurcouts(code, options) {
   const grille = GRILLE[code] || DEFAUT;
   const lignes = [];
@@ -417,7 +362,7 @@ function calculerSurcouts(code, options) {
   };
 }
 
-/* --- Générateur de vols de démonstration, déterministe par recherche --- */
+/* --- Vols de démonstration, déterministes pour une recherche donnée --- */
 function graine(texte) {
   let h = 1779033703 ^ texte.length;
   for (let i = 0; i < texte.length; i++) {
@@ -456,24 +401,24 @@ function rechercherDemo(origine, destination, jourISO) {
       departMin, arriveeMin: departMin + duree, duree, escales, prixAffiche: prix,
     });
   }
-  vols.sort((a, b) => a.departMin - b.departMin);
   return vols;
 }
 
-/* --- Affichage --- */
-const euros = (montant) =>
-  montant.toLocaleString("fr-FR", { style: "currency", currency: "EUR" });
-const heureTexte = (minutes) =>
-  `${String(Math.floor(minutes / 60) % 24).padStart(2, "0")}:${String(minutes % 60).padStart(2, "0")}`;
-const echapper = (texte) => {
-  const div = document.createElement("div");
-  div.textContent = texte;
-  return div.innerHTML;
-};
+/* --- Utilitaires d'affichage --- */
+const euros = (m) => m.toLocaleString("fr-FR", { style: "currency", currency: "EUR" });
+const heureTexte = (min) =>
+  `${String(Math.floor(min / 60) % 24).padStart(2, "0")}:${String(min % 60).padStart(2, "0")}`;
+const echapper = (t) => { const d = document.createElement("div"); d.textContent = t; return d.innerHTML; };
 const dateTexte = (iso) =>
   new Date(`${iso}T12:00:00`).toLocaleDateString("fr-FR", { weekday: "short", day: "numeric", month: "short" });
+const jourISO = (d) => {
+  const local = new Date(d.getTime() - d.getTimezoneOffset() * 60000);
+  return local.toISOString().slice(0, 10);
+};
 
-let etat = null; // { sens: {aller: [résultats], retour: [...]|null}, choix: {aller: 0, retour: 0} }
+/* Le vol choisi est mémorisé par son numéro : changer une option recalcule les
+   prix sans jamais perdre la sélection du voyageur. */
+const choixMemorise = { aller: null, retour: null };
 
 function preparerResultats(vols, options) {
   return vols
@@ -485,12 +430,18 @@ function preparerResultats(vols, options) {
     .sort((a, b) => a.prixReel - b.prixReel);
 }
 
-function carteBillet(r, sens, index, options) {
+function indexChoisi(liste, sens) {
+  const memo = choixMemorise[sens];
+  const trouve = memo === null ? -1 : liste.findIndex((r) => r.vol.numero === memo);
+  return trouve >= 0 ? trouve : 0; // à défaut, le moins cher au prix réel
+}
+
+function carteBillet(r, sens, index, choisi, options) {
   const grille = GRILLE[r.vol.code] || DEFAUT;
   const h = Math.floor(r.vol.duree / 60), m = r.vol.duree % 60;
   let bas;
   if (r.surcouts.lignes.length) {
-    const lignesTable = r.surcouts.lignes
+    const lignes = r.surcouts.lignes
       .map((l) => `<tr><td>${echapper(l.libelle)}</td><td class="mono">+ ${euros(l.total)}</td></tr>`)
       .join("");
     bas = `
@@ -498,7 +449,7 @@ function carteBillet(r, sens, index, options) {
         <summary>Détail des frais : ${euros(r.surcouts.total)}</summary>
         <table>
           <tr><td>Billet${options.passagers > 1 ? "s" : ""}</td><td class="mono">${euros(r.prixBase)}</td></tr>
-          ${lignesTable}
+          ${lignes}
         </table>
         ${r.surcouts.estimation ? '<div class="estimation">Compagnie hors grille : estimation prudente.</div>' : ""}
       </details>`;
@@ -506,48 +457,70 @@ function carteBillet(r, sens, index, options) {
     bas = `<div class="sans-frais">Aucun frais caché avec vos options ✔</div>`;
   }
   return `
-    <article class="carte billet">
-      <label class="zone">
-        <input type="radio" name="choix_${sens}" value="${index}"
-               ${etat.choix[sens] === index ? "checked" : ""}>
-        <div>
-          <div class="compagnie">${echapper(grille.nom)}
-            <span class="numero mono">· ${r.vol.numero}</span></div>
-          <div class="horaires mono">${heureTexte(r.vol.departMin)} — ${heureTexte(r.vol.arriveeMin)}</div>
-          <div class="trajet-detail">${h}h${String(m).padStart(2, "0")} ·
-            ${r.vol.escales === 0 ? "direct" : `${r.vol.escales} escale`}</div>
-        </div>
-        <div class="prix">
-          ${r.surcouts.total > 0 ? `<div class="appel mono">${euros(r.prixBase)}</div>` : ""}
-          <div class="reel mono">${euros(r.prixReel)}</div>
-          <div class="etiquette">prix réel</div>
-          <div class="coche">Choisi ✔</div>
-        </div>
-      </label>
+    <article class="carte billet${choisi ? " choisi" : ""}">
+      <button type="button" class="zone" data-sens="${sens}" data-index="${index}"
+              aria-pressed="${choisi}">
+        <span>
+          <span class="compagnie">${echapper(grille.nom)}
+            <span class="numero mono">· ${r.vol.numero}</span></span>
+          <span class="horaires mono" style="display:block">${heureTexte(r.vol.departMin)} — ${heureTexte(r.vol.arriveeMin)}</span>
+          <span class="trajet-detail" style="display:block">${h}h${String(m).padStart(2, "0")} ·
+            ${r.vol.escales === 0 ? "direct" : `${r.vol.escales} escale`}</span>
+        </span>
+        <span class="prix">
+          ${r.surcouts.total > 0 ? `<span class="appel mono" style="display:block">${euros(r.prixBase)}</span>` : ""}
+          <span class="reel mono" style="display:block">${euros(r.prixReel)}</span>
+          <span class="etiquette" style="display:block">prix réel</span>
+          ${choisi ? '<span class="coche" style="display:block">Choisi ✔</span>' : ""}
+        </span>
+      </button>
       <hr class="perforation">
       ${bas}
     </article>`;
 }
 
-function majBarre() {
-  const barre = document.getElementById("barre");
-  if (!etat) { barre.classList.remove("visible"); return; }
-  const aller = etat.sens.aller[etat.choix.aller];
-  const retour = etat.sens.retour ? etat.sens.retour[etat.choix.retour] : null;
+function sommaire(aller, retour, criteres) {
   const total = Math.round((aller.prixReel + (retour ? retour.prixReel : 0)) * 100) / 100;
   const frais = Math.round((aller.surcouts.total + (retour ? retour.surcouts.total : 0)) * 100) / 100;
-  document.getElementById("barre_libelle").textContent =
-    retour ? "Total aller-retour, frais inclus" : "Total aller simple, frais inclus";
-  document.getElementById("barre_detail").textContent =
-    frais > 0 ? `dont ${euros(frais)} de frais pré-calculés` : "aucun frais caché avec vos options";
-  document.getElementById("barre_montant").textContent = euros(total);
-  barre.classList.add("visible");
+  const ligne = (sens, r, de, vers) => `
+    <div>
+      <span class="sens">${sens}</span>
+      <span class="desc">${echapper((GRILLE[r.vol.code] || DEFAUT).nom)} ·
+        ${de}→${vers} ${heureTexte(r.vol.departMin)}</span>
+      <span class="mono">${euros(r.prixReel)}</span>
+    </div>`;
+  return `
+    <div class="sommaire">
+      <div class="entete">
+        <div>
+          <div class="libelle">Total ${retour ? "aller-retour" : "aller simple"}, frais inclus</div>
+          <div class="frais">${frais > 0
+            ? `dont <strong>${euros(frais)}</strong> de frais pré-calculés`
+            : "aucun frais caché avec vos options ✔"}</div>
+        </div>
+        <div class="montant mono">${euros(total)}</div>
+      </div>
+      <div class="lignes">
+        ${ligne("Aller", aller, criteres.origine, criteres.destination)}
+        ${retour ? ligne("Retour", retour, criteres.destination, criteres.origine) : ""}
+      </div>
+    </div>`;
 }
 
-function rendreResultats(criteres) {
-  const conteneur = document.getElementById("resultats");
-  const o = criteres, opt = o.options;
-  const optionsTexte = [
+function rendre(criteres) {
+  const opt = criteres.options;
+  const listeAller = preparerResultats(
+    rechercherDemo(criteres.origine, criteres.destination, criteres.dateAller), opt);
+  const listeRetour = criteres.dateRetour
+    ? preparerResultats(rechercherDemo(criteres.destination, criteres.origine, criteres.dateRetour), opt)
+    : null;
+
+  const iAller = indexChoisi(listeAller, "aller");
+  const iRetour = listeRetour ? indexChoisi(listeRetour, "retour") : null;
+  choixMemorise.aller = listeAller[iAller].vol.numero;
+  choixMemorise.retour = listeRetour ? listeRetour[iRetour].vol.numero : null;
+
+  const resume = [
     `${opt.passagers} passager${opt.passagers > 1 ? "s" : ""}`,
     opt.bagageCabine ? "bagage cabine" : null,
     opt.bagagesSoute ? `${opt.bagagesSoute} bagage${opt.bagagesSoute > 1 ? "s" : ""} soute` : null,
@@ -555,48 +528,43 @@ function rendreResultats(criteres) {
     opt.enregistrementAeroport ? "enreg. aéroport" : null,
   ].filter(Boolean).join(", ");
 
-  let html = `
-    <div class="bandeau-demo">Mode démonstration : vols fictifs. Les surcoûts,
-    eux, sont calculés avec la vraie grille de frais des compagnies.</div>
-    <p class="synthese" style="margin:0; font-size:.9rem; color:var(--sourdine);">
-      ${optionsTexte}. Chaque liste est triée par <strong>prix réel</strong> ;
-      touchez un vol pour le choisir, le total s'affiche en bas.</p>
-    <h2 class="titre-direction">Aller · ${o.origine} → ${o.destination}
-      <span class="sous">${dateTexte(o.dateAller)}</span></h2>`;
-  etat.sens.aller.forEach((r, i) => { html += carteBillet(r, "aller", i, opt); });
+  let html = sommaire(listeAller[iAller], listeRetour ? listeRetour[iRetour] : null, criteres);
+  html += `<p class="aide">${resume}. Listes triées par <strong>prix réel</strong> —
+           touchez un vol pour l'échanger, le total se met à jour.</p>`;
+  html += `<div class="bandeau-demo">Mode démonstration : vols fictifs. Les surcoûts,
+           eux, viennent de la vraie grille de frais des compagnies.</div>`;
 
-  if (etat.sens.retour) {
-    html += `
-      <h2 class="titre-direction">Retour · ${o.destination} → ${o.origine}
-        <span class="sous">${dateTexte(o.dateRetour)}</span></h2>`;
-    etat.sens.retour.forEach((r, i) => { html += carteBillet(r, "retour", i, opt); });
+  html += `<h2 class="titre-direction">Aller · ${criteres.origine} → ${criteres.destination}
+           <span class="sous">${dateTexte(criteres.dateAller)}</span></h2>`;
+  listeAller.forEach((r, i) => { html += carteBillet(r, "aller", i, i === iAller, opt); });
+
+  if (listeRetour) {
+    html += `<h2 class="titre-direction">Retour · ${criteres.destination} → ${criteres.origine}
+             <span class="sous">${dateTexte(criteres.dateRetour)}</span></h2>`;
+    listeRetour.forEach((r, i) => { html += carteBillet(r, "retour", i, i === iRetour, opt); });
   }
 
+  const conteneur = document.getElementById("resultats");
   conteneur.innerHTML = html;
-  conteneur.querySelectorAll('input[type="radio"]').forEach((radio) => {
-    radio.addEventListener("change", () => {
-      const sens = radio.name === "choix_aller" ? "aller" : "retour";
-      etat.choix[sens] = Number(radio.value);
-      majBarre();
+  conteneur.querySelectorAll(".zone").forEach((bouton) => {
+    bouton.addEventListener("click", () => {
+      const sens = bouton.dataset.sens;
+      const liste = sens === "aller" ? listeAller : listeRetour;
+      choixMemorise[sens] = liste[Number(bouton.dataset.index)].vol.numero;
+      rendre(criteres);
     });
   });
-  majBarre();
-  conteneur.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
-/* --- Formulaire --- */
+/* --- Saisie --- */
 const champAller = document.getElementById("date_aller");
 const champRetour = document.getElementById("date_retour");
-const jourISO = (d) => d.toISOString().slice(0, 10);
-const aujourdhui = new Date();
-champAller.min = jourISO(aujourdhui);
-champRetour.min = jourISO(aujourdhui);
+const champOrigine = document.getElementById("origine");
+const champDestination = document.getElementById("destination");
+const avertissement = document.getElementById("avertissement");
+
 champAller.value = jourISO(new Date(Date.now() + 24 * 3600 * 1000));
 champRetour.value = jourISO(new Date(Date.now() + 8 * 24 * 3600 * 1000));
-champAller.addEventListener("change", () => {
-  champRetour.min = champAller.value;
-  if (champRetour.value < champAller.value) champRetour.value = champAller.value;
-});
 
 let allerRetour = true;
 const btnAR = document.getElementById("btn_ar");
@@ -605,58 +573,79 @@ function basculerType(ar) {
   allerRetour = ar;
   btnAR.setAttribute("aria-pressed", String(ar));
   btnAS.setAttribute("aria-pressed", String(!ar));
-  document.getElementById("champ_retour").style.display = ar ? "" : "none";
+  document.getElementById("champ_retour").hidden = !ar;
   document.getElementById("zone_dates").classList.toggle("simple", !ar);
-  champRetour.required = ar;
+  actualiser();
 }
 btnAR.addEventListener("click", () => basculerType(true));
 btnAS.addEventListener("click", () => basculerType(false));
 
 document.getElementById("inverser").addEventListener("click", () => {
-  const origine = document.getElementById("origine");
-  const destination = document.getElementById("destination");
-  [origine.value, destination.value] = [destination.value, origine.value];
+  [champOrigine.value, champDestination.value] = [champDestination.value, champOrigine.value];
+  choixMemorise.aller = choixMemorise.retour = null;
+  actualiser();
 });
 
-document.getElementById("recherche").addEventListener("submit", (evenement) => {
-  evenement.preventDefault();
-  const erreur = document.getElementById("erreur");
-  erreur.hidden = true;
-
-  const origine = document.getElementById("origine").value.trim().toUpperCase();
-  const destination = document.getElementById("destination").value.trim().toUpperCase();
-  const dateAller = champAller.value;
-  const dateRetour = allerRetour ? champRetour.value : null;
-
-  const montrerErreur = (texte) => { erreur.textContent = texte; erreur.hidden = false; };
-  if (!/^[A-Z]{3}$/.test(origine) || !/^[A-Z]{3}$/.test(destination) || !dateAller)
-    return montrerErreur("Indiquez deux codes aéroport à 3 lettres (ex. CDG, BCN) et une date d'aller.");
-  if (origine === destination)
-    return montrerErreur("Le départ et l'arrivée doivent être différents.");
-  if (allerRetour && !dateRetour)
-    return montrerErreur("Indiquez la date de retour, ou passez en « Aller simple ».");
-  if (allerRetour && dateRetour < dateAller)
-    return montrerErreur("La date de retour doit être après la date d'aller.");
-
-  const options = {
+function lireOptions() {
+  return {
     passagers: Math.min(9, Math.max(1, Number(document.getElementById("passagers").value) || 1)),
     bagageCabine: document.getElementById("bagage_cabine").checked,
     bagagesSoute: Math.min(3, Math.max(0, Number(document.getElementById("bagages_soute").value) || 0)),
     choixSiege: document.getElementById("choix_siege").checked,
     enregistrementAeroport: document.getElementById("enregistrement_aeroport").checked,
   };
+}
 
-  etat = {
-    sens: {
-      aller: preparerResultats(rechercherDemo(origine, destination, dateAller), options),
-      retour: allerRetour
-        ? preparerResultats(rechercherDemo(destination, origine, dateRetour), options)
-        : null,
-    },
-    choix: { aller: 0, retour: 0 }, // pré-sélection : le moins cher au prix réel
-  };
-  rendreResultats({ origine, destination, dateAller, dateRetour, options });
+/* Recalcule tout. Une saisie incomplète affiche une note et conserve les
+   résultats déjà à l'écran — rien ne disparaît sous les doigts. */
+function actualiser() {
+  document.querySelectorAll(".options label.puce").forEach((puce) => {
+    const case_ = puce.querySelector('input[type="checkbox"]');
+    puce.classList.toggle("active", !!case_ && case_.checked);
+  });
+
+  const origine = champOrigine.value.trim().toUpperCase();
+  const destination = champDestination.value.trim().toUpperCase();
+  const dateAller = champAller.value;
+  let dateRetour = allerRetour ? champRetour.value : null;
+
+  const prevenir = (texte) => { avertissement.textContent = texte; avertissement.hidden = false; };
+
+  if (!/^[A-Z]{3}$/.test(origine) || !/^[A-Z]{3}$/.test(destination))
+    return prevenir("Indiquez deux codes aéroport à 3 lettres (ex. CDG et BCN).");
+  if (origine === destination)
+    return prevenir("Le départ et l'arrivée doivent être différents.");
+  if (!dateAller) return prevenir("Choisissez une date d'aller.");
+  if (allerRetour && !dateRetour) return prevenir("Choisissez une date de retour, ou passez en « Aller simple ».");
+
+  // Un retour avant l'aller est corrigé au lieu d'être refusé.
+  if (allerRetour && dateRetour < dateAller) {
+    dateRetour = dateAller;
+    champRetour.value = dateRetour;
+    prevenir("Le retour ne peut pas précéder l'aller : il a été aligné sur la date d'aller.");
+  } else {
+    avertissement.hidden = true;
+  }
+
+  rendre({ origine, destination, dateAller, dateRetour, options: lireOptions() });
+}
+
+const form = document.getElementById("recherche");
+let attente = 0;
+const planifier = () => { clearTimeout(attente); attente = setTimeout(actualiser, 150); };
+form.addEventListener("input", planifier);
+form.addEventListener("change", actualiser);
+form.addEventListener("submit", (e) => { e.preventDefault(); actualiser(); });
+// Changer l'aller décale un retour devenu antérieur.
+champAller.addEventListener("change", () => {
+  if (allerRetour && champRetour.value && champRetour.value < champAller.value)
+    champRetour.value = champAller.value;
 });
+// Changer d'itinéraire repart du vol le moins cher.
+[champOrigine, champDestination, champAller, champRetour].forEach((champ) =>
+  champ.addEventListener("change", () => { choixMemorise.aller = choixMemorise.retour = null; }));
+
+actualiser(); // résultats affichés dès l'ouverture
 </script>
 
 </body>
