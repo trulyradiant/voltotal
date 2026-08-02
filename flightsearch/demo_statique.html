@@ -1,0 +1,492 @@
+<title>VolTotal — vols au prix réel</title>
+<style>
+  :root {
+    --fond: #F3F5FA;
+    --carte: #FFFFFF;
+    --encre: #1A2138;
+    --sourdine: #5D6785;
+    --ligne: #D9DFEC;
+    --accent: #1E4BD8;
+    --accent-fonce: #143795;
+    --accent-encre: #FFFFFF;
+    --vert: #0B7A4B;
+    --ambre: #9C5E0B;
+    --ambre-fond: #FFF6E4;
+    --ambre-ligne: #EBD9B0;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --fond: #0E1424;
+      --carte: #171F35;
+      --encre: #E8ECF7;
+      --sourdine: #96A0BC;
+      --ligne: #2A3453;
+      --accent: #7B96F4;
+      --accent-fonce: #A5B8F8;
+      --accent-encre: #0E1424;
+      --vert: #4CC38A;
+      --ambre: #E4B063;
+      --ambre-fond: #241D0F;
+      --ambre-ligne: #4A3B1D;
+    }
+  }
+  :root[data-theme="light"] {
+    --fond: #F3F5FA; --carte: #FFFFFF; --encre: #1A2138; --sourdine: #5D6785;
+    --ligne: #D9DFEC; --accent: #1E4BD8; --accent-fonce: #143795;
+    --accent-encre: #FFFFFF; --vert: #0B7A4B; --ambre: #9C5E0B;
+    --ambre-fond: #FFF6E4; --ambre-ligne: #EBD9B0;
+  }
+  :root[data-theme="dark"] {
+    --fond: #0E1424; --carte: #171F35; --encre: #E8ECF7; --sourdine: #96A0BC;
+    --ligne: #2A3453; --accent: #7B96F4; --accent-fonce: #A5B8F8;
+    --accent-encre: #0E1424; --vert: #4CC38A; --ambre: #E4B063;
+    --ambre-fond: #241D0F; --ambre-ligne: #4A3B1D;
+  }
+
+  body {
+    margin: 0;
+    background: var(--fond);
+    color: var(--encre);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    line-height: 1.45;
+  }
+  .mono {
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .page { max-width: 40rem; margin: 0 auto; padding: 0 1rem 4rem; }
+
+  header { padding: 1.6rem 0 1.2rem; }
+  header .marque {
+    display: flex; align-items: baseline; gap: .5rem;
+    font-size: 1.7rem; font-weight: 750; letter-spacing: -.02em;
+  }
+  header .marque .total { color: var(--accent); }
+  header p {
+    margin: .35rem 0 0; color: var(--sourdine);
+    font-size: .95rem; max-width: 32rem; text-wrap: balance;
+  }
+
+  .carte {
+    background: var(--carte);
+    border: 1px solid var(--ligne);
+    border-radius: 14px;
+    padding: 1.1rem 1.2rem;
+  }
+
+  form .grille {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: .9rem;
+  }
+  .champ label {
+    display: block;
+    font-size: .72rem; font-weight: 650; letter-spacing: .07em;
+    text-transform: uppercase; color: var(--sourdine);
+    margin-bottom: .3rem;
+  }
+  .champ input {
+    width: 100%; box-sizing: border-box;
+    padding: .6rem .7rem;
+    border: 1px solid var(--ligne); border-radius: 9px;
+    background: var(--fond); color: var(--encre);
+    font-size: 1.05rem; font-family: inherit;
+  }
+  .champ input.iata { text-transform: uppercase; }
+  .champ input:focus-visible, .options input:focus-visible, button:focus-visible,
+  details summary:focus-visible {
+    outline: 2px solid var(--accent); outline-offset: 2px;
+  }
+
+  .options {
+    display: flex; flex-wrap: wrap; gap: .6rem .8rem;
+    margin-top: 1rem;
+  }
+  .options .legende {
+    flex-basis: 100%;
+    font-size: .72rem; font-weight: 650; letter-spacing: .07em;
+    text-transform: uppercase; color: var(--sourdine);
+  }
+  .options label.puce {
+    display: inline-flex; align-items: center; gap: .45rem;
+    padding: .45rem .8rem;
+    border: 1px solid var(--ligne); border-radius: 999px;
+    background: var(--fond);
+    font-size: .95rem; cursor: pointer; user-select: none;
+  }
+  .options label.puce:has(input:checked),
+  .options label.puce:has(input[type="number"]) {
+    border-color: var(--ligne);
+  }
+  .options label.puce:has(input[type="checkbox"]:checked) {
+    background: var(--accent); border-color: var(--accent);
+    color: var(--accent-encre);
+  }
+  .options input[type="checkbox"] { accent-color: var(--accent); margin: 0; }
+  .options input[type="number"] {
+    width: 3.2rem; padding: .15rem .3rem;
+    border: 1px solid var(--ligne); border-radius: 6px;
+    background: var(--carte); color: var(--encre); font-size: 1rem;
+  }
+
+  button.principal {
+    margin-top: 1.1rem; width: 100%;
+    padding: .85rem 1rem;
+    border: 0; border-radius: 10px;
+    background: var(--accent); color: var(--accent-encre);
+    font-size: 1.1rem; font-weight: 650; font-family: inherit;
+    cursor: pointer;
+  }
+  button.principal:active { background: var(--accent-fonce); }
+
+  .erreur {
+    margin-top: .9rem; padding: .7rem .9rem;
+    border-radius: 9px;
+    background: var(--ambre-fond); border: 1px solid var(--ambre-ligne);
+    color: var(--ambre); font-size: .95rem;
+  }
+
+  #resultats { margin-top: 1.4rem; display: flex; flex-direction: column; gap: .9rem; }
+
+  .bandeau-demo {
+    padding: .65rem .9rem;
+    border-radius: 9px;
+    background: var(--ambre-fond); border: 1px solid var(--ambre-ligne);
+    color: var(--ambre); font-size: .88rem;
+  }
+
+  .synthese { font-size: .92rem; color: var(--sourdine); margin: 0; }
+  .synthese strong { color: var(--encre); }
+
+  .billet { padding: 0; overflow: hidden; }
+  .billet .haut {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    gap: 1rem; padding: 1rem 1.2rem .85rem;
+  }
+  .billet .compagnie { font-weight: 650; }
+  .billet .numero { color: var(--sourdine); font-size: .85rem; }
+  .billet .horaires { font-size: 1.25rem; margin-top: .25rem; }
+  .billet .trajet-detail { color: var(--sourdine); font-size: .85rem; margin-top: .1rem; }
+  .billet .prix { text-align: right; flex-shrink: 0; }
+  .billet .prix .appel {
+    color: var(--sourdine); text-decoration: line-through;
+    font-size: .9rem;
+  }
+  .billet .prix .reel {
+    color: var(--vert); font-size: 1.45rem; font-weight: 750;
+    letter-spacing: -.01em;
+  }
+  .billet .prix .etiquette {
+    font-size: .7rem; letter-spacing: .06em; text-transform: uppercase;
+    color: var(--sourdine);
+  }
+  .billet .perforation {
+    border: 0; border-top: 2px dashed var(--ligne);
+    margin: 0 1.2rem;
+  }
+  .billet details { padding: .6rem 1.2rem .9rem; }
+  .billet summary {
+    cursor: pointer; color: var(--accent); font-size: .92rem;
+    list-style-position: inside;
+  }
+  .billet .sans-frais {
+    padding: .6rem 1.2rem .9rem; color: var(--vert); font-size: .92rem;
+  }
+  .billet table {
+    margin-top: .5rem; border-collapse: collapse; font-size: .92rem; width: 100%;
+  }
+  .billet td { padding: .2rem 0; }
+  .billet td:first-child { color: var(--sourdine); }
+  .billet td:last-child { text-align: right; }
+  .billet .estimation { color: var(--ambre); font-size: .85rem; margin-top: .4rem; }
+
+  footer {
+    margin-top: 2rem; color: var(--sourdine); font-size: .82rem;
+    border-top: 1px solid var(--ligne); padding-top: 1rem;
+  }
+</style>
+
+<div class="page">
+  <header>
+    <div class="marque"><span>✈️</span><span>Vol<span class="total">Total</span></span></div>
+    <p>Le prix <strong>réel</strong> de votre vol — bagages, siège et frais
+       d'enregistrement calculés à l'avance, avant de réserver.</p>
+  </header>
+
+  <form id="recherche" class="carte">
+    <div class="grille">
+      <div class="champ">
+        <label for="origine">Départ</label>
+        <input class="iata" id="origine" list="aeroports" placeholder="CDG" maxlength="3"
+               autocapitalize="characters" autocomplete="off" required pattern="[A-Za-z]{3}" value="CDG">
+      </div>
+      <div class="champ">
+        <label for="destination">Arrivée</label>
+        <input class="iata" id="destination" list="aeroports" placeholder="BCN" maxlength="3"
+               autocapitalize="characters" autocomplete="off" required pattern="[A-Za-z]{3}" value="BCN">
+      </div>
+      <div class="champ">
+        <label for="date">Date de départ</label>
+        <input type="date" id="date" required>
+      </div>
+      <div class="champ">
+        <label for="passagers">Passagers</label>
+        <input type="number" id="passagers" min="1" max="9" value="1" inputmode="numeric">
+      </div>
+    </div>
+
+    <div class="options">
+      <span class="legende">Ce que vous emportez vraiment</span>
+      <label class="puce"><input type="checkbox" id="bagage_cabine" checked> Bagage cabine</label>
+      <label class="puce">Soute <input type="number" id="bagages_soute" min="0" max="3" value="0" inputmode="numeric"></label>
+      <label class="puce"><input type="checkbox" id="choix_siege"> Choix du siège</label>
+      <label class="puce"><input type="checkbox" id="enregistrement_aeroport"> Enreg. à l'aéroport</label>
+    </div>
+
+    <button class="principal" type="submit">Rechercher au prix réel</button>
+    <div id="erreur" class="erreur" hidden></div>
+  </form>
+
+  <datalist id="aeroports">
+    <option value="CDG">Paris Charles-de-Gaulle</option>
+    <option value="ORY">Paris Orly</option>
+    <option value="BVA">Paris Beauvais</option>
+    <option value="NCE">Nice</option>
+    <option value="LYS">Lyon</option>
+    <option value="MRS">Marseille</option>
+    <option value="TLS">Toulouse</option>
+    <option value="BOD">Bordeaux</option>
+    <option value="NTE">Nantes</option>
+    <option value="LIL">Lille</option>
+    <option value="BCN">Barcelone</option>
+    <option value="MAD">Madrid</option>
+    <option value="PMI">Palma de Majorque</option>
+    <option value="AGP">Malaga</option>
+    <option value="LIS">Lisbonne</option>
+    <option value="OPO">Porto</option>
+    <option value="FCO">Rome Fiumicino</option>
+    <option value="MXP">Milan Malpensa</option>
+    <option value="VCE">Venise</option>
+    <option value="AMS">Amsterdam</option>
+    <option value="BRU">Bruxelles</option>
+    <option value="GVA">Genève</option>
+    <option value="LHR">Londres Heathrow</option>
+    <option value="DUB">Dublin</option>
+    <option value="BER">Berlin</option>
+    <option value="ATH">Athènes</option>
+    <option value="RAK">Marrakech</option>
+    <option value="TUN">Tunis</option>
+  </datalist>
+
+  <section id="resultats" aria-live="polite"></section>
+
+  <footer>
+    Version de démonstration en ligne : vols fictifs mais réalistes et stables
+    (même recherche → mêmes résultats). Les surcoûts sont calculés avec la
+    grille de frais réelle des compagnies, mise à jour le 02/08/2026 —
+    montants indicatifs par passager et par trajet.
+  </footer>
+</div>
+
+<script>
+"use strict";
+
+/* --- Grille de frais par compagnie (identique à data/frais_compagnies.json) --- */
+const GRILLE = {
+  FR: { nom: "Ryanair",          cabine: 12, soute: 25, siege: 8,  aeroport: 55, cabineIncluse: false },
+  U2: { nom: "easyJet",          cabine: 15, soute: 30, siege: 6,  aeroport: 0,  cabineIncluse: false },
+  VY: { nom: "Vueling",          cabine: 12, soute: 25, siege: 7,  aeroport: 0,  cabineIncluse: false },
+  W6: { nom: "Wizz Air",         cabine: 14, soute: 28, siege: 8,  aeroport: 35, cabineIncluse: false },
+  TO: { nom: "Transavia France", cabine: 15, soute: 25, siege: 9,  aeroport: 0,  cabineIncluse: false },
+  V7: { nom: "Volotea",          cabine: 12, soute: 22, siege: 7,  aeroport: 0,  cabineIncluse: false },
+  AF: { nom: "Air France",       cabine: 0,  soute: 25, siege: 12, aeroport: 0,  cabineIncluse: true },
+  KL: { nom: "KLM",              cabine: 0,  soute: 30, siege: 12, aeroport: 0,  cabineIncluse: true },
+  LH: { nom: "Lufthansa",        cabine: 0,  soute: 30, siege: 15, aeroport: 0,  cabineIncluse: true },
+  IB: { nom: "Iberia",           cabine: 0,  soute: 25, siege: 10, aeroport: 0,  cabineIncluse: true },
+};
+const DEFAUT = { nom: "Compagnie inconnue", cabine: 15, soute: 35, siege: 10, aeroport: 0, cabineIncluse: false };
+const LOW_COST = new Set(["FR", "U2", "VY", "TO", "V7", "W6"]);
+const CODES_DEMO = Object.keys(GRILLE);
+
+/* --- Moteur de surcoûts : options du voyageur × grille de la compagnie --- */
+function calculerSurcouts(code, options) {
+  const grille = GRILLE[code] || DEFAUT;
+  const lignes = [];
+  const pax = options.passagers;
+  if (options.bagageCabine && !grille.cabineIncluse)
+    lignes.push({ libelle: "Bagage cabine", total: grille.cabine * pax });
+  if (options.bagagesSoute > 0)
+    lignes.push({
+      libelle: options.bagagesSoute > 1 ? `Bagage soute × ${options.bagagesSoute}` : "Bagage soute",
+      total: grille.soute * options.bagagesSoute * pax,
+    });
+  if (options.choixSiege && grille.siege > 0)
+    lignes.push({ libelle: "Choix du siège", total: grille.siege * pax });
+  if (options.enregistrementAeroport && grille.aeroport > 0)
+    lignes.push({ libelle: "Enregistrement à l'aéroport", total: grille.aeroport * pax });
+  return {
+    lignes,
+    estimation: !GRILLE[code],
+    total: Math.round(lignes.reduce((somme, l) => somme + l.total, 0) * 100) / 100,
+  };
+}
+
+/* --- Générateur de vols de démonstration, déterministe par recherche --- */
+function graine(texte) {
+  let h = 1779033703 ^ texte.length;
+  for (let i = 0; i < texte.length; i++) {
+    h = Math.imul(h ^ texte.charCodeAt(i), 3432918353);
+    h = (h << 13) | (h >>> 19);
+  }
+  return (h ^= h >>> 16) >>> 0;
+}
+function creerAlea(seed) {
+  let a = seed;
+  return function () {
+    a |= 0; a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+function entier(alea, min, max) { return min + Math.floor(alea() * (max - min + 1)); }
+
+function rechercherDemo(origine, destination, jourISO) {
+  const alea = creerAlea(graine(`${origine}-${destination}-${jourISO}`));
+  const dureeBase = 60 + entier(alea, 0, 180);
+  const nb = entier(alea, 6, 9);
+  const vols = [];
+  for (let i = 0; i < nb; i++) {
+    const code = CODES_DEMO[entier(alea, 0, CODES_DEMO.length - 1)];
+    const heure = 6 + entier(alea, 0, 16);
+    const minute = [0, 15, 30, 45][entier(alea, 0, 3)];
+    const escales = alea() < 0.75 ? 0 : 1;
+    const duree = dureeBase + entier(alea, -15, 25) + escales * (60 + entier(alea, 0, 90));
+    const lowCost = LOW_COST.has(code);
+    const prix = Math.round(((lowCost ? 18 : 55) + alea() * (lowCost ? 90 : 160)) * 100) / 100;
+    const departMin = heure * 60 + minute;
+    vols.push({
+      code, numero: `${code}${entier(alea, 1000, 9999)}`,
+      departMin, arriveeMin: departMin + duree, duree, escales, prixAffiche: prix,
+    });
+  }
+  vols.sort((a, b) => a.departMin - b.departMin);
+  return vols;
+}
+
+/* --- Affichage --- */
+const euros = (montant) =>
+  montant.toLocaleString("fr-FR", { style: "currency", currency: "EUR" });
+const heureTexte = (minutes) =>
+  `${String(Math.floor(minutes / 60) % 24).padStart(2, "0")}:${String(minutes % 60).padStart(2, "0")}`;
+const echapper = (texte) => {
+  const div = document.createElement("div");
+  div.textContent = texte;
+  return div.innerHTML;
+};
+
+function rendreResultats(vols, options, origine, destination, jourISO) {
+  const conteneur = document.getElementById("resultats");
+  const resultats = vols.map((vol) => {
+    const surcouts = calculerSurcouts(vol.code, options);
+    const prixBase = Math.round(vol.prixAffiche * options.passagers * 100) / 100;
+    return { vol, surcouts, prixBase, prixReel: Math.round((prixBase + surcouts.total) * 100) / 100 };
+  });
+  resultats.sort((a, b) => a.prixReel - b.prixReel);
+
+  const jour = new Date(`${jourISO}T12:00:00`).toLocaleDateString("fr-FR", {
+    weekday: "long", day: "numeric", month: "long",
+  });
+  const optionsTexte = [
+    `${options.passagers} passager${options.passagers > 1 ? "s" : ""}`,
+    options.bagageCabine ? "bagage cabine" : null,
+    options.bagagesSoute ? `${options.bagagesSoute} bagage${options.bagagesSoute > 1 ? "s" : ""} soute` : null,
+    options.choixSiege ? "siège choisi" : null,
+    options.enregistrementAeroport ? "enreg. à l'aéroport" : null,
+  ].filter(Boolean).join(", ");
+
+  let html = `
+    <div class="bandeau-demo">Mode démonstration : vols fictifs. Les surcoûts,
+    eux, sont calculés avec la vraie grille de frais des compagnies.</div>
+    <p class="synthese"><strong>${origine} → ${destination}</strong> le ${jour}
+    — ${optionsTexte}. Tri par <strong>prix réel total</strong>.</p>`;
+
+  for (const r of resultats) {
+    const grille = GRILLE[r.vol.code] || DEFAUT;
+    const h = Math.floor(r.vol.duree / 60), m = r.vol.duree % 60;
+    let bas;
+    if (r.surcouts.lignes.length) {
+      const lignesTable = r.surcouts.lignes
+        .map((l) => `<tr><td>${echapper(l.libelle)}</td><td class="mono">+ ${euros(l.total)}</td></tr>`)
+        .join("");
+      bas = `
+        <details>
+          <summary>Détail des frais : ${euros(r.surcouts.total)}</summary>
+          <table>
+            <tr><td>Billet${options.passagers > 1 ? "s" : ""}</td><td class="mono">${euros(r.prixBase)}</td></tr>
+            ${lignesTable}
+          </table>
+          ${r.surcouts.estimation ? '<div class="estimation">Compagnie hors grille : estimation prudente.</div>' : ""}
+        </details>`;
+    } else {
+      bas = `<div class="sans-frais">Aucun frais caché avec vos options ✔</div>`;
+    }
+    html += `
+      <article class="carte billet">
+        <div class="haut">
+          <div>
+            <div class="compagnie">${echapper(grille.nom)}
+              <span class="numero mono">· ${r.vol.numero}</span></div>
+            <div class="horaires mono">${heureTexte(r.vol.departMin)} — ${heureTexte(r.vol.arriveeMin)}</div>
+            <div class="trajet-detail">${h}h${String(m).padStart(2, "0")} ·
+              ${r.vol.escales === 0 ? "direct" : `${r.vol.escales} escale`}</div>
+          </div>
+          <div class="prix">
+            ${r.surcouts.total > 0 ? `<div class="appel mono">${euros(r.prixBase)}</div>` : ""}
+            <div class="reel mono">${euros(r.prixReel)}</div>
+            <div class="etiquette">prix réel total</div>
+          </div>
+        </div>
+        <hr class="perforation">
+        ${bas}
+      </article>`;
+  }
+  conteneur.innerHTML = html;
+  conteneur.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+/* --- Formulaire --- */
+const champDate = document.getElementById("date");
+const demain = new Date(Date.now() + 24 * 3600 * 1000);
+champDate.min = new Date().toISOString().slice(0, 10);
+champDate.value = demain.toISOString().slice(0, 10);
+
+document.getElementById("recherche").addEventListener("submit", (evenement) => {
+  evenement.preventDefault();
+  const erreur = document.getElementById("erreur");
+  erreur.hidden = true;
+
+  const origine = document.getElementById("origine").value.trim().toUpperCase();
+  const destination = document.getElementById("destination").value.trim().toUpperCase();
+  const jourISO = champDate.value;
+  if (!/^[A-Z]{3}$/.test(origine) || !/^[A-Z]{3}$/.test(destination) || !jourISO) {
+    erreur.textContent = "Indiquez deux codes aéroport à 3 lettres (ex. CDG, BCN) et une date.";
+    erreur.hidden = false;
+    return;
+  }
+  if (origine === destination) {
+    erreur.textContent = "Le départ et l'arrivée doivent être différents.";
+    erreur.hidden = false;
+    return;
+  }
+  const options = {
+    passagers: Math.min(9, Math.max(1, Number(document.getElementById("passagers").value) || 1)),
+    bagageCabine: document.getElementById("bagage_cabine").checked,
+    bagagesSoute: Math.min(3, Math.max(0, Number(document.getElementById("bagages_soute").value) || 0)),
+    choixSiege: document.getElementById("choix_siege").checked,
+    enregistrementAeroport: document.getElementById("enregistrement_aeroport").checked,
+  };
+  rendreResultats(rechercherDemo(origine, destination, jourISO), options, origine, destination, jourISO);
+});
+</script>
