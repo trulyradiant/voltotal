@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% block titre %}{{ origine }} → {{ destination }} — VolTotal{% endblock %}
+{% block contenu %}
+
+{% for message in erreurs %}
+  <div class="erreur">{{ message }}</div>
+{% endfor %}
+
+{% if not erreurs %}
+  <p style="margin-top:0;">
+    <a href="{{ url_for('accueil') }}">← Nouvelle recherche</a>
+  </p>
+  <h2 style="margin:.2rem 0 .3rem;">{{ origine }} → {{ destination }}
+    <span style="font-weight:normal; color:var(--gris);">le {{ jour.strftime("%d/%m/%Y") }}</span>
+  </h2>
+  <p class="note" style="margin-top:0;">
+    {{ resultats|length }} vol(s) — {{ options.passagers }} passager(s)
+    {%- if options.bagage_cabine %}, bagage cabine{% endif %}
+    {%- if options.bagages_soute %}, {{ options.bagages_soute }} bagage(s) soute{% endif %}
+    {%- if options.choix_siege %}, siège choisi{% endif %}
+    {%- if options.enregistrement_aeroport %}, enregistrement à l'aéroport{% endif %}.
+    Tri par <strong>prix réel total</strong>.
+  </p>
+
+  {% if resultats and resultats[0].vol.source == "demo" %}
+    <div class="carte" style="background:#fff8e6; border:1px solid #f0ddb0;">
+      <strong>Mode démonstration :</strong> vols fictifs (aucune clé Amadeus configurée).
+      Les surcoûts, eux, sont calculés avec la vraie grille de frais des compagnies.
+    </div>
+  {% endif %}
+
+  {% for r in resultats %}
+    <div class="carte" style="display:grid; grid-template-columns: 1fr auto; gap:1rem; align-items:start;">
+      <div>
+        <div style="font-weight:600; font-size:1.05rem;">
+          {{ r.nom_compagnie }}
+          <span style="color:var(--gris); font-weight:normal;">· {{ r.vol.numero }}</span>
+        </div>
+        <div style="margin:.3rem 0; font-size:1.1rem;">
+          {{ r.vol.depart.strftime("%H:%M") }} — {{ r.vol.arrivee.strftime("%H:%M") }}
+          <span style="color:var(--gris); font-size:.9rem;">
+            · {{ r.vol.duree }} ·
+            {% if r.vol.escales == 0 %}direct{% else %}{{ r.vol.escales }} escale(s){% endif %}
+          </span>
+        </div>
+        {% if r.surcouts.lignes %}
+          <details>
+            <summary style="cursor:pointer; color:var(--bleu);">
+              Détail des frais : {{ r.surcouts.total|euros }}
+              {% if r.surcouts.estimation %}(estimation prudente){% endif %}
+            </summary>
+            <table style="margin-top:.5rem; border-collapse:collapse; font-size:.92rem;">
+              <tr>
+                <td style="padding:.15rem 1.2rem .15rem 0; color:var(--gris);">Billet(s)</td>
+                <td style="text-align:right;">{{ r.prix_base_total|euros }}</td>
+              </tr>
+              {% for ligne in r.surcouts.lignes %}
+                <tr>
+                  <td style="padding:.15rem 1.2rem .15rem 0; color:var(--gris);">{{ ligne.libelle }}</td>
+                  <td style="text-align:right;">+ {{ ligne.total|euros }}</td>
+                </tr>
+              {% endfor %}
+            </table>
+          </details>
+        {% else %}
+          <div class="note">Aucun frais caché avec vos options ✔</div>
+        {% endif %}
+      </div>
+      <div style="text-align:right;">
+        {% if r.surcouts.total > 0 %}
+          <div style="color:var(--gris); text-decoration:line-through;">{{ r.prix_base_total|euros }}</div>
+        {% endif %}
+        <div style="font-size:1.5rem; font-weight:700; color:var(--vert);">{{ r.prix_reel_total|euros }}</div>
+        <div class="note">prix réel total</div>
+      </div>
+    </div>
+  {% else %}
+    <div class="carte">Aucun vol trouvé pour cette recherche.</div>
+  {% endfor %}
+
+  <p class="note">
+    Grille de frais mise à jour le {{ grille.derniere_mise_a_jour }} — montants
+    indicatifs par passager et par trajet, d'après les tarifs publics des compagnies.
+  </p>
+{% else %}
+  <p><a href="{{ url_for('accueil') }}">← Retour à la recherche</a></p>
+{% endif %}
+{% endblock %}

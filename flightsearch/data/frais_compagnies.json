@@ -1,0 +1,110 @@
+{
+  "_commentaire": "Frais annexes indicatifs par compagnie, en euros, par passager et par trajet (aller simple). Sources : grilles tarifaires publiques des compagnies. Mettre a jour regulierement.",
+  "_derniere_mise_a_jour": "2026-08-02",
+  "compagnies": {
+    "FR": {
+      "nom": "Ryanair",
+      "bagage_cabine": 12.0,
+      "bagage_soute": 25.0,
+      "choix_siege": 8.0,
+      "enregistrement_aeroport": 55.0,
+      "cabine_incluse": false
+    },
+    "U2": {
+      "nom": "easyJet",
+      "bagage_cabine": 15.0,
+      "bagage_soute": 30.0,
+      "choix_siege": 6.0,
+      "enregistrement_aeroport": 0.0,
+      "cabine_incluse": false
+    },
+    "VY": {
+      "nom": "Vueling",
+      "bagage_cabine": 12.0,
+      "bagage_soute": 25.0,
+      "choix_siege": 7.0,
+      "enregistrement_aeroport": 0.0,
+      "cabine_incluse": false
+    },
+    "W6": {
+      "nom": "Wizz Air",
+      "bagage_cabine": 14.0,
+      "bagage_soute": 28.0,
+      "choix_siege": 8.0,
+      "enregistrement_aeroport": 35.0,
+      "cabine_incluse": false
+    },
+    "TO": {
+      "nom": "Transavia France",
+      "bagage_cabine": 15.0,
+      "bagage_soute": 25.0,
+      "choix_siege": 9.0,
+      "enregistrement_aeroport": 0.0,
+      "cabine_incluse": false
+    },
+    "HV": {
+      "nom": "Transavia",
+      "bagage_cabine": 15.0,
+      "bagage_soute": 25.0,
+      "choix_siege": 9.0,
+      "enregistrement_aeroport": 0.0,
+      "cabine_incluse": false
+    },
+    "V7": {
+      "nom": "Volotea",
+      "bagage_cabine": 12.0,
+      "bagage_soute": 22.0,
+      "choix_siege": 7.0,
+      "enregistrement_aeroport": 0.0,
+      "cabine_incluse": false
+    },
+    "AF": {
+      "nom": "Air France",
+      "bagage_cabine": 0.0,
+      "bagage_soute": 25.0,
+      "choix_siege": 12.0,
+      "enregistrement_aeroport": 0.0,
+      "cabine_incluse": true
+    },
+    "KL": {
+      "nom": "KLM",
+      "bagage_cabine": 0.0,
+      "bagage_soute": 30.0,
+      "choix_siege": 12.0,
+      "enregistrement_aeroport": 0.0,
+      "cabine_incluse": true
+    },
+    "LH": {
+      "nom": "Lufthansa",
+      "bagage_cabine": 0.0,
+      "bagage_soute": 30.0,
+      "choix_siege": 15.0,
+      "enregistrement_aeroport": 0.0,
+      "cabine_incluse": true
+    },
+    "IB": {
+      "nom": "Iberia",
+      "bagage_cabine": 0.0,
+      "bagage_soute": 25.0,
+      "choix_siege": 10.0,
+      "enregistrement_aeroport": 0.0,
+      "cabine_incluse": true
+    },
+    "TP": {
+      "nom": "TAP Air Portugal",
+      "bagage_cabine": 0.0,
+      "bagage_soute": 30.0,
+      "choix_siege": 10.0,
+      "enregistrement_aeroport": 0.0,
+      "cabine_incluse": true
+    }
+  },
+  "defaut": {
+    "nom": "Compagnie inconnue",
+    "bagage_cabine": 15.0,
+    "bagage_soute": 35.0,
+    "choix_siege": 10.0,
+    "enregistrement_aeroport": 0.0,
+    "cabine_incluse": false
+  }
+}

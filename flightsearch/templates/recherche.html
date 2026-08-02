@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block contenu %}
+<form class="carte" action="{{ url_for('resultats') }}" method="get">
+  <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(10rem, 1fr)); gap:1rem;">
+    <div>
+      <label for="origine">Départ (code IATA)</label>
+      <input type="text" id="origine" name="origine" placeholder="CDG" maxlength="3"
+             required pattern="[A-Za-z]{3}" style="text-transform:uppercase">
+    </div>
+    <div>
+      <label for="destination">Arrivée (code IATA)</label>
+      <input type="text" id="destination" name="destination" placeholder="BCN" maxlength="3"
+             required pattern="[A-Za-z]{3}" style="text-transform:uppercase">
+    </div>
+    <div>
+      <label for="date">Date de départ</label>
+      <input type="date" id="date" name="date" required min="{{ date_min }}" value="{{ date_defaut }}">
+    </div>
+    <div>
+      <label for="passagers">Passagers</label>
+      <input type="number" id="passagers" name="passagers" min="1" max="9" value="1">
+    </div>
+  </div>
+
+  <fieldset style="border:0; padding:0; margin:1.2rem 0 0;">
+    <legend style="font-size:.85rem; color:var(--gris); margin-bottom:.4rem;">
+      Ce que vous emportez vraiment — c'est ça qui change le prix final :
+    </legend>
+    <div style="display:flex; flex-wrap:wrap; gap:1.2rem; align-items:center;">
+      <label style="display:flex; gap:.4rem; align-items:center; color:var(--texte); font-size:1rem;">
+        <input type="checkbox" name="bagage_cabine" value="1" checked> Bagage cabine
+      </label>
+      <label style="display:flex; gap:.4rem; align-items:center; color:var(--texte); font-size:1rem;">
+        Bagages en soute
+        <input type="number" name="bagages_soute" min="0" max="3" value="0" style="width:4rem;">
+      </label>
+      <label style="display:flex; gap:.4rem; align-items:center; color:var(--texte); font-size:1rem;">
+        <input type="checkbox" name="choix_siege" value="1"> Choisir mon siège
+      </label>
+      <label style="display:flex; gap:.4rem; align-items:center; color:var(--texte); font-size:1rem;">
+        <input type="checkbox" name="enregistrement_aeroport" value="1"> Enregistrement à l'aéroport
+      </label>
+    </div>
+  </fieldset>
+
+  <div style="margin-top:1.4rem;">
+    <button class="bouton" type="submit">Rechercher au prix réel</button>
+  </div>
+</form>
+
+<p class="note">
+  Les résultats sont triés par <strong>prix total tout compris</strong>, pas par prix
+  d'appel : un vol « à 19 € » peut coûter plus cher qu'un vol à 60 € une fois les
+  bagages ajoutés. VolTotal fait le calcul avant que vous réserviez.
+</p>
+{% endblock %}
