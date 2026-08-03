@@ -11,8 +11,8 @@ total tout compris**, calculé à l'avance.
 1. Vous indiquez le trajet, les dates (aller simple ou aller-retour), le
    nombre de passagers **et vos options** : bagage cabine, bagages en soute,
    choix du siège, enregistrement à l'aéroport.
-2. Le serveur cherche les vols — **Amadeus en temps réel** si des clés sont
-   configurées, sinon des vols de démonstration.
+2. Le serveur cherche les vols — **en temps réel** (Duffel ou Amadeus) si des
+   clés sont configurées, sinon des vols de démonstration.
 3. Pour chaque vol, il détermine les tarifs applicables (voir « D'où viennent
    les prix » ci-dessous) et les renvoie au navigateur.
 4. L'interface affiche **le total tout compris en haut de l'écran**, puis les
@@ -48,42 +48,55 @@ Le fichier `demo_statique.html` est une version autonome de l'interface
 (HTML + JavaScript, sans serveur) : elle s'ouvre directement dans un
 navigateur ou un téléphone, uniquement en mode démonstration.
 
-## Brancher les vols en temps réel (Amadeus, gratuit)
+## Brancher les vols en temps réel
+
+Deux fournisseurs sont pris en charge. En `FOURNISSEUR_VOLS=auto` (défaut),
+**Duffel est préféré s'il est configuré**, sinon Amadeus, sinon la
+démonstration. `/sources` indique laquelle est active.
+
+### Duffel — recommandé
+
+C'est le fournisseur le plus intéressant ici : il distribue du contenu GDS,
+NDC **et une partie des compagnies low-cost**, et son appel « available
+services » renvoie le prix réel du bagage en soute proposé sur l'offre.
+
+1. Créez un compte sur https://duffel.com (libre-service, sans démarche
+   commerciale) et copiez le jeton de test.
+2. Renseignez `DUFFEL_TOKEN=duffel_test_...`
+
+⚠️ **En mode test, Duffel répond avec une compagnie fictive (« Duffel
+Airways »)** : c'est utile pour valider toute la chaîne technique, pas pour
+comparer de vrais prix. Le contenu réel des compagnies demande un compte
+validé par Duffel et un jeton `duffel_live_`.
+
+### Amadeus
 
 1. Créez un compte Self-Service sur https://developers.amadeus.com.
-2. Créez une application dans « My Self-Service Workspace » et copiez la
-   **API Key** et l'**API Secret**.
-3. Renseignez les variables :
-
-```
-AMADEUS_CLIENT_ID=votre_api_key
-AMADEUS_CLIENT_SECRET=votre_api_secret
-```
-
-Au démarrage suivant, la recherche interroge Amadeus. Vérifiez avec
-`/sante` : `"vols_temps_reel": true`.
+2. Créez une application et copiez la **API Key** et l'**API Secret**.
+3. Renseignez `AMADEUS_CLIENT_ID` et `AMADEUS_CLIENT_SECRET`.
 
 L'environnement **test** (par défaut) est gratuit mais ne couvre qu'une
 partie des vols et affiche des prix indicatifs. Passer en production
-(`AMADEUS_ENV=production`) demande un dossier validé par Amadeus et une
-facturation à l'appel.
+(`AMADEUS_ENV=production`) demande un dossier validé et une facturation.
 
-### Ce que cette source couvre — et ne couvre pas
+Amadeus fournit aussi la **recherche d'aéroport par nom de ville**, utilisée
+pour l'autocomplétion des champs de départ et d'arrivée.
 
-- ✅ Vols, horaires, escales et prix des compagnies **traditionnelles**
-  (Air France, KLM, Lufthansa, Iberia, TAP…).
-- ✅ Franchise bagage incluse dans le tarif, et **prix réel du bagage en
-  soute** pour l'offre consultée (appel de tarification `include=bags`).
-- ❌ **Les low-cost pures (Ryanair, easyJet, Wizz Air) ne sont pas
-  distribuées par Amadeus** — or ce sont précisément celles qui facturent le
-  plus de suppléments. Sur ces compagnies, VolTotal continue d'utiliser sa
-  grille interne, et le total est affiché comme une estimation.
-- ❌ Aucune API publique ne donne le tarif du **choix de siège** ni de
-  l'**enregistrement à l'aéroport** : ces montants restent estimés.
+### Ce que chaque source couvre
 
-Couvrir les low-cost demanderait un autre fournisseur (Duffel, Kiwi Tequila,
-Skyscanner Partners), tous soumis à un accord commercial. C'est la principale
-limite à lever pour que l'app tienne complètement sa promesse.
+| | Duffel | Amadeus | Démonstration |
+|---|---|---|---|
+| Compagnies traditionnelles | ✅ | ✅ | fictif |
+| Low-cost (Ryanair, easyJet, Wizz) | ✅ partiel, selon leur catalogue | ❌ non distribuées | fictif |
+| Franchise bagage incluse | ✅ | ✅ | — |
+| Prix réel du bagage en soute | ✅ services annexes | ✅ tarification `include=bags` | — |
+| Prix du choix de siège | ❌ | ❌ | — |
+| Enregistrement à l'aéroport | ❌ | ❌ | — |
+| Recherche d'aéroport par ville | ❌ | ✅ | — |
+
+Aucune API publique ne donne le tarif du **choix de siège** ni de
+l'**enregistrement à l'aéroport** : ces deux montants restent estimés par la
+grille interne, et l'affichage le signale.
 
 ## Déploiement (Railway, comme MailGuard)
 
@@ -93,19 +106,21 @@ Créez un second service sur le même dépôt avec la commande de démarrage :
 gunicorn flightsearch.wsgi:app --bind 0.0.0.0:$PORT --workers 2 --threads 4
 ```
 
-Ajoutez `AMADEUS_CLIENT_ID` et `AMADEUS_CLIENT_SECRET` dans les Variables du
-service pour activer le temps réel.
+Ajoutez `DUFFEL_TOKEN` (et/ou `AMADEUS_CLIENT_ID` + `AMADEUS_CLIENT_SECRET`)
+dans les Variables du service pour activer le temps réel. Vérifiez ensuite
+`/sources` : il indique la source réellement active.
 
 ## Organisation du code
 
 | Fichier | Rôle |
 |---|---|
 | `modeles.py` | Objets partagés : `Vol`, `OptionsVoyage`, `Surcouts` |
-| `fournisseurs/amadeus.py` | Connecteur API : vols, franchises, tarifs bagages, recherche d'aéroports |
+| `fournisseurs/duffel.py` | Connecteur Duffel : vols, franchises, services annexes (bagages) |
+| `fournisseurs/amadeus.py` | Connecteur Amadeus : vols, franchises, tarifs bagages, recherche d'aéroports |
 | `fournisseurs/demo.py` | Générateur de vols de démonstration, déterministe |
 | `fournisseurs/__init__.py` | Choix de la source, cache mémoire, repli en cas de panne |
 | `surcouts.py` | Grille interne et arbitrage entre tarif publié et estimation |
-| `app.py` | Routes Flask : page, `/api/vols`, `/api/aeroports`, `/sante` |
+| `app.py` | Routes Flask : page, `/api/vols`, `/api/aeroports`, `/sources`, `/sante` |
 | `templates/index.html` | Interface mobile (calcul instantané côté navigateur) |
 | `demo_statique.html` | Version autonome sans serveur |
 
@@ -115,7 +130,7 @@ service pour activer le temps réel.
 python -m unittest discover -t . -s flightsearch
 ```
 
-20 tests, sans aucun appel réseau : les réponses Amadeus sont simulées.
+27 tests, sans aucun appel réseau : les réponses des API sont simulées.
 
 ## Limites connues
 

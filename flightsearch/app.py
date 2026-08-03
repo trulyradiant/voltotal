@@ -32,6 +32,15 @@ def create_app() -> Flask:
             recherche_aeroports=fournisseurs.amadeus.configure(),
         )
 
+    @app.get("/sources")
+    def sources():
+        """Quelle source est active, et laquelle manque pour couvrir les low-cost."""
+        return jsonify(
+            active=fournisseurs.source_active(),
+            duffel_configure=fournisseurs.duffel.configure(),
+            amadeus_configure=fournisseurs.amadeus.configure(),
+        )
+
     @app.get("/api/vols")
     def api_vols():
         origine = (request.args.get("origine") or "").strip().upper()
@@ -57,6 +66,7 @@ def create_app() -> Flask:
 
         return jsonify(
             source=resultat.source,
+            nom_source=resultat.nom_source,
             temps_reel=resultat.temps_reel,
             avertissement=resultat.avertissement,
             maj_grille=grille.derniere_mise_a_jour,
@@ -85,9 +95,11 @@ def create_app() -> Flask:
 
     @app.get("/sante")
     def sante():
+        source = fournisseurs.source_active()
         return jsonify(
             etat="ok",
-            vols_temps_reel=fournisseurs.amadeus.configure(),
+            source=source,
+            vols_temps_reel=source != "demo",
             grille_frais=grille.derniere_mise_a_jour,
         )
 

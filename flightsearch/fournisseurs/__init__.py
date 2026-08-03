@@ -1,8 +1,16 @@
-"""Choix de la source de vols : Amadeus si des clés existent, sinon démo.
+"""Choix de la source de vols, avec repli systématique sur la démonstration.
 
-Un petit cache mémoire évite de rappeler l'API pour une recherche identique
-(le voyageur qui coche « bagage en soute » ne doit pas déclencher un nouvel
-appel : les vols n'ont pas changé, seuls les frais se recalculent).
+Trois sources possibles, sélectionnées par ``FOURNISSEUR_VOLS`` :
+
+- ``duffel``  : contenu GDS, NDC et une partie des low-cost ; expose le prix
+  des services annexes (bagages) — c'est la source la plus complète pour un
+  moteur de surcoûts ;
+- ``amadeus`` : compagnies traditionnelles, franchises et tarification bagages ;
+- ``demo``    : vols fictifs, sans aucune clé.
+
+En ``auto`` (défaut), on prend la première source configurée dans cet ordre.
+Si elle échoue ou ne renvoie rien, on retombe sur la démonstration avec un
+avertissement affiché : le voyageur doit toujours savoir ce qu'il regarde.
 """
 from __future__ import annotations
 
@@ -13,7 +21,7 @@ import time
 from datetime import date
 
 from ..modeles import Vol
-from . import amadeus, demo
+from . import amadeus, demo, duffel
 
 _LOG = logging.getLogger(__name__)
 
@@ -21,16 +29,38 @@ _DUREE_CACHE = int(os.environ.get("VOLS_CACHE_SECONDES", "300"))
 _cache: dict[tuple, tuple[float, list[Vol]]] = {}
 _verrou = threading.Lock()
 
+# Par ordre de préférence : la meilleure couverture des suppléments d'abord.
+_SOURCES = {"duffel": duffel, "amadeus": amadeus}
+
+_NOMS = {"duffel": "Duffel", "amadeus": "Amadeus", "demo": "démonstration"}
+
 
 class ResultatRecherche:
     def __init__(self, vols: list[Vol], source: str, avertissement: str | None = None):
         self.vols = vols
-        self.source = source  # "amadeus" ou "demo"
+        self.source = source  # "duffel", "amadeus" ou "demo"
         self.avertissement = avertissement
 
     @property
     def temps_reel(self) -> bool:
-        return self.source == "amadeus"
+        return self.source != "demo"
+
+    @property
+    def nom_source(self) -> str:
+        return _NOMS.get(self.source, self.source)
+
+
+def source_active() -> str:
+    """Nom de la source qui serait interrogée maintenant."""
+    choix = os.environ.get("FOURNISSEUR_VOLS", "auto").lower()
+    if choix in _SOURCES:
+        return choix if _SOURCES[choix].configure() else "demo"
+    if choix == "demo":
+        return "demo"
+    for nom, module in _SOURCES.items():
+        if module.configure():
+            return nom
+    return "demo"
 
 
 def rechercher(origine: str, destination: str, jour: date, passagers: int) -> ResultatRecherche:
@@ -42,18 +72,20 @@ def rechercher(origine: str, destination: str, jour: date, passagers: int) -> Re
             return ResultatRecherche(vols, vols[0].source if vols else "demo")
 
     avertissement = None
-    if amadeus.configure():
+    nom = source_active()
+    if nom in _SOURCES:
+        module = _SOURCES[nom]
         try:
-            vols = amadeus.rechercher(origine, destination, jour, passagers)
+            vols = module.rechercher(origine, destination, jour, passagers)
             if vols:
                 _memoriser(cle, vols)
-                return ResultatRecherche(vols, "amadeus")
+                return ResultatRecherche(vols, nom)
             avertissement = (
-                "Aucun vol réel sur cette liaison à cette date — affichage de "
-                "vols de démonstration."
+                f"Aucun vol sur cette liaison à cette date chez {_NOMS[nom]} — "
+                "affichage de vols de démonstration."
             )
-        except amadeus.ErreurAmadeus as erreur:
-            _LOG.warning("Amadeus indisponible, repli sur la démonstration : %s", erreur)
+        except Exception as erreur:  # panne réseau, quota, format inattendu…
+            _LOG.warning("%s indisponible, repli sur la démonstration : %s", _NOMS[nom], erreur)
             avertissement = (
                 "La connexion aux vols en temps réel a échoué — affichage de "
                 "vols de démonstration."
@@ -73,7 +105,7 @@ def _memoriser(cle: tuple, vols: list[Vol]) -> None:
 
 
 def chercher_aeroports(mot_cle: str) -> list[dict]:
-    """Recherche d'aéroport par nom de ville, quand l'API est configurée."""
+    """Recherche d'aéroport par nom de ville (Amadeus uniquement)."""
     if not amadeus.configure():
         return []
     try:

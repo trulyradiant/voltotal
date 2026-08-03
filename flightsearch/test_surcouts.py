@@ -8,7 +8,7 @@ import unittest
 from datetime import date, datetime
 from unittest import mock
 
-from flightsearch.fournisseurs import amadeus, demo
+from flightsearch.fournisseurs import amadeus, demo, duffel
 from flightsearch.modeles import OptionsVoyage, Vol
 from flightsearch.surcouts import GrilleFrais
 
@@ -149,25 +149,118 @@ class TestConnecteurAmadeus(unittest.TestCase):
                 amadeus.rechercher("CDG", "BCN", date(2026, 9, 20), 1)
 
 
-class TestRepli(unittest.TestCase):
-    def test_sans_cles_on_bascule_en_demonstration(self):
+OFFRE_DUFFEL = {
+    "id": "off_123",
+    "total_amount": "240.00",
+    "total_currency": "EUR",
+    "owner": {"iata_code": "FR", "name": "Ryanair"},
+    "slices": [{"segments": [{
+        "origin": {"iata_code": "CDG"}, "destination": {"iata_code": "BCN"},
+        "departing_at": "2026-09-20T10:15:00", "arriving_at": "2026-09-20T12:25:00",
+        "marketing_carrier": {"iata_code": "FR"}, "marketing_carrier_flight_number": "1148",
+        "passengers": [{"baggages": [
+            {"type": "carry_on", "quantity": 1},
+            {"type": "checked", "quantity": 0},
+        ]}],
+    }]}],
+}
+
+
+class TestConnecteurDuffel(unittest.TestCase):
+    def test_decodage_offre_et_services_annexes(self):
+        def faux_appel(url, corps=None, methode="GET"):
+            if "/air/offers/" in url:
+                return {"data": {"available_services": [
+                    {"type": "baggage", "total_amount": "45.00", "quantity": 1,
+                     "metadata": {"type": "checked", "maximum_weight_kg": 20}},
+                    {"type": "seat", "total_amount": "9.00"},
+                ]}}
+            return {"data": {"offers": [OFFRE_DUFFEL]}}
+
+        with mock.patch.dict("os.environ", {"DUFFEL_TOKEN": "duffel_test_x"}), \
+             mock.patch.object(duffel, "_appeler", side_effect=faux_appel):
+            vols = duffel.rechercher("CDG", "BCN", date(2026, 9, 20), 2)
+
+        self.assertEqual(len(vols), 1)
+        vol = vols[0]
+        self.assertEqual(vol.compagnie, "FR")
+        self.assertEqual(vol.nom_compagnie, "Ryanair")
+        self.assertEqual(vol.prix_affiche, 120.0)  # 240 € pour 2 passagers
+        self.assertIs(vol.cabine_incluse, True)
+        self.assertEqual(vol.bagages_soute_inclus, 0)
+        self.assertEqual(vol.prix_bagage_soute_annonce, 45.0)  # et non les 25 € de la grille
+
+    def test_franchise_retenue_est_la_plus_faible_du_trajet(self):
+        # Une franchise soute sur un seul segment ne vaut pas pour le trajet.
+        offre = json.loads(json.dumps(OFFRE_DUFFEL))
+        segment = offre["slices"][0]["segments"][0]
+        second = json.loads(json.dumps(segment))
+        second["passengers"][0]["baggages"] = [
+            {"type": "carry_on", "quantity": 0}, {"type": "checked", "quantity": 2},
+        ]
+        offre["slices"][0]["segments"].append(second)
+        with mock.patch.dict("os.environ", {"DUFFEL_TOKEN": "t"}), \
+             mock.patch.object(duffel, "_appeler", return_value={"data": {"offers": [offre]}}):
+            vol = duffel.rechercher("CDG", "BCN", date(2026, 9, 20), 1)[0]
+        self.assertIs(vol.cabine_incluse, False)
+        self.assertEqual(vol.bagages_soute_inclus, 0)
+
+    def test_offre_malformee_ignoree_sans_planter(self):
+        reponse = {"data": {"offers": [{"id": "x"}, OFFRE_DUFFEL]}}
+        with mock.patch.dict("os.environ", {"DUFFEL_TOKEN": "t"}), \
+             mock.patch.object(duffel, "_appeler", return_value=reponse):
+            vols = duffel.rechercher("CDG", "BCN", date(2026, 9, 20), 1)
+        self.assertEqual(len(vols), 1)
+
+    def test_prix_low_cost_confirme_par_la_compagnie(self):
+        """Le cas qui manquait : un bagage Ryanair au tarif réel, pas estimé."""
+        grille = GrilleFrais()
+        vol = vol_simple("FR", prix_bagage_soute_annonce=45.0,
+                         bagages_soute_inclus=0, cabine_incluse=True)
+        resultat = grille.calculer(vol, OptionsVoyage(bagage_cabine=True, bagages_soute=1))
+        self.assertEqual(resultat.total, 45.0)
+        self.assertTrue(resultat.confirme)
+
+
+class TestChoixDeLaSource(unittest.TestCase):
+    def setUp(self):
         from flightsearch import fournisseurs
+        self.fournisseurs = fournisseurs
         fournisseurs._cache.clear()
-        with mock.patch.dict("os.environ", {}, clear=False):
-            with mock.patch.object(amadeus, "configure", return_value=False):
-                resultat = fournisseurs.rechercher("CDG", "BCN", date(2026, 9, 20), 1)
+
+    def test_duffel_prefere_quand_les_deux_sont_configures(self):
+        with mock.patch.dict("os.environ", {"FOURNISSEUR_VOLS": "auto"}), \
+             mock.patch.object(duffel, "configure", return_value=True), \
+             mock.patch.object(amadeus, "configure", return_value=True):
+            self.assertEqual(self.fournisseurs.source_active(), "duffel")
+
+    def test_source_imposee_par_la_configuration(self):
+        with mock.patch.dict("os.environ", {"FOURNISSEUR_VOLS": "amadeus"}), \
+             mock.patch.object(duffel, "configure", return_value=True), \
+             mock.patch.object(amadeus, "configure", return_value=True):
+            self.assertEqual(self.fournisseurs.source_active(), "amadeus")
+
+    def test_sans_cles_on_bascule_en_demonstration(self):
+        with mock.patch.object(duffel, "configure", return_value=False), \
+             mock.patch.object(amadeus, "configure", return_value=False):
+            resultat = self.fournisseurs.rechercher("CDG", "BCN", date(2026, 9, 20), 1)
         self.assertFalse(resultat.temps_reel)
         self.assertTrue(resultat.vols)
 
-    def test_panne_amadeus_repli_avec_avertissement(self):
-        from flightsearch import fournisseurs
-        fournisseurs._cache.clear()
-        with mock.patch.object(amadeus, "configure", return_value=True), \
-             mock.patch.object(amadeus, "rechercher", side_effect=amadeus.ErreurAmadeus("boum")):
-            resultat = fournisseurs.rechercher("CDG", "BCN", date(2026, 9, 21), 1)
+    def test_panne_du_fournisseur_repli_avec_avertissement(self):
+        with mock.patch.object(duffel, "configure", return_value=True), \
+             mock.patch.object(duffel, "rechercher", side_effect=duffel.ErreurDuffel("boum")):
+            resultat = self.fournisseurs.rechercher("CDG", "BCN", date(2026, 9, 21), 1)
         self.assertFalse(resultat.temps_reel)
         self.assertIn("temps réel", resultat.avertissement)
         self.assertTrue(resultat.vols)
+
+    def test_liaison_sans_vol_repli_annonce(self):
+        with mock.patch.object(duffel, "configure", return_value=True), \
+             mock.patch.object(duffel, "rechercher", return_value=[]):
+            resultat = self.fournisseurs.rechercher("CDG", "BCN", date(2026, 9, 22), 1)
+        self.assertFalse(resultat.temps_reel)
+        self.assertIn("Duffel", resultat.avertissement)
 
 
 class TestDemonstration(unittest.TestCase):
