@@ -1,98 +1,94 @@
 """VolTotal — moteur de recherche de vols à prix tout compris.
 
-Chaque résultat affiche le prix d'appel de la compagnie ET le prix réel une
-fois les options du voyageur ajoutées (bagages, siège, enregistrement),
-pré-calculées via la grille de frais par compagnie. Tri par prix réel.
+Le serveur cherche les vols (Amadeus en temps réel, ou démonstration) et
+renvoie, pour chaque vol, les tarifs unitaires des options avec leur origine.
+L'interface recalcule alors le total à chaque changement sans rappeler le
+serveur, ce qui garde l'affichage instantané sur téléphone.
 """
 from __future__ import annotations
 
-from dataclasses import dataclass
+import logging
 from datetime import date, timedelta
 
-from flask import Flask, render_template, request
+from flask import Flask, jsonify, render_template, request
 
-from .surcouts import GrilleFrais, OptionsVoyage, Surcouts
-from .vols import Vol, rechercher
-
-
-@dataclass
-class Resultat:
-    vol: Vol
-    nom_compagnie: str
-    surcouts: Surcouts
-    prix_base_total: float  # prix affiché × passagers
-    prix_reel_total: float  # prix base + surcoûts
+from . import fournisseurs
+from .surcouts import GrilleFrais
 
 
 def create_app() -> Flask:
     app = Flask(__name__)
+    logging.basicConfig(level=logging.INFO)
     grille = GrilleFrais()
 
     @app.get("/")
     def accueil():
-        demain = (date.today() + timedelta(days=1)).isoformat()
-        return render_template("recherche.html", date_min=date.today().isoformat(),
-                               date_defaut=demain)
-
-    @app.get("/resultats")
-    def resultats():
-        origine = request.args.get("origine", "").strip().upper()
-        destination = request.args.get("destination", "").strip().upper()
-        erreurs = []
-        if len(origine) != 3 or not origine.isalpha():
-            erreurs.append("L'aéroport de départ doit être un code IATA à 3 lettres (ex. CDG).")
-        if len(destination) != 3 or not destination.isalpha():
-            erreurs.append("L'aéroport d'arrivée doit être un code IATA à 3 lettres (ex. BCN).")
-        try:
-            jour = date.fromisoformat(request.args.get("date", ""))
-        except ValueError:
-            jour = None
-            erreurs.append("La date de départ est invalide.")
-
-        options = OptionsVoyage(
-            passagers=max(1, min(9, request.args.get("passagers", 1, type=int))),
-            bagage_cabine=request.args.get("bagage_cabine") == "1",
-            bagages_soute=max(0, min(3, request.args.get("bagages_soute", 0, type=int))),
-            choix_siege=request.args.get("choix_siege") == "1",
-            enregistrement_aeroport=request.args.get("enregistrement_aeroport") == "1",
+        return render_template(
+            "index.html",
+            aujourdhui=date.today().isoformat(),
+            date_aller=(date.today() + timedelta(days=1)).isoformat(),
+            date_retour=(date.today() + timedelta(days=8)).isoformat(),
+            maj_grille=grille.derniere_mise_a_jour,
+            recherche_aeroports=fournisseurs.amadeus.configure(),
         )
 
-        if erreurs:
-            return render_template("resultats.html", erreurs=erreurs, resultats=[],
-                                   options=options, origine=origine,
-                                   destination=destination, grille=grille), 400
+    @app.get("/api/vols")
+    def api_vols():
+        origine = (request.args.get("origine") or "").strip().upper()
+        destination = (request.args.get("destination") or "").strip().upper()
+        passagers = max(1, min(9, request.args.get("passagers", 1, type=int)))
+
+        if not (origine.isalpha() and len(origine) == 3):
+            return jsonify(erreur="Code aéroport de départ invalide."), 400
+        if not (destination.isalpha() and len(destination) == 3):
+            return jsonify(erreur="Code aéroport d'arrivée invalide."), 400
+        if origine == destination:
+            return jsonify(erreur="Le départ et l'arrivée doivent être différents."), 400
+        try:
+            jour = date.fromisoformat(request.args.get("date") or "")
+        except ValueError:
+            return jsonify(erreur="Date invalide."), 400
 
         try:
-            vols = rechercher(origine, destination, jour, options.passagers)
-        except Exception:
-            app.logger.exception("Echec de la recherche de vols")
-            return render_template(
-                "resultats.html",
-                erreurs=["La recherche de vols a échoué, réessayez dans un instant."],
-                resultats=[], options=options, origine=origine,
-                destination=destination, grille=grille), 502
+            resultat = fournisseurs.rechercher(origine, destination, jour, passagers)
+        except Exception:  # le repli démonstration a déjà été tenté en amont
+            app.logger.exception("Recherche de vols impossible")
+            return jsonify(erreur="La recherche de vols a échoué, réessayez."), 502
 
-        liste = []
-        for vol in vols:
-            surcouts = grille.calculer(vol.compagnie, options)
-            prix_base = round(vol.prix_affiche * options.passagers, 2)
-            liste.append(
-                Resultat(
-                    vol=vol,
-                    nom_compagnie=grille.nom_compagnie(vol.compagnie),
-                    surcouts=surcouts,
-                    prix_base_total=prix_base,
-                    prix_reel_total=round(prix_base + surcouts.total, 2),
-                )
-            )
-        liste.sort(key=lambda r: r.prix_reel_total)
+        return jsonify(
+            source=resultat.source,
+            temps_reel=resultat.temps_reel,
+            avertissement=resultat.avertissement,
+            maj_grille=grille.derniere_mise_a_jour,
+            vols=[
+                {
+                    "compagnie": vol.compagnie,
+                    "nom": vol.nom_compagnie or grille.nom_compagnie(vol.compagnie),
+                    "numero": vol.numero,
+                    "depart": vol.depart.isoformat(),
+                    "arrivee": vol.arrivee.isoformat(),
+                    "duree_minutes": vol.duree_minutes,
+                    "escales": vol.escales,
+                    "prix_affiche": vol.prix_affiche,
+                    "frais": grille.tarifs(vol),
+                }
+                for vol in resultat.vols
+            ],
+        )
 
-        return render_template(
-            "resultats.html", erreurs=[], resultats=liste, options=options,
-            origine=origine, destination=destination, jour=jour, grille=grille)
+    @app.get("/api/aeroports")
+    def api_aeroports():
+        mot_cle = (request.args.get("q") or "").strip()
+        if len(mot_cle) < 2:
+            return jsonify(aeroports=[])
+        return jsonify(aeroports=fournisseurs.chercher_aeroports(mot_cle))
 
-    @app.template_filter("euros")
-    def euros(montant: float) -> str:
-        return f"{montant:,.2f} €".replace(",", " ").replace(".", ",")
+    @app.get("/sante")
+    def sante():
+        return jsonify(
+            etat="ok",
+            vols_temps_reel=fournisseurs.amadeus.configure(),
+            grille_frais=grille.derniere_mise_a_jour,
+        )
 
     return app

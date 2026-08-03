@@ -1,0 +1,431 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>VolTotal — vols au prix réel</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='voltotal.css') }}">
+</head>
+<body>
+<div class="page">
+  <header>
+    <div class="marque"><span>✈️</span><span>Vol<span class="total">Total</span></span></div>
+    <div class="accroche">bagages et frais inclus</div>
+  </header>
+
+  <!-- Le prix précède le formulaire : sur un téléphone, il ne doit jamais
+       falloir faire défiler l'écran pour voir combien on paie vraiment. -->
+  <section id="sommaire" aria-live="polite">
+    <div class="panne">Recherche des vols…</div>
+  </section>
+
+  <noscript>
+    <div class="panne">Cette page a besoin de JavaScript pour calculer les prix.</div>
+  </noscript>
+
+  <form id="recherche" class="carte" novalidate>
+    <div class="type-trajet" role="group" aria-label="Type de trajet">
+      <button type="button" id="btn_ar" aria-pressed="true">Aller-retour</button>
+      <button type="button" id="btn_as" aria-pressed="false">Aller simple</button>
+    </div>
+
+    <div class="trajet">
+      <div class="champ">
+        <label for="origine">Départ</label>
+        <input class="iata" id="origine" list="aeroports" placeholder="CDG" maxlength="3"
+               autocapitalize="characters" autocomplete="off" value="CDG">
+      </div>
+      <button type="button" class="inverser" id="inverser" aria-label="Inverser départ et arrivée">⇄</button>
+      <div class="champ">
+        <label for="destination">Arrivée</label>
+        <input class="iata" id="destination" list="aeroports" placeholder="BCN" maxlength="3"
+               autocapitalize="characters" autocomplete="off" value="BCN">
+      </div>
+    </div>
+
+    <div class="dates" id="zone_dates">
+      <div class="champ">
+        <label for="date_aller">Aller</label>
+        <input type="date" id="date_aller" value="{{ date_aller }}" min="{{ aujourdhui }}">
+      </div>
+      <div class="champ" id="champ_retour">
+        <label for="date_retour">Retour</label>
+        <input type="date" id="date_retour" value="{{ date_retour }}" min="{{ aujourdhui }}">
+      </div>
+    </div>
+
+    <div class="options">
+      <label class="puce">Passagers <input type="number" id="passagers" min="1" max="9" value="1" inputmode="numeric"></label>
+      <label class="puce active"><input type="checkbox" id="bagage_cabine" checked> Bagage cabine</label>
+      <label class="puce">Soute <input type="number" id="bagages_soute" min="0" max="3" value="0" inputmode="numeric"></label>
+      <label class="puce"><input type="checkbox" id="choix_siege"> Choix du siège</label>
+      <label class="puce"><input type="checkbox" id="enregistrement_aeroport"> Enreg. à l'aéroport</label>
+    </div>
+
+    <div id="avertissement" class="avertissement" hidden></div>
+  </form>
+
+  <datalist id="aeroports">
+    <option value="CDG">Paris Charles-de-Gaulle</option>
+    <option value="ORY">Paris Orly</option>
+    <option value="NCE">Nice</option>
+    <option value="LYS">Lyon</option>
+    <option value="MRS">Marseille</option>
+    <option value="TLS">Toulouse</option>
+    <option value="BOD">Bordeaux</option>
+    <option value="NTE">Nantes</option>
+    <option value="BCN">Barcelone</option>
+    <option value="MAD">Madrid</option>
+    <option value="LIS">Lisbonne</option>
+    <option value="FCO">Rome Fiumicino</option>
+    <option value="MXP">Milan Malpensa</option>
+    <option value="AMS">Amsterdam</option>
+    <option value="BRU">Bruxelles</option>
+    <option value="GVA">Genève</option>
+    <option value="LHR">Londres Heathrow</option>
+    <option value="BER">Berlin</option>
+    <option value="ATH">Athènes</option>
+    <option value="RAK">Marrakech</option>
+  </datalist>
+
+  <section id="resultats" aria-live="polite"></section>
+
+  <footer id="pied">
+    Grille de frais interne mise à jour le {{ maj_grille }} — utilisée pour les
+    options que les compagnies ne publient pas (siège, enregistrement).
+    Les frais marqués « tarif compagnie » viennent directement de la compagnie.
+  </footer>
+</div>
+
+<script>
+"use strict";
+/* Filet de sécurité : si quoi que ce soit échoue, la page le dit au lieu de
+   rester muette — c'est la panne que le voyageur ne peut pas diagnostiquer. */
+function signalerPanne(message) {
+  var zone = document.getElementById("sommaire");
+  if (zone) zone.innerHTML = '<div class="panne">Le calcul a échoué : ' +
+    String(message).replace(/</g, "&lt;") + "</div>";
+}
+window.addEventListener("error", function (e) { signalerPanne(e.message); });
+
+try {
+
+var RECHERCHE_AEROPORTS = {{ 'true' if recherche_aeroports else 'false' }};
+
+/* --- Utilitaires d'affichage --- */
+function euros(m) {
+  try { return m.toLocaleString("fr-FR", { style: "currency", currency: "EUR" }); }
+  catch (e) { return m.toFixed(2).replace(".", ",") + " €"; }
+}
+function heureTexte(iso) { return iso.slice(11, 16); }
+function echapper(t) { var d = document.createElement("div"); d.textContent = t; return d.innerHTML; }
+function dateTexte(iso) {
+  try {
+    return new Date(iso + "T12:00:00").toLocaleDateString("fr-FR",
+      { weekday: "short", day: "numeric", month: "short" });
+  } catch (e) { return iso; }
+}
+
+/* --- Surcoûts : le serveur donne les tarifs unitaires et leur origine,
+       le navigateur ne fait que multiplier. L'affichage reste instantané. --- */
+function calculerSurcouts(frais, options) {
+  var lignes = [], pax = options.passagers, confirme = true;
+  function ajouter(libelle, total, source) {
+    lignes.push({ libelle: libelle, total: Math.round(total * 100) / 100, source: source });
+    if (source !== "compagnie") confirme = false;
+  }
+  if (options.bagageCabine && !frais.bagage_cabine.inclus && frais.bagage_cabine.prix > 0)
+    ajouter("Bagage cabine", frais.bagage_cabine.prix * pax, frais.bagage_cabine.source);
+  if (options.bagagesSoute > 0) {
+    var inclus = frais.bagage_soute.inclus || 0;
+    var aPayer = Math.max(0, options.bagagesSoute - inclus);
+    if (aPayer > 0) {
+      var libelle = aPayer > 1 ? "Bagage soute × " + aPayer : "Bagage soute";
+      if (inclus) libelle += " (dont " + inclus + " inclus)";
+      ajouter(libelle, frais.bagage_soute.prix * aPayer * pax, frais.bagage_soute.source);
+    }
+  }
+  if (options.choixSiege && frais.choix_siege.prix > 0)
+    ajouter("Choix du siège", frais.choix_siege.prix * pax, frais.choix_siege.source);
+  if (options.enregistrementAeroport && frais.enregistrement_aeroport.prix > 0)
+    ajouter("Enregistrement à l'aéroport", frais.enregistrement_aeroport.prix * pax,
+            frais.enregistrement_aeroport.source);
+  var somme = 0;
+  for (var i = 0; i < lignes.length; i++) somme += lignes[i].total;
+  return { lignes: lignes, total: Math.round(somme * 100) / 100,
+           confirme: lignes.length > 0 && confirme };
+}
+
+/* --- Appels au serveur, avec cache : cocher une option ne redemande rien --- */
+var cacheVols = {};
+function chargerVols(origine, destination, jour, passagers) {
+  var cle = origine + "|" + destination + "|" + jour + "|" + passagers;
+  if (cacheVols[cle]) return Promise.resolve(cacheVols[cle]);
+  var url = "/api/vols?origine=" + encodeURIComponent(origine) +
+    "&destination=" + encodeURIComponent(destination) +
+    "&date=" + encodeURIComponent(jour) + "&passagers=" + passagers;
+  return fetch(url).then(function (r) {
+    return r.json().then(function (donnees) {
+      if (!r.ok) throw new Error(donnees.erreur || "Recherche impossible");
+      cacheVols[cle] = donnees;
+      return donnees;
+    });
+  });
+}
+
+var choixMemorise = { aller: null, retour: null };
+
+function preparerResultats(vols, options) {
+  var liste = vols.map(function (vol) {
+    var surcouts = calculerSurcouts(vol.frais, options);
+    var prixBase = Math.round(vol.prix_affiche * options.passagers * 100) / 100;
+    return { vol: vol, surcouts: surcouts, prixBase: prixBase,
+             prixReel: Math.round((prixBase + surcouts.total) * 100) / 100 };
+  });
+  liste.sort(function (a, b) { return a.prixReel - b.prixReel; });
+  return liste;
+}
+
+function indexChoisi(liste, sens) {
+  for (var i = 0; i < liste.length; i++)
+    if (liste[i].vol.numero === choixMemorise[sens]) return i;
+  return 0; // à défaut, le moins cher au prix réel
+}
+
+function carteBillet(r, sens, index, choisi, options) {
+  var v = r.vol, h = Math.floor(v.duree_minutes / 60), m = v.duree_minutes % 60, bas;
+  if (r.surcouts.lignes.length) {
+    var lignes = r.surcouts.lignes.map(function (l) {
+      return '<tr><td>' + echapper(l.libelle) +
+        (l.source === "compagnie" ? ' <span class="etiquette">tarif compagnie</span>' : '') +
+        '</td><td class="mono">+ ' + euros(l.total) + '</td></tr>';
+    }).join("");
+    bas = '<details><summary>Détail des frais : ' + euros(r.surcouts.total) +
+      (r.surcouts.confirme ? " ✔" : " (estimation)") + '</summary>' +
+      '<table><tr><td>Billet' + (options.passagers > 1 ? "s" : "") + '</td>' +
+      '<td class="mono">' + euros(r.prixBase) + '</td></tr>' + lignes + '</table></details>';
+  } else {
+    bas = '<div class="sans-frais">Aucun frais caché avec vos options ✔</div>';
+  }
+  return '<article class="carte billet' + (choisi ? " choisi" : "") + '">' +
+    '<button type="button" class="zone" data-sens="' + sens + '" data-index="' + index + '" ' +
+    'aria-pressed="' + choisi + '"><span>' +
+    '<span class="compagnie">' + echapper(v.nom) +
+      ' <span class="numero mono">· ' + echapper(v.numero) + '</span></span>' +
+    '<span class="horaires mono" style="display:block">' + heureTexte(v.depart) +
+      ' — ' + heureTexte(v.arrivee) + '</span>' +
+    '<span class="trajet-detail" style="display:block">' + h + 'h' + (m < 10 ? "0" : "") + m +
+      ' · ' + (v.escales === 0 ? "direct" : v.escales + " escale") + '</span>' +
+    '</span><span class="prix">' +
+    (r.surcouts.total > 0 ? '<span class="appel mono" style="display:block">' + euros(r.prixBase) + '</span>' : "") +
+    '<span class="reel mono" style="display:block">' + euros(r.prixReel) + '</span>' +
+    '<span class="etiquette" style="display:block">prix réel</span>' +
+    (choisi ? '<span class="coche" style="display:block">Choisi ✔</span>' : "") +
+    '</span></button><hr class="perforation">' + bas + '</article>';
+}
+
+function rendreSommaire(aller, retour, criteres) {
+  var total = Math.round((aller.prixReel + (retour ? retour.prixReel : 0)) * 100) / 100;
+  var frais = Math.round((aller.surcouts.total + (retour ? retour.surcouts.total : 0)) * 100) / 100;
+  function ligne(sens, r, de, vers) {
+    return '<div><span class="sens">' + sens + '</span><span class="desc">' +
+      echapper(r.vol.nom) + ' · ' + de + '→' + vers + ' ' + heureTexte(r.vol.depart) +
+      '</span><span class="mono">' + euros(r.prixReel) + '</span></div>';
+  }
+  document.getElementById("sommaire").innerHTML =
+    '<div class="sommaire"><div class="entete"><div>' +
+    '<div class="libelle">Total ' + (retour ? "aller-retour" : "aller simple") + ', frais inclus</div>' +
+    '<div class="frais">' + (frais > 0
+      ? "dont <strong>" + euros(frais) + "</strong> de frais pré-calculés"
+      : "aucun frais caché avec vos options ✔") + '</div>' +
+    '</div><div class="montant mono">' + euros(total) + '</div></div>' +
+    '<div class="lignes">' + ligne("Aller", aller, criteres.origine, criteres.destination) +
+    (retour ? ligne("Retour", retour, criteres.destination, criteres.origine) : "") + '</div>' +
+    '<div class="rappel">↓ Tous les vols et le détail des frais sont plus bas.</div></div>';
+}
+
+function rendre(criteres, donneesAller, donneesRetour) {
+  var opt = criteres.options;
+  var listeAller = preparerResultats(donneesAller.vols, opt);
+  var listeRetour = donneesRetour ? preparerResultats(donneesRetour.vols, opt) : null;
+  if (!listeAller.length) {
+    document.getElementById("sommaire").innerHTML =
+      '<div class="panne">Aucun vol trouvé sur ' + criteres.origine + ' → ' +
+      criteres.destination + ' à cette date.</div>';
+    document.getElementById("resultats").innerHTML = "";
+    return;
+  }
+
+  var iAller = indexChoisi(listeAller, "aller");
+  var iRetour = listeRetour && listeRetour.length ? indexChoisi(listeRetour, "retour") : null;
+  choixMemorise.aller = listeAller[iAller].vol.numero;
+  choixMemorise.retour = iRetour === null ? null : listeRetour[iRetour].vol.numero;
+
+  rendreSommaire(listeAller[iAller], iRetour === null ? null : listeRetour[iRetour], criteres);
+
+  var html = "";
+  if (!donneesAller.temps_reel)
+    html += '<div class="bandeau-demo">' +
+      (donneesAller.avertissement || "Mode démonstration : vols fictifs.") +
+      ' Les surcoûts viennent de la grille de frais des compagnies.</div>';
+  else
+    html += '<div class="bandeau-demo">Vols et prix en temps réel. Les frais marqués ' +
+      '« tarif compagnie » sont ceux publiés par la compagnie pour cette offre.</div>';
+
+  html += '<h2 class="titre-direction">Aller · ' + criteres.origine + ' → ' + criteres.destination +
+    ' <span class="sous">' + dateTexte(criteres.dateAller) + '</span></h2>';
+  for (var i = 0; i < listeAller.length; i++)
+    html += carteBillet(listeAller[i], "aller", i, i === iAller, opt);
+
+  if (listeRetour && listeRetour.length) {
+    html += '<h2 class="titre-direction">Retour · ' + criteres.destination + ' → ' + criteres.origine +
+      ' <span class="sous">' + dateTexte(criteres.dateRetour) + '</span></h2>';
+    for (var j = 0; j < listeRetour.length; j++)
+      html += carteBillet(listeRetour[j], "retour", j, j === iRetour, opt);
+  }
+
+  var conteneur = document.getElementById("resultats");
+  conteneur.innerHTML = html;
+  var zones = conteneur.querySelectorAll(".zone");
+  for (var k = 0; k < zones.length; k++) {
+    zones[k].addEventListener("click", function () {
+      choixMemorise[this.getAttribute("data-sens")] =
+        (this.getAttribute("data-sens") === "aller" ? listeAller : listeRetour)
+          [Number(this.getAttribute("data-index"))].vol.numero;
+      rendre(criteres, donneesAller, donneesRetour);
+    });
+  }
+}
+
+/* --- Saisie --- */
+var champAller = document.getElementById("date_aller");
+var champRetour = document.getElementById("date_retour");
+var champOrigine = document.getElementById("origine");
+var champDestination = document.getElementById("destination");
+var avertissement = document.getElementById("avertissement");
+var allerRetour = true;
+
+var btnAR = document.getElementById("btn_ar");
+var btnAS = document.getElementById("btn_as");
+function basculerType(ar) {
+  allerRetour = ar;
+  btnAR.setAttribute("aria-pressed", String(ar));
+  btnAS.setAttribute("aria-pressed", String(!ar));
+  document.getElementById("champ_retour").hidden = !ar;
+  document.getElementById("zone_dates").className = ar ? "dates" : "dates simple";
+  actualiser();
+}
+btnAR.addEventListener("click", function () { basculerType(true); });
+btnAS.addEventListener("click", function () { basculerType(false); });
+
+document.getElementById("inverser").addEventListener("click", function () {
+  var tampon = champOrigine.value;
+  champOrigine.value = champDestination.value;
+  champDestination.value = tampon;
+  choixMemorise.aller = null; choixMemorise.retour = null;
+  actualiser();
+});
+
+function lireOptions() {
+  return {
+    passagers: Math.min(9, Math.max(1, Number(document.getElementById("passagers").value) || 1)),
+    bagageCabine: document.getElementById("bagage_cabine").checked,
+    bagagesSoute: Math.min(3, Math.max(0, Number(document.getElementById("bagages_soute").value) || 0)),
+    choixSiege: document.getElementById("choix_siege").checked,
+    enregistrementAeroport: document.getElementById("enregistrement_aeroport").checked
+  };
+}
+
+function actualiser() {
+  var puces = document.querySelectorAll(".options label.puce");
+  for (var i = 0; i < puces.length; i++) {
+    var coche = puces[i].querySelector('input[type="checkbox"]');
+    puces[i].className = "puce" + (coche && coche.checked ? " active" : "");
+  }
+
+  var origine = champOrigine.value.replace(/\s/g, "").toUpperCase();
+  var destination = champDestination.value.replace(/\s/g, "").toUpperCase();
+  var dateAller = champAller.value;
+  var dateRetour = allerRetour ? champRetour.value : null;
+
+  function prevenir(texte) { avertissement.textContent = texte; avertissement.hidden = false; }
+
+  if (!/^[A-Z]{3}$/.test(origine) || !/^[A-Z]{3}$/.test(destination))
+    return prevenir("Indiquez deux codes aéroport à 3 lettres (ex. CDG et BCN).");
+  if (origine === destination)
+    return prevenir("Le départ et l'arrivée doivent être différents.");
+  if (!dateAller) return prevenir("Choisissez une date d'aller.");
+  if (allerRetour && !dateRetour)
+    return prevenir("Choisissez une date de retour, ou passez en « Aller simple ».");
+  if (allerRetour && dateRetour < dateAller) {
+    dateRetour = dateAller;
+    champRetour.value = dateRetour;
+    prevenir("Le retour ne peut pas précéder l'aller : il a été aligné sur la date d'aller.");
+  } else {
+    avertissement.hidden = true;
+  }
+
+  var options = lireOptions();
+  var criteres = { origine: origine, destination: destination, dateAller: dateAller,
+                   dateRetour: dateRetour, options: options };
+  var demandes = [chargerVols(origine, destination, dateAller, options.passagers)];
+  if (dateRetour) demandes.push(chargerVols(destination, origine, dateRetour, options.passagers));
+
+  Promise.all(demandes).then(function (reponses) {
+    rendre(criteres, reponses[0], reponses[1] || null);
+  }).catch(function (erreur) {
+    signalerPanne(erreur.message || erreur);
+  });
+}
+
+var form = document.getElementById("recherche");
+var attente = 0;
+form.addEventListener("input", function () {
+  clearTimeout(attente); attente = setTimeout(actualiser, 250);
+});
+form.addEventListener("change", function () { actualiser(); });
+form.addEventListener("submit", function (e) { e.preventDefault(); actualiser(); });
+champAller.addEventListener("change", function () {
+  if (allerRetour && champRetour.value && champRetour.value < champAller.value)
+    champRetour.value = champAller.value;
+});
+[champOrigine, champDestination, champAller, champRetour].forEach(function (champ) {
+  champ.addEventListener("change", function () {
+    choixMemorise.aller = null; choixMemorise.retour = null;
+  });
+});
+
+/* Suggestions d'aéroports par nom de ville, quand l'API le permet. */
+if (RECHERCHE_AEROPORTS) {
+  var listeAeroports = document.getElementById("aeroports");
+  var attenteSuggestions = 0;
+  [champOrigine, champDestination].forEach(function (champ) {
+    champ.addEventListener("input", function () {
+      var mot = champ.value.trim();
+      if (mot.length < 2) return;
+      clearTimeout(attenteSuggestions);
+      attenteSuggestions = setTimeout(function () {
+        fetch("/api/aeroports?q=" + encodeURIComponent(mot))
+          .then(function (r) { return r.json(); })
+          .then(function (d) {
+            (d.aeroports || []).forEach(function (a) {
+              if (listeAeroports.querySelector('option[value="' + a.code + '"]')) return;
+              var option = document.createElement("option");
+              option.value = a.code;
+              option.textContent = a.nom + (a.ville ? " · " + a.ville : "");
+              listeAeroports.appendChild(option);
+            });
+          }).catch(function () {});
+      }, 300);
+    });
+  });
+}
+
+actualiser(); // prix et vols affichés dès l'ouverture
+
+} catch (erreur) {
+  signalerPanne(erreur && erreur.message ? erreur.message : erreur);
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,158 @@
+:root {
+    --fond: #F3F5FA; --carte: #FFFFFF; --encre: #1A2138; --sourdine: #5D6785;
+    --ligne: #D9DFEC; --accent: #1E4BD8; --accent-fonce: #143795;
+    --accent-doux: #E8EDFD; --accent-encre: #FFFFFF; --vert: #0B7A4B;
+    --ambre: #9C5E0B; --ambre-fond: #FFF6E4; --ambre-ligne: #EBD9B0;
+    --rouge: #B3261E; --rouge-fond: #FDECEA;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --fond: #0E1424; --carte: #171F35; --encre: #E8ECF7; --sourdine: #96A0BC;
+      --ligne: #2A3453; --accent: #7B96F4; --accent-fonce: #A5B8F8;
+      --accent-doux: #1D2A52; --accent-encre: #0E1424; --vert: #4CC38A;
+      --ambre: #E4B063; --ambre-fond: #241D0F; --ambre-ligne: #4A3B1D;
+      --rouge: #F2B8B5; --rouge-fond: #3A1512;
+    }
+  }
+  :root[data-theme="light"] {
+    --fond: #F3F5FA; --carte: #FFFFFF; --encre: #1A2138; --sourdine: #5D6785;
+    --ligne: #D9DFEC; --accent: #1E4BD8; --accent-fonce: #143795;
+    --accent-doux: #E8EDFD; --accent-encre: #FFFFFF; --vert: #0B7A4B;
+    --ambre: #9C5E0B; --ambre-fond: #FFF6E4; --ambre-ligne: #EBD9B0;
+    --rouge: #B3261E; --rouge-fond: #FDECEA;
+  }
+  :root[data-theme="dark"] {
+    --fond: #0E1424; --carte: #171F35; --encre: #E8ECF7; --sourdine: #96A0BC;
+    --ligne: #2A3453; --accent: #7B96F4; --accent-fonce: #A5B8F8;
+    --accent-doux: #1D2A52; --accent-encre: #0E1424; --vert: #4CC38A;
+    --ambre: #E4B063; --ambre-fond: #241D0F; --ambre-ligne: #4A3B1D;
+    --rouge: #F2B8B5; --rouge-fond: #3A1512;
+  }
+
+  body {
+    margin: 0; background: var(--fond); color: var(--encre);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    line-height: 1.4; font-size: 16px; -webkit-tap-highlight-color: transparent;
+  }
+  .mono { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+          font-variant-numeric: tabular-nums; }
+  .page { max-width: 40rem; margin: 0 auto; padding: 0 .8rem 3rem; }
+
+  header { padding: .8rem 0 .6rem; display: flex; align-items: baseline;
+           justify-content: space-between; gap: .5rem; flex-wrap: wrap; }
+  header .marque { display: flex; align-items: baseline; gap: .35rem;
+                   font-size: 1.3rem; font-weight: 750; letter-spacing: -.02em; }
+  header .marque .total { color: var(--accent); }
+  header .accroche { color: var(--sourdine); font-size: .8rem; }
+
+  .carte { background: var(--carte); border: 1px solid var(--ligne);
+           border-radius: 14px; padding: .85rem; }
+
+  /* --- Le prix, tout en haut : la première chose qu'on voit --- */
+  .sommaire {
+    background: var(--carte); border: 2px solid var(--vert);
+    border-radius: 14px; padding: .8rem .9rem; margin-bottom: .7rem;
+  }
+  .sommaire .entete { display: flex; justify-content: space-between;
+                      align-items: baseline; gap: .7rem; }
+  .sommaire .libelle { font-size: .68rem; font-weight: 700; letter-spacing: .06em;
+                       text-transform: uppercase; color: var(--sourdine); }
+  .sommaire .montant { color: var(--vert); font-size: 1.7rem; font-weight: 750;
+                       letter-spacing: -.02em; white-space: nowrap; }
+  .sommaire .frais { font-size: .82rem; color: var(--sourdine); margin-top: .05rem; }
+  .sommaire .frais strong { color: var(--encre); }
+  .sommaire .lignes { margin-top: .6rem; padding-top: .6rem;
+                      border-top: 1px dashed var(--ligne);
+                      display: flex; flex-direction: column; gap: .25rem; font-size: .85rem; }
+  .sommaire .lignes > div { display: flex; align-items: baseline; gap: .5rem; }
+  .sommaire .sens { color: var(--sourdine); text-transform: uppercase;
+                    font-size: .64rem; font-weight: 700; letter-spacing: .06em;
+                    min-width: 3.1rem; flex-shrink: 0; }
+  .sommaire .desc { flex: 1; min-width: 0; }
+  .sommaire .rappel { margin-top: .5rem; font-size: .8rem; color: var(--accent); }
+
+  .panne { background: var(--rouge-fond); border: 1px solid var(--rouge);
+           color: var(--rouge); border-radius: 12px; padding: .8rem; font-size: .9rem; }
+
+  /* --- Formulaire compact --- */
+  .type-trajet { display: grid; grid-template-columns: 1fr 1fr; gap: 4px;
+                 background: var(--fond); border: 1px solid var(--ligne);
+                 border-radius: 10px; padding: 3px; margin-bottom: .6rem; }
+  .type-trajet button { border: 0; border-radius: 7px; padding: .45rem;
+                        background: transparent; color: var(--sourdine);
+                        font: inherit; font-size: .92rem; font-weight: 600;
+                        cursor: pointer; min-height: 42px; }
+  .type-trajet button[aria-pressed="true"] { background: var(--carte); color: var(--encre);
+                        box-shadow: 0 1px 3px rgba(10, 20, 50, .12); }
+
+  .trajet { display: grid; grid-template-columns: 1fr auto 1fr; gap: .4rem; align-items: end; }
+  .dates { display: grid; grid-template-columns: 1fr 1fr; gap: .4rem; margin-top: .55rem; }
+  .dates.simple { grid-template-columns: 1fr; }
+  .champ label { display: block; font-size: .64rem; font-weight: 700; letter-spacing: .06em;
+                 text-transform: uppercase; color: var(--sourdine); margin-bottom: .15rem; }
+  .champ input { width: 100%; box-sizing: border-box; padding: .5rem .55rem;
+                 border: 1px solid var(--ligne); border-radius: 10px;
+                 background: var(--fond); color: var(--encre);
+                 font-size: 1rem; font-family: inherit; min-height: 46px; }
+  .champ input.iata { text-transform: uppercase; font-weight: 700; letter-spacing: .04em; }
+  .inverser { width: 42px; height: 46px; border: 1px solid var(--ligne); border-radius: 10px;
+              background: var(--fond); color: var(--accent); font-size: 1.1rem; cursor: pointer; }
+  input:focus-visible, button:focus-visible, summary:focus-visible {
+    outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  .options { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .6rem; }
+  .options label.puce { display: inline-flex; align-items: center; gap: .4rem;
+    padding: .45rem .75rem; min-height: 42px; box-sizing: border-box;
+    border: 1px solid var(--ligne); border-radius: 999px; background: var(--fond);
+    font-size: .9rem; cursor: pointer; user-select: none; }
+  .options label.puce.active { background: var(--accent); border-color: var(--accent);
+                               color: var(--accent-encre); }
+  .options input[type="checkbox"] { accent-color: var(--accent); margin: 0; width: 17px; height: 17px; }
+  .options input[type="number"] { width: 2.8rem; padding: .15rem .25rem;
+    border: 1px solid var(--ligne); border-radius: 6px;
+    background: var(--carte); color: var(--encre); font-size: .95rem; }
+
+  .avertissement { margin-top: .6rem; padding: .55rem .75rem; border-radius: 10px;
+    background: var(--ambre-fond); border: 1px solid var(--ambre-ligne);
+    color: var(--ambre); font-size: .88rem; }
+
+  #resultats { margin-top: .8rem; display: flex; flex-direction: column; gap: .6rem; }
+  .bandeau-demo { padding: .5rem .75rem; border-radius: 10px;
+    background: var(--ambre-fond); border: 1px solid var(--ambre-ligne);
+    color: var(--ambre); font-size: .8rem; }
+  .titre-direction { margin: .4rem 0 0; font-size: .95rem; font-weight: 700; }
+  .titre-direction .sous { color: var(--sourdine); font-weight: 400; font-size: .82rem; }
+
+  .billet { padding: 0; overflow: hidden; }
+  .billet.choisi { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+  .billet .zone { display: flex; justify-content: space-between; align-items: flex-start;
+    gap: .7rem; padding: .7rem .85rem .6rem; width: 100%; box-sizing: border-box;
+    background: none; border: 0; font: inherit; color: inherit; text-align: left; cursor: pointer; }
+  .billet.choisi .zone { background: var(--accent-doux); }
+  .billet .compagnie { font-weight: 650; font-size: .92rem; }
+  .billet .numero { color: var(--sourdine); font-size: .8rem; font-weight: 400; }
+  .billet .horaires { font-size: 1.12rem; margin-top: .15rem; }
+  .billet .trajet-detail { color: var(--sourdine); font-size: .8rem; }
+  .billet .prix { text-align: right; flex-shrink: 0; }
+  .billet .prix .appel { color: var(--sourdine); text-decoration: line-through; font-size: .82rem; }
+  .billet .prix .reel { color: var(--vert); font-size: 1.22rem; font-weight: 750; }
+  .billet .prix .etiquette { font-size: .62rem; letter-spacing: .05em;
+                             text-transform: uppercase; color: var(--sourdine); }
+  .billet .prix .coche { font-size: .68rem; font-weight: 700; letter-spacing: .04em;
+                         text-transform: uppercase; color: var(--accent); }
+  .billet .perforation { border: 0; border-top: 2px dashed var(--ligne); margin: 0 .85rem; }
+  .billet details { padding: .45rem .85rem .65rem; }
+  .billet summary { cursor: pointer; color: var(--accent); font-size: .86rem;
+    list-style-position: inside; min-height: 30px; display: flex; align-items: center; }
+  .billet .sans-frais { padding: .45rem .85rem .65rem; color: var(--vert); font-size: .86rem; }
+  .billet table { margin-top: .35rem; border-collapse: collapse; font-size: .86rem; width: 100%; }
+  .billet td { padding: .15rem 0; }
+  .billet td:first-child { color: var(--sourdine); }
+  .billet td:last-child { text-align: right; }
+  .billet .estimation { color: var(--ambre); font-size: .8rem; margin-top: .3rem; }
+
+  footer { margin-top: 1.4rem; color: var(--sourdine); font-size: .78rem;
+           border-top: 1px solid var(--ligne); padding-top: .8rem; }
+  @media (prefers-reduced-motion: no-preference) {
+    .billet { transition: box-shadow .12s ease, border-color .12s ease; }
+  }
