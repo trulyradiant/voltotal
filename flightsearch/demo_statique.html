@@ -8,214 +8,160 @@
 <title>VolTotal — vols au prix réel</title>
 <style>
   :root {
-    --fond: #F3F5FA;
-    --carte: #FFFFFF;
-    --encre: #1A2138;
-    --sourdine: #5D6785;
-    --ligne: #D9DFEC;
-    --accent: #1E4BD8;
-    --accent-fonce: #143795;
-    --accent-doux: #E8EDFD;
-    --accent-encre: #FFFFFF;
-    --vert: #0B7A4B;
-    --vert-doux: #E4F4EC;
-    --ambre: #9C5E0B;
-    --ambre-fond: #FFF6E4;
-    --ambre-ligne: #EBD9B0;
+    --fond: #F3F5FA; --carte: #FFFFFF; --encre: #1A2138; --sourdine: #5D6785;
+    --ligne: #D9DFEC; --accent: #1E4BD8; --accent-fonce: #143795;
+    --accent-doux: #E8EDFD; --accent-encre: #FFFFFF; --vert: #0B7A4B;
+    --ambre: #9C5E0B; --ambre-fond: #FFF6E4; --ambre-ligne: #EBD9B0;
+    --rouge: #B3261E; --rouge-fond: #FDECEA;
   }
   @media (prefers-color-scheme: dark) {
     :root {
       --fond: #0E1424; --carte: #171F35; --encre: #E8ECF7; --sourdine: #96A0BC;
       --ligne: #2A3453; --accent: #7B96F4; --accent-fonce: #A5B8F8;
       --accent-doux: #1D2A52; --accent-encre: #0E1424; --vert: #4CC38A;
-      --vert-doux: #12301F; --ambre: #E4B063; --ambre-fond: #241D0F; --ambre-ligne: #4A3B1D;
+      --ambre: #E4B063; --ambre-fond: #241D0F; --ambre-ligne: #4A3B1D;
+      --rouge: #F2B8B5; --rouge-fond: #3A1512;
     }
   }
   :root[data-theme="light"] {
     --fond: #F3F5FA; --carte: #FFFFFF; --encre: #1A2138; --sourdine: #5D6785;
     --ligne: #D9DFEC; --accent: #1E4BD8; --accent-fonce: #143795;
     --accent-doux: #E8EDFD; --accent-encre: #FFFFFF; --vert: #0B7A4B;
-    --vert-doux: #E4F4EC; --ambre: #9C5E0B; --ambre-fond: #FFF6E4; --ambre-ligne: #EBD9B0;
+    --ambre: #9C5E0B; --ambre-fond: #FFF6E4; --ambre-ligne: #EBD9B0;
+    --rouge: #B3261E; --rouge-fond: #FDECEA;
   }
   :root[data-theme="dark"] {
     --fond: #0E1424; --carte: #171F35; --encre: #E8ECF7; --sourdine: #96A0BC;
     --ligne: #2A3453; --accent: #7B96F4; --accent-fonce: #A5B8F8;
     --accent-doux: #1D2A52; --accent-encre: #0E1424; --vert: #4CC38A;
-    --vert-doux: #12301F; --ambre: #E4B063; --ambre-fond: #241D0F; --ambre-ligne: #4A3B1D;
+    --ambre: #E4B063; --ambre-fond: #241D0F; --ambre-ligne: #4A3B1D;
+    --rouge: #F2B8B5; --rouge-fond: #3A1512;
   }
 
   body {
     margin: 0; background: var(--fond); color: var(--encre);
     font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-    line-height: 1.45; font-size: 16px;
-    -webkit-tap-highlight-color: transparent;
+    line-height: 1.4; font-size: 16px; -webkit-tap-highlight-color: transparent;
   }
   .mono { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
           font-variant-numeric: tabular-nums; }
+  .page { max-width: 40rem; margin: 0 auto; padding: 0 .8rem 3rem; }
 
-  .page { max-width: 40rem; margin: 0 auto; padding: 0 .9rem 3rem; }
-
-  header { padding: 1.1rem 0 .8rem; }
-  header .marque {
-    display: flex; align-items: baseline; gap: .45rem;
-    font-size: 1.5rem; font-weight: 750; letter-spacing: -.02em;
-  }
+  header { padding: .8rem 0 .6rem; display: flex; align-items: baseline;
+           justify-content: space-between; gap: .5rem; flex-wrap: wrap; }
+  header .marque { display: flex; align-items: baseline; gap: .35rem;
+                   font-size: 1.3rem; font-weight: 750; letter-spacing: -.02em; }
   header .marque .total { color: var(--accent); }
-  header p { margin: .28rem 0 0; color: var(--sourdine); font-size: .9rem;
-             max-width: 32rem; text-wrap: balance; }
+  header .accroche { color: var(--sourdine); font-size: .8rem; }
 
   .carte { background: var(--carte); border: 1px solid var(--ligne);
-           border-radius: 14px; padding: 1rem; }
+           border-radius: 14px; padding: .85rem; }
 
-  .type-trajet {
-    display: grid; grid-template-columns: 1fr 1fr; gap: 4px;
-    background: var(--fond); border: 1px solid var(--ligne);
-    border-radius: 10px; padding: 4px; margin-bottom: .85rem;
-  }
-  .type-trajet button {
-    border: 0; border-radius: 7px; padding: .5rem;
-    background: transparent; color: var(--sourdine);
-    font: inherit; font-size: .95rem; font-weight: 600; cursor: pointer; min-height: 44px;
-  }
-  .type-trajet button[aria-pressed="true"] {
-    background: var(--carte); color: var(--encre);
-    box-shadow: 0 1px 3px rgba(10, 20, 50, .12);
-  }
-
-  .trajet { display: grid; grid-template-columns: 1fr auto 1fr; gap: .5rem; align-items: end; }
-  .dates { display: grid; grid-template-columns: 1fr 1fr; gap: .5rem; margin-top: .7rem; }
-  .dates.simple { grid-template-columns: 1fr; }
-  .rangee-pax { margin-top: .7rem; }
-
-  .champ label {
-    display: block; font-size: .7rem; font-weight: 650; letter-spacing: .07em;
-    text-transform: uppercase; color: var(--sourdine); margin-bottom: .25rem;
-  }
-  .champ input {
-    width: 100%; box-sizing: border-box; padding: .65rem .6rem;
-    border: 1px solid var(--ligne); border-radius: 10px;
-    background: var(--fond); color: var(--encre);
-    font-size: 1rem; font-family: inherit; min-height: 48px;
-  }
-  .champ input.iata { text-transform: uppercase; font-weight: 650; letter-spacing: .04em; }
-  .inverser {
-    width: 44px; height: 48px; border: 1px solid var(--ligne); border-radius: 10px;
-    background: var(--fond); color: var(--accent); font-size: 1.15rem; cursor: pointer;
-  }
-  input:focus-visible, button:focus-visible, summary:focus-visible, .zone:focus-visible {
-    outline: 2px solid var(--accent); outline-offset: 2px;
-  }
-
-  .options { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .9rem; }
-  .options .legende {
-    flex-basis: 100%; font-size: .7rem; font-weight: 650; letter-spacing: .07em;
-    text-transform: uppercase; color: var(--sourdine);
-  }
-  .options label.puce {
-    display: inline-flex; align-items: center; gap: .45rem;
-    padding: .55rem .85rem; min-height: 44px; box-sizing: border-box;
-    border: 1px solid var(--ligne); border-radius: 999px;
-    background: var(--fond); font-size: .95rem; cursor: pointer; user-select: none;
-  }
-  .options label.puce.active {
-    background: var(--accent); border-color: var(--accent); color: var(--accent-encre);
-  }
-  .options input[type="checkbox"] { accent-color: var(--accent); margin: 0; width: 18px; height: 18px; }
-  .options label.puce.active input[type="checkbox"] { accent-color: var(--accent-encre); }
-  .options input[type="number"] {
-    width: 3rem; padding: .2rem .3rem; border: 1px solid var(--ligne); border-radius: 6px;
-    background: var(--carte); color: var(--encre); font-size: 1rem;
-  }
-
-  .note-live {
-    margin-top: .9rem; font-size: .85rem; color: var(--sourdine);
-    display: flex; align-items: center; gap: .4rem;
-  }
-  .avertissement {
-    margin-top: .8rem; padding: .65rem .85rem; border-radius: 10px;
-    background: var(--ambre-fond); border: 1px solid var(--ambre-ligne);
-    color: var(--ambre); font-size: .92rem;
-  }
-
-  #resultats { margin-top: 1rem; display: flex; flex-direction: column; gap: .8rem; }
-
-  /* Le total, en tête des résultats : toujours visible sans scroller */
+  /* --- Le prix, tout en haut : la première chose qu'on voit --- */
   .sommaire {
-    background: var(--carte); border: 2px solid var(--vert); border-radius: 14px;
-    padding: .9rem 1rem;
+    background: var(--carte); border: 2px solid var(--vert);
+    border-radius: 14px; padding: .8rem .9rem; margin-bottom: .7rem;
   }
-  .sommaire .entete {
-    display: flex; justify-content: space-between; align-items: baseline; gap: .8rem;
-  }
-  .sommaire .libelle {
-    font-size: .7rem; font-weight: 700; letter-spacing: .07em;
-    text-transform: uppercase; color: var(--sourdine);
-  }
-  .sommaire .montant { color: var(--vert); font-size: 1.75rem; font-weight: 750;
+  .sommaire .entete { display: flex; justify-content: space-between;
+                      align-items: baseline; gap: .7rem; }
+  .sommaire .libelle { font-size: .68rem; font-weight: 700; letter-spacing: .06em;
+                       text-transform: uppercase; color: var(--sourdine); }
+  .sommaire .montant { color: var(--vert); font-size: 1.7rem; font-weight: 750;
                        letter-spacing: -.02em; white-space: nowrap; }
-  .sommaire .frais { font-size: .85rem; color: var(--sourdine); margin-top: .1rem; }
+  .sommaire .frais { font-size: .82rem; color: var(--sourdine); margin-top: .05rem; }
   .sommaire .frais strong { color: var(--encre); }
-  .sommaire .lignes {
-    margin-top: .7rem; padding-top: .7rem; border-top: 1px dashed var(--ligne);
-    display: flex; flex-direction: column; gap: .3rem; font-size: .88rem;
-  }
-  .sommaire .lignes div { display: flex; justify-content: space-between; gap: .6rem; }
-  .sommaire .lignes .sens {
-    color: var(--sourdine); text-transform: uppercase; font-size: .68rem;
-    font-weight: 700; letter-spacing: .06em; min-width: 3.4rem;
-  }
-  .sommaire .lignes .desc { flex: 1; }
+  .sommaire .lignes { margin-top: .6rem; padding-top: .6rem;
+                      border-top: 1px dashed var(--ligne);
+                      display: flex; flex-direction: column; gap: .25rem; font-size: .85rem; }
+  .sommaire .lignes > div { display: flex; align-items: baseline; gap: .5rem; }
+  .sommaire .sens { color: var(--sourdine); text-transform: uppercase;
+                    font-size: .64rem; font-weight: 700; letter-spacing: .06em;
+                    min-width: 3.1rem; flex-shrink: 0; }
+  .sommaire .desc { flex: 1; min-width: 0; }
+  .sommaire .rappel { margin-top: .5rem; font-size: .8rem; color: var(--accent); }
 
-  .bandeau-demo {
-    padding: .6rem .85rem; border-radius: 10px;
+  .panne { background: var(--rouge-fond); border: 1px solid var(--rouge);
+           color: var(--rouge); border-radius: 12px; padding: .8rem; font-size: .9rem; }
+
+  /* --- Formulaire compact --- */
+  .type-trajet { display: grid; grid-template-columns: 1fr 1fr; gap: 4px;
+                 background: var(--fond); border: 1px solid var(--ligne);
+                 border-radius: 10px; padding: 3px; margin-bottom: .6rem; }
+  .type-trajet button { border: 0; border-radius: 7px; padding: .45rem;
+                        background: transparent; color: var(--sourdine);
+                        font: inherit; font-size: .92rem; font-weight: 600;
+                        cursor: pointer; min-height: 42px; }
+  .type-trajet button[aria-pressed="true"] { background: var(--carte); color: var(--encre);
+                        box-shadow: 0 1px 3px rgba(10, 20, 50, .12); }
+
+  .trajet { display: grid; grid-template-columns: 1fr auto 1fr; gap: .4rem; align-items: end; }
+  .dates { display: grid; grid-template-columns: 1fr 1fr; gap: .4rem; margin-top: .55rem; }
+  .dates.simple { grid-template-columns: 1fr; }
+  .champ label { display: block; font-size: .64rem; font-weight: 700; letter-spacing: .06em;
+                 text-transform: uppercase; color: var(--sourdine); margin-bottom: .15rem; }
+  .champ input { width: 100%; box-sizing: border-box; padding: .5rem .55rem;
+                 border: 1px solid var(--ligne); border-radius: 10px;
+                 background: var(--fond); color: var(--encre);
+                 font-size: 1rem; font-family: inherit; min-height: 46px; }
+  .champ input.iata { text-transform: uppercase; font-weight: 700; letter-spacing: .04em; }
+  .inverser { width: 42px; height: 46px; border: 1px solid var(--ligne); border-radius: 10px;
+              background: var(--fond); color: var(--accent); font-size: 1.1rem; cursor: pointer; }
+  input:focus-visible, button:focus-visible, summary:focus-visible {
+    outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  .options { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .6rem; }
+  .options label.puce { display: inline-flex; align-items: center; gap: .4rem;
+    padding: .45rem .75rem; min-height: 42px; box-sizing: border-box;
+    border: 1px solid var(--ligne); border-radius: 999px; background: var(--fond);
+    font-size: .9rem; cursor: pointer; user-select: none; }
+  .options label.puce.active { background: var(--accent); border-color: var(--accent);
+                               color: var(--accent-encre); }
+  .options input[type="checkbox"] { accent-color: var(--accent); margin: 0; width: 17px; height: 17px; }
+  .options input[type="number"] { width: 2.8rem; padding: .15rem .25rem;
+    border: 1px solid var(--ligne); border-radius: 6px;
+    background: var(--carte); color: var(--encre); font-size: .95rem; }
+
+  .avertissement { margin-top: .6rem; padding: .55rem .75rem; border-radius: 10px;
     background: var(--ambre-fond); border: 1px solid var(--ambre-ligne);
-    color: var(--ambre); font-size: .84rem;
-  }
-  .aide { font-size: .86rem; color: var(--sourdine); margin: 0; }
+    color: var(--ambre); font-size: .88rem; }
 
-  .titre-direction { margin: .5rem 0 0; font-size: 1rem; font-weight: 700; }
-  .titre-direction .sous { color: var(--sourdine); font-weight: 400; font-size: .86rem; }
+  #resultats { margin-top: .8rem; display: flex; flex-direction: column; gap: .6rem; }
+  .bandeau-demo { padding: .5rem .75rem; border-radius: 10px;
+    background: var(--ambre-fond); border: 1px solid var(--ambre-ligne);
+    color: var(--ambre); font-size: .8rem; }
+  .titre-direction { margin: .4rem 0 0; font-size: .95rem; font-weight: 700; }
+  .titre-direction .sous { color: var(--sourdine); font-weight: 400; font-size: .82rem; }
 
   .billet { padding: 0; overflow: hidden; }
   .billet.choisi { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
-  .billet .zone {
-    display: flex; justify-content: space-between; align-items: flex-start;
-    gap: .8rem; padding: .85rem 1rem .7rem; width: 100%; box-sizing: border-box;
-    background: none; border: 0; font: inherit; color: inherit;
-    text-align: left; cursor: pointer;
-  }
+  .billet .zone { display: flex; justify-content: space-between; align-items: flex-start;
+    gap: .7rem; padding: .7rem .85rem .6rem; width: 100%; box-sizing: border-box;
+    background: none; border: 0; font: inherit; color: inherit; text-align: left; cursor: pointer; }
   .billet.choisi .zone { background: var(--accent-doux); }
-  .billet .compagnie { font-weight: 650; font-size: .95rem; }
-  .billet .numero { color: var(--sourdine); font-size: .82rem; font-weight: 400; }
-  .billet .horaires { font-size: 1.18rem; margin-top: .2rem; }
-  .billet .trajet-detail { color: var(--sourdine); font-size: .84rem; margin-top: .05rem; }
+  .billet .compagnie { font-weight: 650; font-size: .92rem; }
+  .billet .numero { color: var(--sourdine); font-size: .8rem; font-weight: 400; }
+  .billet .horaires { font-size: 1.12rem; margin-top: .15rem; }
+  .billet .trajet-detail { color: var(--sourdine); font-size: .8rem; }
   .billet .prix { text-align: right; flex-shrink: 0; }
-  .billet .prix .appel { color: var(--sourdine); text-decoration: line-through; font-size: .86rem; }
-  .billet .prix .reel { color: var(--vert); font-size: 1.3rem; font-weight: 750; letter-spacing: -.01em; }
-  .billet .prix .etiquette {
-    font-size: .66rem; letter-spacing: .06em; text-transform: uppercase; color: var(--sourdine);
-  }
-  .billet .prix .coche {
-    font-size: .7rem; font-weight: 700; letter-spacing: .05em;
-    text-transform: uppercase; color: var(--accent); margin-top: .1rem;
-  }
-  .billet .perforation { border: 0; border-top: 2px dashed var(--ligne); margin: 0 1rem; }
-  .billet details { padding: .5rem 1rem .75rem; }
-  .billet summary {
-    cursor: pointer; color: var(--accent); font-size: .89rem;
-    list-style-position: inside; min-height: 32px; display: flex; align-items: center;
-  }
-  .billet .sans-frais { padding: .5rem 1rem .75rem; color: var(--vert); font-size: .89rem; }
-  .billet table { margin-top: .4rem; border-collapse: collapse; font-size: .89rem; width: 100%; }
-  .billet td { padding: .18rem 0; }
+  .billet .prix .appel { color: var(--sourdine); text-decoration: line-through; font-size: .82rem; }
+  .billet .prix .reel { color: var(--vert); font-size: 1.22rem; font-weight: 750; }
+  .billet .prix .etiquette { font-size: .62rem; letter-spacing: .05em;
+                             text-transform: uppercase; color: var(--sourdine); }
+  .billet .prix .coche { font-size: .68rem; font-weight: 700; letter-spacing: .04em;
+                         text-transform: uppercase; color: var(--accent); }
+  .billet .perforation { border: 0; border-top: 2px dashed var(--ligne); margin: 0 .85rem; }
+  .billet details { padding: .45rem .85rem .65rem; }
+  .billet summary { cursor: pointer; color: var(--accent); font-size: .86rem;
+    list-style-position: inside; min-height: 30px; display: flex; align-items: center; }
+  .billet .sans-frais { padding: .45rem .85rem .65rem; color: var(--vert); font-size: .86rem; }
+  .billet table { margin-top: .35rem; border-collapse: collapse; font-size: .86rem; width: 100%; }
+  .billet td { padding: .15rem 0; }
   .billet td:first-child { color: var(--sourdine); }
   .billet td:last-child { text-align: right; }
-  .billet .estimation { color: var(--ambre); font-size: .83rem; margin-top: .35rem; }
+  .billet .estimation { color: var(--ambre); font-size: .8rem; margin-top: .3rem; }
 
-  footer {
-    margin-top: 1.6rem; color: var(--sourdine); font-size: .8rem;
-    border-top: 1px solid var(--ligne); padding-top: .9rem;
-  }
+  footer { margin-top: 1.4rem; color: var(--sourdine); font-size: .78rem;
+           border-top: 1px solid var(--ligne); padding-top: .8rem; }
   @media (prefers-reduced-motion: no-preference) {
     .billet { transition: box-shadow .12s ease, border-color .12s ease; }
   }
@@ -224,12 +170,19 @@
 <div class="page">
   <header>
     <div class="marque"><span>✈️</span><span>Vol<span class="total">Total</span></span></div>
-    <p>Le prix <strong>réel</strong> de votre voyage — bagages, siège et frais
-       d'enregistrement calculés à l'avance, avant de réserver.</p>
+    <div class="accroche">bagages et frais inclus</div>
   </header>
 
-  <!-- novalidate : c'est le script qui contrôle la saisie, jamais le navigateur,
-       pour qu'aucune combinaison de dates ne puisse bloquer la recherche. -->
+  <!-- Le prix précède le formulaire : sur un téléphone, il ne doit jamais
+       falloir faire défiler l'écran pour voir combien on paie vraiment. -->
+  <section id="sommaire" aria-live="polite">
+    <div class="panne">Chargement…</div>
+  </section>
+
+  <noscript>
+    <div class="panne">Cette page a besoin de JavaScript pour calculer les prix.</div>
+  </noscript>
+
   <form id="recherche" class="carte" novalidate>
     <div class="type-trajet" role="group" aria-label="Type de trajet">
       <button type="button" id="btn_ar" aria-pressed="true">Aller-retour</button>
@@ -261,20 +214,14 @@
       </div>
     </div>
 
-    <div class="champ rangee-pax">
-      <label for="passagers">Passagers</label>
-      <input type="number" id="passagers" min="1" max="9" value="1" inputmode="numeric">
-    </div>
-
     <div class="options">
-      <span class="legende">Ce que vous emportez vraiment</span>
+      <label class="puce">Passagers <input type="number" id="passagers" min="1" max="9" value="1" inputmode="numeric"></label>
       <label class="puce active"><input type="checkbox" id="bagage_cabine" checked> Bagage cabine</label>
       <label class="puce">Soute <input type="number" id="bagages_soute" min="0" max="3" value="0" inputmode="numeric"></label>
       <label class="puce"><input type="checkbox" id="choix_siege"> Choix du siège</label>
       <label class="puce"><input type="checkbox" id="enregistrement_aeroport"> Enreg. à l'aéroport</label>
     </div>
 
-    <p class="note-live">↻ Les prix se recalculent tout seuls à chaque changement.</p>
     <div id="avertissement" class="avertissement" hidden></div>
   </form>
 
@@ -313,17 +260,27 @@
 
   <footer>
     Version de démonstration : vols fictifs mais réalistes et stables (même
-    recherche → mêmes résultats). Les surcoûts sont calculés avec la grille de
-    frais réelle des compagnies (mise à jour 02/08/2026), par passager et
+    recherche → mêmes résultats). Les surcoûts viennent de la grille de frais
+    réelle des compagnies (mise à jour 02/08/2026), par passager et
     <strong>par trajet</strong> — un bagage payant l'est à l'aller et au retour.
   </footer>
 </div>
 
 <script>
 "use strict";
+/* Filet de sécurité : si quoi que ce soit échoue, la page le dit au lieu de
+   rester muette — c'est la panne que le voyageur ne peut pas diagnostiquer. */
+function signalerPanne(message) {
+  var zone = document.getElementById("sommaire");
+  if (zone) zone.innerHTML = '<div class="panne">Le calcul a échoué : ' +
+    String(message).replace(/</g, "&lt;") + "</div>";
+}
+window.addEventListener("error", function (e) { signalerPanne(e.message); });
+
+try {
 
 /* --- Grille de frais par compagnie (identique à data/frais_compagnies.json) --- */
-const GRILLE = {
+var GRILLE = {
   FR: { nom: "Ryanair",          cabine: 12, soute: 25, siege: 8,  aeroport: 55, cabineIncluse: false },
   U2: { nom: "easyJet",          cabine: 15, soute: 30, siege: 6,  aeroport: 0,  cabineIncluse: false },
   VY: { nom: "Vueling",          cabine: 12, soute: 25, siege: 7,  aeroport: 0,  cabineIncluse: false },
@@ -333,256 +290,246 @@ const GRILLE = {
   AF: { nom: "Air France",       cabine: 0,  soute: 25, siege: 12, aeroport: 0,  cabineIncluse: true },
   KL: { nom: "KLM",              cabine: 0,  soute: 30, siege: 12, aeroport: 0,  cabineIncluse: true },
   LH: { nom: "Lufthansa",        cabine: 0,  soute: 30, siege: 15, aeroport: 0,  cabineIncluse: true },
-  IB: { nom: "Iberia",           cabine: 0,  soute: 25, siege: 10, aeroport: 0,  cabineIncluse: true },
+  IB: { nom: "Iberia",           cabine: 0,  soute: 25, siege: 10, aeroport: 0,  cabineIncluse: true }
 };
-const DEFAUT = { nom: "Compagnie inconnue", cabine: 15, soute: 35, siege: 10, aeroport: 0, cabineIncluse: false };
-const LOW_COST = new Set(["FR", "U2", "VY", "TO", "V7", "W6"]);
-const CODES_DEMO = Object.keys(GRILLE);
+var DEFAUT = { nom: "Compagnie inconnue", cabine: 15, soute: 35, siege: 10, aeroport: 0, cabineIncluse: false };
+var LOW_COST = ["FR", "U2", "VY", "TO", "V7", "W6"];
+var CODES_DEMO = Object.keys(GRILLE);
 
 /* --- Moteur de surcoûts : options du voyageur × grille, pour un trajet --- */
 function calculerSurcouts(code, options) {
-  const grille = GRILLE[code] || DEFAUT;
-  const lignes = [];
-  const pax = options.passagers;
+  var grille = GRILLE[code] || DEFAUT;
+  var lignes = [];
+  var pax = options.passagers;
   if (options.bagageCabine && !grille.cabineIncluse)
     lignes.push({ libelle: "Bagage cabine", total: grille.cabine * pax });
   if (options.bagagesSoute > 0)
     lignes.push({
-      libelle: options.bagagesSoute > 1 ? `Bagage soute × ${options.bagagesSoute}` : "Bagage soute",
-      total: grille.soute * options.bagagesSoute * pax,
+      libelle: options.bagagesSoute > 1 ? "Bagage soute × " + options.bagagesSoute : "Bagage soute",
+      total: grille.soute * options.bagagesSoute * pax
     });
   if (options.choixSiege && grille.siege > 0)
     lignes.push({ libelle: "Choix du siège", total: grille.siege * pax });
   if (options.enregistrementAeroport && grille.aeroport > 0)
     lignes.push({ libelle: "Enregistrement à l'aéroport", total: grille.aeroport * pax });
-  return {
-    lignes,
-    estimation: !GRILLE[code],
-    total: Math.round(lignes.reduce((somme, l) => somme + l.total, 0) * 100) / 100,
-  };
+  var somme = 0;
+  for (var i = 0; i < lignes.length; i++) somme += lignes[i].total;
+  return { lignes: lignes, estimation: !GRILLE[code], total: Math.round(somme * 100) / 100 };
 }
 
 /* --- Vols de démonstration, déterministes pour une recherche donnée --- */
 function graine(texte) {
-  let h = 1779033703 ^ texte.length;
-  for (let i = 0; i < texte.length; i++) {
+  var h = 1779033703 ^ texte.length;
+  for (var i = 0; i < texte.length; i++) {
     h = Math.imul(h ^ texte.charCodeAt(i), 3432918353);
     h = (h << 13) | (h >>> 19);
   }
   return (h ^= h >>> 16) >>> 0;
 }
 function creerAlea(seed) {
-  let a = seed;
+  var a = seed;
   return function () {
     a |= 0; a = (a + 0x6D2B79F5) | 0;
-    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    var t = Math.imul(a ^ (a >>> 15), 1 | a);
     t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   };
 }
 function entier(alea, min, max) { return min + Math.floor(alea() * (max - min + 1)); }
 
-function rechercherDemo(origine, destination, jourISO) {
-  const alea = creerAlea(graine(`${origine}-${destination}-${jourISO}`));
-  const dureeBase = 60 + entier(alea, 0, 180);
-  const nb = entier(alea, 6, 9);
-  const vols = [];
-  for (let i = 0; i < nb; i++) {
-    const code = CODES_DEMO[entier(alea, 0, CODES_DEMO.length - 1)];
-    const heure = 6 + entier(alea, 0, 16);
-    const minute = [0, 15, 30, 45][entier(alea, 0, 3)];
-    const escales = alea() < 0.75 ? 0 : 1;
-    const duree = dureeBase + entier(alea, -15, 25) + escales * (60 + entier(alea, 0, 90));
-    const lowCost = LOW_COST.has(code);
-    const prix = Math.round(((lowCost ? 18 : 55) + alea() * (lowCost ? 90 : 160)) * 100) / 100;
-    const departMin = heure * 60 + minute;
+function rechercherDemo(origine, destination, jour) {
+  var alea = creerAlea(graine(origine + "-" + destination + "-" + jour));
+  var dureeBase = 60 + entier(alea, 0, 180);
+  var nb = entier(alea, 6, 9);
+  var vols = [];
+  for (var i = 0; i < nb; i++) {
+    var code = CODES_DEMO[entier(alea, 0, CODES_DEMO.length - 1)];
+    var heure = 6 + entier(alea, 0, 16);
+    var minute = [0, 15, 30, 45][entier(alea, 0, 3)];
+    var escales = alea() < 0.75 ? 0 : 1;
+    var duree = dureeBase + entier(alea, -15, 25) + escales * (60 + entier(alea, 0, 90));
+    var lowCost = LOW_COST.indexOf(code) >= 0;
+    var prix = Math.round(((lowCost ? 18 : 55) + alea() * (lowCost ? 90 : 160)) * 100) / 100;
+    var departMin = heure * 60 + minute;
     vols.push({
-      code, numero: `${code}${entier(alea, 1000, 9999)}`,
-      departMin, arriveeMin: departMin + duree, duree, escales, prixAffiche: prix,
+      code: code, numero: code + entier(alea, 1000, 9999),
+      departMin: departMin, arriveeMin: departMin + duree,
+      duree: duree, escales: escales, prixAffiche: prix
     });
   }
   return vols;
 }
 
 /* --- Utilitaires d'affichage --- */
-const euros = (m) => m.toLocaleString("fr-FR", { style: "currency", currency: "EUR" });
-const heureTexte = (min) =>
-  `${String(Math.floor(min / 60) % 24).padStart(2, "0")}:${String(min % 60).padStart(2, "0")}`;
-const echapper = (t) => { const d = document.createElement("div"); d.textContent = t; return d.innerHTML; };
-const dateTexte = (iso) =>
-  new Date(`${iso}T12:00:00`).toLocaleDateString("fr-FR", { weekday: "short", day: "numeric", month: "short" });
-const jourISO = (d) => {
-  const local = new Date(d.getTime() - d.getTimezoneOffset() * 60000);
+function euros(m) {
+  try { return m.toLocaleString("fr-FR", { style: "currency", currency: "EUR" }); }
+  catch (e) { return m.toFixed(2).replace(".", ",") + " €"; }
+}
+function heureTexte(min) {
+  var h = Math.floor(min / 60) % 24, m = min % 60;
+  return (h < 10 ? "0" : "") + h + ":" + (m < 10 ? "0" : "") + m;
+}
+function echapper(t) { var d = document.createElement("div"); d.textContent = t; return d.innerHTML; }
+function dateTexte(iso) {
+  try {
+    return new Date(iso + "T12:00:00").toLocaleDateString("fr-FR",
+      { weekday: "short", day: "numeric", month: "short" });
+  } catch (e) { return iso; }
+}
+function jourISO(d) {
+  var local = new Date(d.getTime() - d.getTimezoneOffset() * 60000);
   return local.toISOString().slice(0, 10);
-};
+}
 
 /* Le vol choisi est mémorisé par son numéro : changer une option recalcule les
    prix sans jamais perdre la sélection du voyageur. */
-const choixMemorise = { aller: null, retour: null };
+var choixMemorise = { aller: null, retour: null };
 
 function preparerResultats(vols, options) {
-  return vols
-    .map((vol) => {
-      const surcouts = calculerSurcouts(vol.code, options);
-      const prixBase = Math.round(vol.prixAffiche * options.passagers * 100) / 100;
-      return { vol, surcouts, prixBase, prixReel: Math.round((prixBase + surcouts.total) * 100) / 100 };
-    })
-    .sort((a, b) => a.prixReel - b.prixReel);
+  var liste = vols.map(function (vol) {
+    var surcouts = calculerSurcouts(vol.code, options);
+    var prixBase = Math.round(vol.prixAffiche * options.passagers * 100) / 100;
+    return { vol: vol, surcouts: surcouts, prixBase: prixBase,
+             prixReel: Math.round((prixBase + surcouts.total) * 100) / 100 };
+  });
+  liste.sort(function (a, b) { return a.prixReel - b.prixReel; });
+  return liste;
 }
 
 function indexChoisi(liste, sens) {
-  const memo = choixMemorise[sens];
-  const trouve = memo === null ? -1 : liste.findIndex((r) => r.vol.numero === memo);
-  return trouve >= 0 ? trouve : 0; // à défaut, le moins cher au prix réel
+  var memo = choixMemorise[sens];
+  for (var i = 0; i < liste.length; i++) if (liste[i].vol.numero === memo) return i;
+  return 0; // à défaut, le moins cher au prix réel
 }
 
 function carteBillet(r, sens, index, choisi, options) {
-  const grille = GRILLE[r.vol.code] || DEFAUT;
-  const h = Math.floor(r.vol.duree / 60), m = r.vol.duree % 60;
-  let bas;
+  var grille = GRILLE[r.vol.code] || DEFAUT;
+  var h = Math.floor(r.vol.duree / 60), m = r.vol.duree % 60;
+  var bas;
   if (r.surcouts.lignes.length) {
-    const lignes = r.surcouts.lignes
-      .map((l) => `<tr><td>${echapper(l.libelle)}</td><td class="mono">+ ${euros(l.total)}</td></tr>`)
-      .join("");
-    bas = `
-      <details>
-        <summary>Détail des frais : ${euros(r.surcouts.total)}</summary>
-        <table>
-          <tr><td>Billet${options.passagers > 1 ? "s" : ""}</td><td class="mono">${euros(r.prixBase)}</td></tr>
-          ${lignes}
-        </table>
-        ${r.surcouts.estimation ? '<div class="estimation">Compagnie hors grille : estimation prudente.</div>' : ""}
-      </details>`;
+    var lignes = r.surcouts.lignes.map(function (l) {
+      return '<tr><td>' + echapper(l.libelle) + '</td><td class="mono">+ ' + euros(l.total) + '</td></tr>';
+    }).join("");
+    bas = '<details><summary>Détail des frais : ' + euros(r.surcouts.total) + '</summary>' +
+      '<table><tr><td>Billet' + (options.passagers > 1 ? "s" : "") + '</td>' +
+      '<td class="mono">' + euros(r.prixBase) + '</td></tr>' + lignes + '</table>' +
+      (r.surcouts.estimation ? '<div class="estimation">Compagnie hors grille : estimation prudente.</div>' : "") +
+      '</details>';
   } else {
-    bas = `<div class="sans-frais">Aucun frais caché avec vos options ✔</div>`;
+    bas = '<div class="sans-frais">Aucun frais caché avec vos options ✔</div>';
   }
-  return `
-    <article class="carte billet${choisi ? " choisi" : ""}">
-      <button type="button" class="zone" data-sens="${sens}" data-index="${index}"
-              aria-pressed="${choisi}">
-        <span>
-          <span class="compagnie">${echapper(grille.nom)}
-            <span class="numero mono">· ${r.vol.numero}</span></span>
-          <span class="horaires mono" style="display:block">${heureTexte(r.vol.departMin)} — ${heureTexte(r.vol.arriveeMin)}</span>
-          <span class="trajet-detail" style="display:block">${h}h${String(m).padStart(2, "0")} ·
-            ${r.vol.escales === 0 ? "direct" : `${r.vol.escales} escale`}</span>
-        </span>
-        <span class="prix">
-          ${r.surcouts.total > 0 ? `<span class="appel mono" style="display:block">${euros(r.prixBase)}</span>` : ""}
-          <span class="reel mono" style="display:block">${euros(r.prixReel)}</span>
-          <span class="etiquette" style="display:block">prix réel</span>
-          ${choisi ? '<span class="coche" style="display:block">Choisi ✔</span>' : ""}
-        </span>
-      </button>
-      <hr class="perforation">
-      ${bas}
-    </article>`;
+  return '<article class="carte billet' + (choisi ? " choisi" : "") + '">' +
+    '<button type="button" class="zone" data-sens="' + sens + '" data-index="' + index + '" ' +
+    'aria-pressed="' + choisi + '"><span>' +
+    '<span class="compagnie">' + echapper(grille.nom) +
+      ' <span class="numero mono">· ' + r.vol.numero + '</span></span>' +
+    '<span class="horaires mono" style="display:block">' + heureTexte(r.vol.departMin) +
+      ' — ' + heureTexte(r.vol.arriveeMin) + '</span>' +
+    '<span class="trajet-detail" style="display:block">' + h + 'h' + (m < 10 ? "0" : "") + m +
+      ' · ' + (r.vol.escales === 0 ? "direct" : r.vol.escales + " escale") + '</span>' +
+    '</span><span class="prix">' +
+    (r.surcouts.total > 0 ? '<span class="appel mono" style="display:block">' + euros(r.prixBase) + '</span>' : "") +
+    '<span class="reel mono" style="display:block">' + euros(r.prixReel) + '</span>' +
+    '<span class="etiquette" style="display:block">prix réel</span>' +
+    (choisi ? '<span class="coche" style="display:block">Choisi ✔</span>' : "") +
+    '</span></button><hr class="perforation">' + bas + '</article>';
 }
 
-function sommaire(aller, retour, criteres) {
-  const total = Math.round((aller.prixReel + (retour ? retour.prixReel : 0)) * 100) / 100;
-  const frais = Math.round((aller.surcouts.total + (retour ? retour.surcouts.total : 0)) * 100) / 100;
-  const ligne = (sens, r, de, vers) => `
-    <div>
-      <span class="sens">${sens}</span>
-      <span class="desc">${echapper((GRILLE[r.vol.code] || DEFAUT).nom)} ·
-        ${de}→${vers} ${heureTexte(r.vol.departMin)}</span>
-      <span class="mono">${euros(r.prixReel)}</span>
-    </div>`;
-  return `
-    <div class="sommaire">
-      <div class="entete">
-        <div>
-          <div class="libelle">Total ${retour ? "aller-retour" : "aller simple"}, frais inclus</div>
-          <div class="frais">${frais > 0
-            ? `dont <strong>${euros(frais)}</strong> de frais pré-calculés`
-            : "aucun frais caché avec vos options ✔"}</div>
-        </div>
-        <div class="montant mono">${euros(total)}</div>
-      </div>
-      <div class="lignes">
-        ${ligne("Aller", aller, criteres.origine, criteres.destination)}
-        ${retour ? ligne("Retour", retour, criteres.destination, criteres.origine) : ""}
-      </div>
-    </div>`;
+function rendreSommaire(aller, retour, criteres) {
+  var total = Math.round((aller.prixReel + (retour ? retour.prixReel : 0)) * 100) / 100;
+  var frais = Math.round((aller.surcouts.total + (retour ? retour.surcouts.total : 0)) * 100) / 100;
+  function ligne(sens, r, de, vers) {
+    return '<div><span class="sens">' + sens + '</span>' +
+      '<span class="desc">' + echapper((GRILLE[r.vol.code] || DEFAUT).nom) + ' · ' +
+      de + '→' + vers + ' ' + heureTexte(r.vol.departMin) + '</span>' +
+      '<span class="mono">' + euros(r.prixReel) + '</span></div>';
+  }
+  document.getElementById("sommaire").innerHTML =
+    '<div class="sommaire"><div class="entete"><div>' +
+    '<div class="libelle">Total ' + (retour ? "aller-retour" : "aller simple") + ', frais inclus</div>' +
+    '<div class="frais">' + (frais > 0
+      ? "dont <strong>" + euros(frais) + "</strong> de frais pré-calculés"
+      : "aucun frais caché avec vos options ✔") + '</div>' +
+    '</div><div class="montant mono">' + euros(total) + '</div></div>' +
+    '<div class="lignes">' +
+      ligne("Aller", aller, criteres.origine, criteres.destination) +
+      (retour ? ligne("Retour", retour, criteres.destination, criteres.origine) : "") +
+    '</div>' +
+    '<div class="rappel">↓ Tous les vols et le détail des frais sont plus bas.</div></div>';
 }
 
 function rendre(criteres) {
-  const opt = criteres.options;
-  const listeAller = preparerResultats(
+  var opt = criteres.options;
+  var listeAller = preparerResultats(
     rechercherDemo(criteres.origine, criteres.destination, criteres.dateAller), opt);
-  const listeRetour = criteres.dateRetour
+  var listeRetour = criteres.dateRetour
     ? preparerResultats(rechercherDemo(criteres.destination, criteres.origine, criteres.dateRetour), opt)
     : null;
 
-  const iAller = indexChoisi(listeAller, "aller");
-  const iRetour = listeRetour ? indexChoisi(listeRetour, "retour") : null;
+  var iAller = indexChoisi(listeAller, "aller");
+  var iRetour = listeRetour ? indexChoisi(listeRetour, "retour") : null;
   choixMemorise.aller = listeAller[iAller].vol.numero;
   choixMemorise.retour = listeRetour ? listeRetour[iRetour].vol.numero : null;
 
-  const resume = [
-    `${opt.passagers} passager${opt.passagers > 1 ? "s" : ""}`,
-    opt.bagageCabine ? "bagage cabine" : null,
-    opt.bagagesSoute ? `${opt.bagagesSoute} bagage${opt.bagagesSoute > 1 ? "s" : ""} soute` : null,
-    opt.choixSiege ? "siège choisi" : null,
-    opt.enregistrementAeroport ? "enreg. aéroport" : null,
-  ].filter(Boolean).join(", ");
+  rendreSommaire(listeAller[iAller], listeRetour ? listeRetour[iRetour] : null, criteres);
 
-  let html = sommaire(listeAller[iAller], listeRetour ? listeRetour[iRetour] : null, criteres);
-  html += `<p class="aide">${resume}. Listes triées par <strong>prix réel</strong> —
-           touchez un vol pour l'échanger, le total se met à jour.</p>`;
-  html += `<div class="bandeau-demo">Mode démonstration : vols fictifs. Les surcoûts,
-           eux, viennent de la vraie grille de frais des compagnies.</div>`;
-
-  html += `<h2 class="titre-direction">Aller · ${criteres.origine} → ${criteres.destination}
-           <span class="sous">${dateTexte(criteres.dateAller)}</span></h2>`;
-  listeAller.forEach((r, i) => { html += carteBillet(r, "aller", i, i === iAller, opt); });
+  var html = '<div class="bandeau-demo">Mode démonstration : vols fictifs. Les surcoûts, ' +
+    'eux, viennent de la vraie grille de frais des compagnies. Touchez un vol pour ' +
+    'l\'échanger, le total en haut se met à jour.</div>';
+  html += '<h2 class="titre-direction">Aller · ' + criteres.origine + ' → ' + criteres.destination +
+    ' <span class="sous">' + dateTexte(criteres.dateAller) + '</span></h2>';
+  for (var i = 0; i < listeAller.length; i++)
+    html += carteBillet(listeAller[i], "aller", i, i === iAller, opt);
 
   if (listeRetour) {
-    html += `<h2 class="titre-direction">Retour · ${criteres.destination} → ${criteres.origine}
-             <span class="sous">${dateTexte(criteres.dateRetour)}</span></h2>`;
-    listeRetour.forEach((r, i) => { html += carteBillet(r, "retour", i, i === iRetour, opt); });
+    html += '<h2 class="titre-direction">Retour · ' + criteres.destination + ' → ' + criteres.origine +
+      ' <span class="sous">' + dateTexte(criteres.dateRetour) + '</span></h2>';
+    for (var j = 0; j < listeRetour.length; j++)
+      html += carteBillet(listeRetour[j], "retour", j, j === iRetour, opt);
   }
 
-  const conteneur = document.getElementById("resultats");
+  var conteneur = document.getElementById("resultats");
   conteneur.innerHTML = html;
-  conteneur.querySelectorAll(".zone").forEach((bouton) => {
-    bouton.addEventListener("click", () => {
-      const sens = bouton.dataset.sens;
-      const liste = sens === "aller" ? listeAller : listeRetour;
-      choixMemorise[sens] = liste[Number(bouton.dataset.index)].vol.numero;
+  var zones = conteneur.querySelectorAll(".zone");
+  for (var k = 0; k < zones.length; k++) {
+    zones[k].addEventListener("click", function () {
+      var sens = this.getAttribute("data-sens");
+      var liste = sens === "aller" ? listeAller : listeRetour;
+      choixMemorise[sens] = liste[Number(this.getAttribute("data-index"))].vol.numero;
       rendre(criteres);
     });
-  });
+  }
 }
 
 /* --- Saisie --- */
-const champAller = document.getElementById("date_aller");
-const champRetour = document.getElementById("date_retour");
-const champOrigine = document.getElementById("origine");
-const champDestination = document.getElementById("destination");
-const avertissement = document.getElementById("avertissement");
+var champAller = document.getElementById("date_aller");
+var champRetour = document.getElementById("date_retour");
+var champOrigine = document.getElementById("origine");
+var champDestination = document.getElementById("destination");
+var avertissement = document.getElementById("avertissement");
 
 champAller.value = jourISO(new Date(Date.now() + 24 * 3600 * 1000));
 champRetour.value = jourISO(new Date(Date.now() + 8 * 24 * 3600 * 1000));
 
-let allerRetour = true;
-const btnAR = document.getElementById("btn_ar");
-const btnAS = document.getElementById("btn_as");
+var allerRetour = true;
+var btnAR = document.getElementById("btn_ar");
+var btnAS = document.getElementById("btn_as");
 function basculerType(ar) {
   allerRetour = ar;
   btnAR.setAttribute("aria-pressed", String(ar));
   btnAS.setAttribute("aria-pressed", String(!ar));
   document.getElementById("champ_retour").hidden = !ar;
-  document.getElementById("zone_dates").classList.toggle("simple", !ar);
+  document.getElementById("zone_dates").className = ar ? "dates" : "dates simple";
   actualiser();
 }
-btnAR.addEventListener("click", () => basculerType(true));
-btnAS.addEventListener("click", () => basculerType(false));
+btnAR.addEventListener("click", function () { basculerType(true); });
+btnAS.addEventListener("click", function () { basculerType(false); });
 
-document.getElementById("inverser").addEventListener("click", () => {
-  [champOrigine.value, champDestination.value] = [champDestination.value, champOrigine.value];
-  choixMemorise.aller = choixMemorise.retour = null;
+document.getElementById("inverser").addEventListener("click", function () {
+  var tampon = champOrigine.value;
+  champOrigine.value = champDestination.value;
+  champDestination.value = tampon;
+  choixMemorise.aller = null; choixMemorise.retour = null;
   actualiser();
 });
 
@@ -592,31 +539,33 @@ function lireOptions() {
     bagageCabine: document.getElementById("bagage_cabine").checked,
     bagagesSoute: Math.min(3, Math.max(0, Number(document.getElementById("bagages_soute").value) || 0)),
     choixSiege: document.getElementById("choix_siege").checked,
-    enregistrementAeroport: document.getElementById("enregistrement_aeroport").checked,
+    enregistrementAeroport: document.getElementById("enregistrement_aeroport").checked
   };
 }
 
 /* Recalcule tout. Une saisie incomplète affiche une note et conserve les
    résultats déjà à l'écran — rien ne disparaît sous les doigts. */
 function actualiser() {
-  document.querySelectorAll(".options label.puce").forEach((puce) => {
-    const case_ = puce.querySelector('input[type="checkbox"]');
-    puce.classList.toggle("active", !!case_ && case_.checked);
-  });
+  var puces = document.querySelectorAll(".options label.puce");
+  for (var i = 0; i < puces.length; i++) {
+    var coche = puces[i].querySelector('input[type="checkbox"]');
+    puces[i].className = "puce" + (coche && coche.checked ? " active" : "");
+  }
 
-  const origine = champOrigine.value.trim().toUpperCase();
-  const destination = champDestination.value.trim().toUpperCase();
-  const dateAller = champAller.value;
-  let dateRetour = allerRetour ? champRetour.value : null;
+  var origine = champOrigine.value.replace(/\s/g, "").toUpperCase();
+  var destination = champDestination.value.replace(/\s/g, "").toUpperCase();
+  var dateAller = champAller.value;
+  var dateRetour = allerRetour ? champRetour.value : null;
 
-  const prevenir = (texte) => { avertissement.textContent = texte; avertissement.hidden = false; };
+  function prevenir(texte) { avertissement.textContent = texte; avertissement.hidden = false; }
 
   if (!/^[A-Z]{3}$/.test(origine) || !/^[A-Z]{3}$/.test(destination))
     return prevenir("Indiquez deux codes aéroport à 3 lettres (ex. CDG et BCN).");
   if (origine === destination)
     return prevenir("Le départ et l'arrivée doivent être différents.");
   if (!dateAller) return prevenir("Choisissez une date d'aller.");
-  if (allerRetour && !dateRetour) return prevenir("Choisissez une date de retour, ou passez en « Aller simple ».");
+  if (allerRetour && !dateRetour)
+    return prevenir("Choisissez une date de retour, ou passez en « Aller simple ».");
 
   // Un retour avant l'aller est corrigé au lieu d'être refusé.
   if (allerRetour && dateRetour < dateAller) {
@@ -627,25 +576,33 @@ function actualiser() {
     avertissement.hidden = true;
   }
 
-  rendre({ origine, destination, dateAller, dateRetour, options: lireOptions() });
+  rendre({ origine: origine, destination: destination, dateAller: dateAller,
+           dateRetour: dateRetour, options: lireOptions() });
 }
 
-const form = document.getElementById("recherche");
-let attente = 0;
-const planifier = () => { clearTimeout(attente); attente = setTimeout(actualiser, 150); };
-form.addEventListener("input", planifier);
-form.addEventListener("change", actualiser);
-form.addEventListener("submit", (e) => { e.preventDefault(); actualiser(); });
-// Changer l'aller décale un retour devenu antérieur.
-champAller.addEventListener("change", () => {
+var form = document.getElementById("recherche");
+var attente = 0;
+form.addEventListener("input", function () {
+  clearTimeout(attente); attente = setTimeout(actualiser, 150);
+});
+form.addEventListener("change", function () { actualiser(); });
+form.addEventListener("submit", function (e) { e.preventDefault(); actualiser(); });
+champAller.addEventListener("change", function () {
   if (allerRetour && champRetour.value && champRetour.value < champAller.value)
     champRetour.value = champAller.value;
 });
-// Changer d'itinéraire repart du vol le moins cher.
-[champOrigine, champDestination, champAller, champRetour].forEach((champ) =>
-  champ.addEventListener("change", () => { choixMemorise.aller = choixMemorise.retour = null; }));
+// Changer d'itinéraire ou de date repart du vol le moins cher.
+[champOrigine, champDestination, champAller, champRetour].forEach(function (champ) {
+  champ.addEventListener("change", function () {
+    choixMemorise.aller = null; choixMemorise.retour = null;
+  });
+});
 
-actualiser(); // résultats affichés dès l'ouverture
+actualiser(); // prix et vols affichés dès l'ouverture
+
+} catch (erreur) {
+  signalerPanne(erreur && erreur.message ? erreur.message : erreur);
+}
 </script>
 
 </body>
