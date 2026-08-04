@@ -1,6 +1,6 @@
 """Tests du moteur de surcoûts, des fournisseurs et de l'API.
 
-Lancer :  python -m unittest discover flightsearch
+Lancer :  python -m unittest discover voltotal
 Aucun appel réseau : les réponses Amadeus sont simulées.
 """
 import json
@@ -8,9 +8,9 @@ import unittest
 from datetime import date, datetime
 from unittest import mock
 
-from flightsearch.fournisseurs import amadeus, demo, duffel
-from flightsearch.modeles import OptionsVoyage, Vol
-from flightsearch.surcouts import GrilleFrais
+from voltotal.fournisseurs import amadeus, demo, duffel
+from voltotal.modeles import OptionsVoyage, Vol
+from voltotal.surcouts import GrilleFrais
 
 
 def vol_simple(compagnie="FR", **extra):
@@ -224,7 +224,7 @@ class TestConnecteurDuffel(unittest.TestCase):
 
 class TestChoixDeLaSource(unittest.TestCase):
     def setUp(self):
-        from flightsearch import fournisseurs
+        from voltotal import fournisseurs
         self.fournisseurs = fournisseurs
         fournisseurs._cache.clear()
 
@@ -278,8 +278,8 @@ class TestDemonstration(unittest.TestCase):
 
 class TestApi(unittest.TestCase):
     def setUp(self):
-        from flightsearch.app import create_app
-        from flightsearch import fournisseurs
+        from voltotal.app import create_app
+        from voltotal import fournisseurs
         fournisseurs._cache.clear()
         self.client = create_app().test_client()
 

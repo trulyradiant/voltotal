@@ -37,7 +37,7 @@ la grille est affichée en bas de page.
 ```
 python -m venv .venv
 .venv/bin/pip install -r requirements.txt      # celui à la racine du dépôt
-.venv/bin/python -m flightsearch.wsgi
+.venv/bin/python -m voltotal.wsgi
 ```
 
 Ouvrez http://127.0.0.1:5001 — sans configuration, l'app tourne en **mode
@@ -103,7 +103,7 @@ grille interne, et l'affichage le signale.
 Créez un second service sur le même dépôt avec la commande de démarrage :
 
 ```
-gunicorn flightsearch.wsgi:app --bind 0.0.0.0:$PORT --workers 2 --threads 4
+gunicorn voltotal.wsgi:app --bind 0.0.0.0:$PORT --workers 2 --threads 4
 ```
 
 Ajoutez `DUFFEL_TOKEN` (et/ou `AMADEUS_CLIENT_ID` + `AMADEUS_CLIENT_SECRET`)
@@ -127,7 +127,7 @@ dans les Variables du service pour activer le temps réel. Vérifiez ensuite
 ## Tests
 
 ```
-python -m unittest discover -t . -s flightsearch
+python -m unittest discover -t . -s voltotal
 ```
 
 27 tests, sans aucun appel réseau : les réponses des API sont simulées.
