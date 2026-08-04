@@ -186,27 +186,56 @@ def _completer_tarifs_bagages(vols: list[Vol]) -> None:
 
 
 def chercher_aeroports(mot_cle: str, limite: int = 8) -> list[dict]:
-    """« barcelone » → [{'code': 'BCN', 'nom': …, 'ville': …, 'pays': 'ES'}, …]
+    """« barcelone » → une entrée par ville, avec ses aéroports.
 
-    Duffel renvoie des aéroports et des villes. Les deux sont utiles : un code
-    de ville (PAR) couvre tous ses aéroports d'un coup, un code d'aéroport
-    (CDG) cible précisément. Les villes sont donc listées en premier.
+    Duffel renvoie à plat des villes (qui portent la liste de leurs aéroports)
+    et des aéroports isolés. On regroupe le tout par ville, dans le format
+    attendu par l'interface : ``{ville, pays, code_tous, aeroports[]}``.
     """
     params = urllib.parse.urlencode({"name": mot_cle})
     donnees = _appeler(f"{_BASE}/places/suggestions?{params}")
-    villes, aeroports = [], []
+
+    groupes: dict[str, dict] = {}
+    isoles: list[dict] = []
     for lieu in donnees.get("data") or []:
         code = lieu.get("iata_code")
         if not code:
             continue
-        entree = {
-            "code": code,
-            "nom": lieu.get("name") or code,
-            "ville": lieu.get("city_name") or (lieu.get("city") or {}).get("name") or "",
-            "pays": lieu.get("iata_country_code") or "",
-        }
-        (villes if lieu.get("type") == "city" else aeroports).append(entree)
-    return (villes + aeroports)[:limite]
+        pays = lieu.get("iata_country_code") or ""
+        if lieu.get("type") == "city":
+            aeroports = [
+                {"code": a["iata_code"], "nom": a.get("name") or a["iata_code"]}
+                for a in (lieu.get("airports") or [])
+                if a.get("iata_code")
+            ]
+            groupes[code] = {
+                "ville": lieu.get("name") or code,
+                "pays": pays,
+                # Un code de ville n'autorise « tous les aéroports » que s'il
+                # en dessert effectivement plusieurs.
+                "code_tous": code if len(aeroports) > 1 else None,
+                "aeroports": aeroports or [{"code": code, "nom": lieu.get("name") or code}],
+            }
+        else:
+            isoles.append({
+                "code": code,
+                "nom": lieu.get("name") or code,
+                "ville": lieu.get("city_name") or (lieu.get("city") or {}).get("name") or "",
+                "pays": pays,
+            })
+
+    resultats = list(groupes.values())
+    deja_listes = {a["code"] for groupe in resultats for a in groupe["aeroports"]}
+    for aeroport in isoles:
+        if aeroport["code"] in deja_listes:
+            continue
+        resultats.append({
+            "ville": aeroport["ville"] or aeroport["nom"],
+            "pays": aeroport["pays"],
+            "code_tous": None,
+            "aeroports": [{"code": aeroport["code"], "nom": aeroport["nom"]}],
+        })
+    return resultats[:limite]
 
 
 def _prix_bagage(reference: str) -> float | None:

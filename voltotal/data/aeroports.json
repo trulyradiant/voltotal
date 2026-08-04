@@ -1,0 +1,125 @@
+{
+  "_commentaire": "Villes et leurs aéroports, pour la saisie par nom de ville. 'code_tous' n'est renseigné que lorsqu'un vrai code IATA de ville existe (PAR, LON, MIL…) : lui seul permet de chercher sur tous les aéroports à la fois. Base volontairement courte : Duffel complète le reste quand il est configuré.",
+  "villes": [
+    {"nom": "Paris", "pays": "France", "code_tous": "PAR", "aeroports": [
+      {"code": "CDG", "nom": "Charles-de-Gaulle"},
+      {"code": "ORY", "nom": "Orly"},
+      {"code": "BVA", "nom": "Beauvais-Tillé"}]},
+    {"nom": "Londres", "pays": "Royaume-Uni", "code_tous": "LON", "aeroports": [
+      {"code": "LHR", "nom": "Heathrow"},
+      {"code": "LGW", "nom": "Gatwick"},
+      {"code": "STN", "nom": "Stansted"},
+      {"code": "LTN", "nom": "Luton"},
+      {"code": "LCY", "nom": "City"}]},
+    {"nom": "Milan", "pays": "Italie", "code_tous": "MIL", "aeroports": [
+      {"code": "MXP", "nom": "Malpensa"},
+      {"code": "LIN", "nom": "Linate"},
+      {"code": "BGY", "nom": "Bergame-Orio al Serio"}]},
+    {"nom": "Rome", "pays": "Italie", "code_tous": "ROM", "aeroports": [
+      {"code": "FCO", "nom": "Fiumicino"},
+      {"code": "CIA", "nom": "Ciampino"}]},
+    {"nom": "New York", "pays": "États-Unis", "code_tous": "NYC", "aeroports": [
+      {"code": "JFK", "nom": "John F. Kennedy"},
+      {"code": "EWR", "nom": "Newark"},
+      {"code": "LGA", "nom": "LaGuardia"}]},
+    {"nom": "Tokyo", "pays": "Japon", "code_tous": "TYO", "aeroports": [
+      {"code": "HND", "nom": "Haneda"},
+      {"code": "NRT", "nom": "Narita"}]},
+    {"nom": "Stockholm", "pays": "Suède", "code_tous": "STO", "aeroports": [
+      {"code": "ARN", "nom": "Arlanda"},
+      {"code": "BMA", "nom": "Bromma"},
+      {"code": "NYO", "nom": "Skavsta"}]},
+    {"nom": "Washington", "pays": "États-Unis", "code_tous": "WAS", "aeroports": [
+      {"code": "IAD", "nom": "Dulles"},
+      {"code": "DCA", "nom": "Reagan National"},
+      {"code": "BWI", "nom": "Baltimore"}]},
+    {"nom": "Chicago", "pays": "États-Unis", "code_tous": "CHI", "aeroports": [
+      {"code": "ORD", "nom": "O'Hare"},
+      {"code": "MDW", "nom": "Midway"}]},
+
+    {"nom": "Barcelone", "pays": "Espagne", "aeroports": [
+      {"code": "BCN", "nom": "El Prat"},
+      {"code": "GRO", "nom": "Gérone-Costa Brava"},
+      {"code": "REU", "nom": "Reus"}]},
+    {"nom": "Bruxelles", "pays": "Belgique", "aeroports": [
+      {"code": "BRU", "nom": "Zaventem"},
+      {"code": "CRL", "nom": "Charleroi Brussels South"}]},
+    {"nom": "Venise", "pays": "Italie", "aeroports": [
+      {"code": "VCE", "nom": "Marco Polo"},
+      {"code": "TSF", "nom": "Trévise"}]},
+    {"nom": "Istanbul", "pays": "Turquie", "aeroports": [
+      {"code": "IST", "nom": "Istanbul"},
+      {"code": "SAW", "nom": "Sabiha Gökçen"}]},
+    {"nom": "Oslo", "pays": "Norvège", "aeroports": [
+      {"code": "OSL", "nom": "Gardermoen"},
+      {"code": "TRF", "nom": "Sandefjord-Torp"}]},
+    {"nom": "Francfort", "pays": "Allemagne", "aeroports": [
+      {"code": "FRA", "nom": "Francfort-sur-le-Main"},
+      {"code": "HHN", "nom": "Francfort-Hahn"}]},
+    {"nom": "Bâle-Mulhouse", "pays": "France", "aeroports": [
+      {"code": "BSL", "nom": "EuroAirport"}]},
+
+    {"nom": "Nice", "pays": "France", "aeroports": [{"code": "NCE", "nom": "Côte d'Azur"}]},
+    {"nom": "Lyon", "pays": "France", "aeroports": [{"code": "LYS", "nom": "Saint-Exupéry"}]},
+    {"nom": "Marseille", "pays": "France", "aeroports": [{"code": "MRS", "nom": "Provence"}]},
+    {"nom": "Toulouse", "pays": "France", "aeroports": [{"code": "TLS", "nom": "Blagnac"}]},
+    {"nom": "Bordeaux", "pays": "France", "aeroports": [{"code": "BOD", "nom": "Mérignac"}]},
+    {"nom": "Nantes", "pays": "France", "aeroports": [{"code": "NTE", "nom": "Atlantique"}]},
+    {"nom": "Lille", "pays": "France", "aeroports": [{"code": "LIL", "nom": "Lesquin"}]},
+    {"nom": "Strasbourg", "pays": "France", "aeroports": [{"code": "SXB", "nom": "Entzheim"}]},
+    {"nom": "Montpellier", "pays": "France", "aeroports": [{"code": "MPL", "nom": "Méditerranée"}]},
+    {"nom": "Rennes", "pays": "France", "aeroports": [{"code": "RNS", "nom": "Saint-Jacques"}]},
+    {"nom": "Brest", "pays": "France", "aeroports": [{"code": "BES", "nom": "Bretagne"}]},
+    {"nom": "Biarritz", "pays": "France", "aeroports": [{"code": "BIQ", "nom": "Pays basque"}]},
+    {"nom": "Ajaccio", "pays": "France", "aeroports": [{"code": "AJA", "nom": "Napoléon-Bonaparte"}]},
+    {"nom": "Bastia", "pays": "France", "aeroports": [{"code": "BIA", "nom": "Poretta"}]},
+    {"nom": "Perpignan", "pays": "France", "aeroports": [{"code": "PGF", "nom": "Rivesaltes"}]},
+    {"nom": "Clermont-Ferrand", "pays": "France", "aeroports": [{"code": "CFE", "nom": "Auvergne"}]},
+    {"nom": "Pau", "pays": "France", "aeroports": [{"code": "PUF", "nom": "Pyrénées"}]},
+    {"nom": "Toulon", "pays": "France", "aeroports": [{"code": "TLN", "nom": "Hyères"}]},
+
+    {"nom": "Madrid", "pays": "Espagne", "aeroports": [{"code": "MAD", "nom": "Barajas"}]},
+    {"nom": "Séville", "pays": "Espagne", "aeroports": [{"code": "SVQ", "nom": "Séville"}]},
+    {"nom": "Valence", "pays": "Espagne", "aeroports": [{"code": "VLC", "nom": "Valence"}]},
+    {"nom": "Malaga", "pays": "Espagne", "aeroports": [{"code": "AGP", "nom": "Costa del Sol"}]},
+    {"nom": "Palma de Majorque", "pays": "Espagne", "aeroports": [{"code": "PMI", "nom": "Son Sant Joan"}]},
+    {"nom": "Ibiza", "pays": "Espagne", "aeroports": [{"code": "IBZ", "nom": "Ibiza"}]},
+    {"nom": "Bilbao", "pays": "Espagne", "aeroports": [{"code": "BIO", "nom": "Bilbao"}]},
+    {"nom": "Lisbonne", "pays": "Portugal", "aeroports": [{"code": "LIS", "nom": "Humberto Delgado"}]},
+    {"nom": "Porto", "pays": "Portugal", "aeroports": [{"code": "OPO", "nom": "Francisco Sá Carneiro"}]},
+    {"nom": "Faro", "pays": "Portugal", "aeroports": [{"code": "FAO", "nom": "Faro"}]},
+    {"nom": "Naples", "pays": "Italie", "aeroports": [{"code": "NAP", "nom": "Capodichino"}]},
+    {"nom": "Florence", "pays": "Italie", "aeroports": [{"code": "FLR", "nom": "Peretola"}]},
+    {"nom": "Palerme", "pays": "Italie", "aeroports": [{"code": "PMO", "nom": "Punta Raisi"}]},
+    {"nom": "Catane", "pays": "Italie", "aeroports": [{"code": "CTA", "nom": "Fontanarossa"}]},
+    {"nom": "Amsterdam", "pays": "Pays-Bas", "aeroports": [{"code": "AMS", "nom": "Schiphol"}]},
+    {"nom": "Genève", "pays": "Suisse", "aeroports": [{"code": "GVA", "nom": "Cointrin"}]},
+    {"nom": "Zurich", "pays": "Suisse", "aeroports": [{"code": "ZRH", "nom": "Kloten"}]},
+    {"nom": "Berlin", "pays": "Allemagne", "aeroports": [{"code": "BER", "nom": "Brandebourg"}]},
+    {"nom": "Munich", "pays": "Allemagne", "aeroports": [{"code": "MUC", "nom": "Franz-Josef-Strauss"}]},
+    {"nom": "Hambourg", "pays": "Allemagne", "aeroports": [{"code": "HAM", "nom": "Fuhlsbüttel"}]},
+    {"nom": "Vienne", "pays": "Autriche", "aeroports": [{"code": "VIE", "nom": "Schwechat"}]},
+    {"nom": "Prague", "pays": "Tchéquie", "aeroports": [{"code": "PRG", "nom": "Václav Havel"}]},
+    {"nom": "Budapest", "pays": "Hongrie", "aeroports": [{"code": "BUD", "nom": "Ferenc Liszt"}]},
+    {"nom": "Varsovie", "pays": "Pologne", "aeroports": [{"code": "WAW", "nom": "Chopin"}]},
+    {"nom": "Cracovie", "pays": "Pologne", "aeroports": [{"code": "KRK", "nom": "Jean-Paul II"}]},
+    {"nom": "Copenhague", "pays": "Danemark", "aeroports": [{"code": "CPH", "nom": "Kastrup"}]},
+    {"nom": "Dublin", "pays": "Irlande", "aeroports": [{"code": "DUB", "nom": "Dublin"}]},
+    {"nom": "Édimbourg", "pays": "Royaume-Uni", "aeroports": [{"code": "EDI", "nom": "Édimbourg"}]},
+    {"nom": "Manchester", "pays": "Royaume-Uni", "aeroports": [{"code": "MAN", "nom": "Manchester"}]},
+    {"nom": "Athènes", "pays": "Grèce", "aeroports": [{"code": "ATH", "nom": "Elefthérios-Venizélos"}]},
+    {"nom": "Marrakech", "pays": "Maroc", "aeroports": [{"code": "RAK", "nom": "Ménara"}]},
+    {"nom": "Casablanca", "pays": "Maroc", "aeroports": [{"code": "CMN", "nom": "Mohammed V"}]},
+    {"nom": "Agadir", "pays": "Maroc", "aeroports": [{"code": "AGA", "nom": "Al-Massira"}]},
+    {"nom": "Tunis", "pays": "Tunisie", "aeroports": [{"code": "TUN", "nom": "Carthage"}]},
+    {"nom": "Alger", "pays": "Algérie", "aeroports": [{"code": "ALG", "nom": "Houari-Boumédiène"}]},
+    {"nom": "Le Caire", "pays": "Égypte", "aeroports": [{"code": "CAI", "nom": "Le Caire"}]},
+    {"nom": "Dubaï", "pays": "Émirats arabes unis", "aeroports": [{"code": "DXB", "nom": "Dubaï"}]},
+    {"nom": "Montréal", "pays": "Canada", "aeroports": [{"code": "YUL", "nom": "Trudeau"}]},
+    {"nom": "Los Angeles", "pays": "États-Unis", "aeroports": [{"code": "LAX", "nom": "Los Angeles"}]},
+    {"nom": "Miami", "pays": "États-Unis", "aeroports": [{"code": "MIA", "nom": "Miami"}]},
+    {"nom": "Pointe-à-Pitre", "pays": "Guadeloupe", "aeroports": [{"code": "PTP", "nom": "Pôle Caraïbes"}]},
+    {"nom": "Fort-de-France", "pays": "Martinique", "aeroports": [{"code": "FDF", "nom": "Aimé-Césaire"}]},
+    {"nom": "Saint-Denis de La Réunion", "pays": "La Réunion", "aeroports": [{"code": "RUN", "nom": "Roland-Garros"}]}
+  ]
+}

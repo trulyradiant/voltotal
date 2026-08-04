@@ -156,3 +156,46 @@
   @media (prefers-reduced-motion: no-preference) {
     .billet { transition: box-shadow .12s ease, border-color .12s ease; }
   }
+
+/* --- Sélecteur de ville / aéroport --------------------------------------- */
+.champ.lieu { position: relative; }
+.champ.lieu input[type="text"], .champ.lieu > input:not([type="hidden"]) {
+  text-transform: none; font-weight: 500; letter-spacing: 0;
+}
+.suggestions {
+  position: absolute; z-index: 30; top: 100%; left: 0; right: 0;
+  margin: .25rem 0 0; padding: .25rem; list-style: none;
+  background: var(--carte); border: 1px solid var(--ligne); border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(10, 20, 50, .18);
+  max-height: 15rem; overflow-y: auto;
+  /* Le panneau déborde volontairement de sa colonne : à la largeur d'un
+     demi-champ, les noms d'aéroport se casseraient sur quatre lignes. */
+  min-width: min(17rem, 76vw);
+}
+.champ.lieu.vers-gauche .suggestions { left: auto; right: 0; }
+.suggestions li {
+  display: flex; justify-content: space-between; align-items: baseline; gap: .5rem;
+  padding: .5rem .55rem; border-radius: 7px; cursor: pointer;
+  min-height: 44px; box-sizing: border-box;
+}
+.suggestions li.actif, .suggestions li:hover { background: var(--accent-doux); }
+.suggestions .principal { display: flex; flex-direction: column; min-width: 0; }
+.suggestions .titre {
+  font-weight: 650; font-size: .95rem;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.suggestions .detail {
+  color: var(--sourdine); font-size: .78rem;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.suggestions .code {
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: .82rem; color: var(--sourdine); flex-shrink: 0;
+}
+.suggestions li.tous { border-bottom: 1px dashed var(--ligne); border-radius: 7px 7px 0 0; }
+.suggestions li.tous .titre { color: var(--accent); }
+.suggestions li.tous .code { color: var(--accent); font-weight: 700; }
+.suggestions li.aeroport { padding-left: 1.5rem; }
+.suggestions li.aeroport .titre { font-weight: 500; font-size: .92rem; }
+.suggestions .vide { color: var(--sourdine); font-size: .88rem; padding: .5rem .55rem; cursor: default; }
+.suggestions .vide:hover { background: none; }

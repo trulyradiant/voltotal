@@ -14,7 +14,7 @@ from datetime import date, timedelta
 
 from flask import Flask, jsonify, render_template, request
 
-from . import fournisseurs
+from . import fournisseurs, lieux
 from .surcouts import GrilleFrais
 
 
@@ -22,6 +22,7 @@ def create_app() -> Flask:
     app = Flask(__name__)
     logging.basicConfig(level=logging.INFO)
     grille = GrilleFrais()
+    base_lieux = lieux.BaseLieux()
 
     @app.get("/")
     def accueil():
@@ -31,7 +32,7 @@ def create_app() -> Flask:
             date_aller=(date.today() + timedelta(days=1)).isoformat(),
             date_retour=(date.today() + timedelta(days=8)).isoformat(),
             maj_grille=grille.derniere_mise_a_jour,
-            recherche_aeroports=fournisseurs.recherche_aeroports_disponible(),
+            recherche_aeroports=True,  # la base locale répond même sans API
         )
 
     @app.get("/sources")
@@ -109,10 +110,18 @@ def create_app() -> Flask:
 
     @app.get("/api/aeroports")
     def api_aeroports():
+        """Villes correspondant à la saisie, chacune avec ses aéroports.
+
+        La base locale répond toujours, sans réseau ; l'API ne fait que
+        compléter. La saisie par nom de ville marche donc même en mode
+        démonstration.
+        """
         mot_cle = (request.args.get("q") or "").strip()
         if len(mot_cle) < 2:
-            return jsonify(aeroports=[])
-        return jsonify(aeroports=fournisseurs.chercher_aeroports(mot_cle))
+            return jsonify(lieux=[])
+        locaux = base_lieux.rechercher(mot_cle)
+        distants = fournisseurs.chercher_aeroports(mot_cle) if len(locaux) < 6 else []
+        return jsonify(lieux=lieux.fusionner(locaux, distants))
 
     @app.get("/sante")
     def sante():

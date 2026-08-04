@@ -30,16 +30,24 @@
     </div>
 
     <div class="trajet">
-      <div class="champ">
+      <div class="champ lieu">
         <label for="origine">Départ</label>
-        <input class="iata" id="origine" list="aeroports" placeholder="CDG" maxlength="3"
-               autocapitalize="characters" autocomplete="off" value="CDG">
+        <input id="origine" placeholder="Ville ou aéroport" autocomplete="off"
+               role="combobox" aria-expanded="false" aria-autocomplete="list"
+               aria-controls="liste_origine" value="Paris — tous les aéroports">
+        <input type="hidden" id="origine_code" value="PAR">
+        <ul class="suggestions" id="liste_origine" role="listbox"
+            aria-label="Villes et aéroports de départ" hidden></ul>
       </div>
       <button type="button" class="inverser" id="inverser" aria-label="Inverser départ et arrivée">⇄</button>
-      <div class="champ">
+      <div class="champ lieu vers-gauche">
         <label for="destination">Arrivée</label>
-        <input class="iata" id="destination" list="aeroports" placeholder="BCN" maxlength="3"
-               autocapitalize="characters" autocomplete="off" value="BCN">
+        <input id="destination" placeholder="Ville ou aéroport" autocomplete="off"
+               role="combobox" aria-expanded="false" aria-autocomplete="list"
+               aria-controls="liste_destination" value="Barcelone — El Prat">
+        <input type="hidden" id="destination_code" value="BCN">
+        <ul class="suggestions" id="liste_destination" role="listbox"
+            aria-label="Villes et aéroports d'arrivée" hidden></ul>
       </div>
     </div>
 
@@ -65,28 +73,6 @@
     <div id="avertissement" class="avertissement" hidden></div>
   </form>
 
-  <datalist id="aeroports">
-    <option value="CDG">Paris Charles-de-Gaulle</option>
-    <option value="ORY">Paris Orly</option>
-    <option value="NCE">Nice</option>
-    <option value="LYS">Lyon</option>
-    <option value="MRS">Marseille</option>
-    <option value="TLS">Toulouse</option>
-    <option value="BOD">Bordeaux</option>
-    <option value="NTE">Nantes</option>
-    <option value="BCN">Barcelone</option>
-    <option value="MAD">Madrid</option>
-    <option value="LIS">Lisbonne</option>
-    <option value="FCO">Rome Fiumicino</option>
-    <option value="MXP">Milan Malpensa</option>
-    <option value="AMS">Amsterdam</option>
-    <option value="BRU">Bruxelles</option>
-    <option value="GVA">Genève</option>
-    <option value="LHR">Londres Heathrow</option>
-    <option value="BER">Berlin</option>
-    <option value="ATH">Athènes</option>
-    <option value="RAK">Marrakech</option>
-  </datalist>
 
   <section id="resultats" aria-live="polite"></section>
 
@@ -302,6 +288,8 @@ var champAller = document.getElementById("date_aller");
 var champRetour = document.getElementById("date_retour");
 var champOrigine = document.getElementById("origine");
 var champDestination = document.getElementById("destination");
+var codeOrigine = document.getElementById("origine_code");
+var codeDestination = document.getElementById("destination_code");
 var avertissement = document.getElementById("avertissement");
 var allerRetour = true;
 
@@ -319,9 +307,9 @@ btnAR.addEventListener("click", function () { basculerType(true); });
 btnAS.addEventListener("click", function () { basculerType(false); });
 
 document.getElementById("inverser").addEventListener("click", function () {
-  var tampon = champOrigine.value;
-  champOrigine.value = champDestination.value;
-  champDestination.value = tampon;
+  var libelle = champOrigine.value, code = codeOrigine.value;
+  champOrigine.value = champDestination.value; codeOrigine.value = codeDestination.value;
+  champDestination.value = libelle; codeDestination.value = code;
   choixMemorise.aller = null; choixMemorise.retour = null;
   actualiser();
 });
@@ -343,15 +331,16 @@ function actualiser() {
     puces[i].className = "puce" + (coche && coche.checked ? " active" : "");
   }
 
-  var origine = champOrigine.value.replace(/\s/g, "").toUpperCase();
-  var destination = champDestination.value.replace(/\s/g, "").toUpperCase();
+  var origine = codeOrigine.value.toUpperCase();
+  var destination = codeDestination.value.toUpperCase();
   var dateAller = champAller.value;
   var dateRetour = allerRetour ? champRetour.value : null;
 
   function prevenir(texte) { avertissement.textContent = texte; avertissement.hidden = false; }
 
-  if (!/^[A-Z]{3}$/.test(origine) || !/^[A-Z]{3}$/.test(destination))
-    return prevenir("Indiquez deux codes aéroport à 3 lettres (ex. CDG et BCN).");
+  // Code absent = sélection en cours de frappe. On garde l'affichage tel
+  // quel, sans avertir : quitter le champ restaure le dernier lieu valide.
+  if (!/^[A-Z]{3}$/.test(origine) || !/^[A-Z]{3}$/.test(destination)) return;
   if (origine === destination)
     return prevenir("Le départ et l'arrivée doivent être différents.");
   if (!dateAller) return prevenir("Choisissez une date d'aller.");
@@ -389,37 +378,160 @@ champAller.addEventListener("change", function () {
   if (allerRetour && champRetour.value && champRetour.value < champAller.value)
     champRetour.value = champAller.value;
 });
-[champOrigine, champDestination, champAller, champRetour].forEach(function (champ) {
+[champAller, champRetour].forEach(function (champ) {
   champ.addEventListener("change", function () {
     choixMemorise.aller = null; choixMemorise.retour = null;
   });
 });
 
-/* Suggestions d'aéroports par nom de ville, quand l'API le permet. */
-if (RECHERCHE_AEROPORTS) {
-  var listeAeroports = document.getElementById("aeroports");
-  var attenteSuggestions = 0;
-  [champOrigine, champDestination].forEach(function (champ) {
-    champ.addEventListener("input", function () {
-      var mot = champ.value.trim();
-      if (mot.length < 2) return;
-      clearTimeout(attenteSuggestions);
-      attenteSuggestions = setTimeout(function () {
-        fetch("/api/aeroports?q=" + encodeURIComponent(mot))
-          .then(function (r) { return r.json(); })
-          .then(function (d) {
-            (d.aeroports || []).forEach(function (a) {
-              if (listeAeroports.querySelector('option[value="' + a.code + '"]')) return;
-              var option = document.createElement("option");
-              option.value = a.code;
-              option.textContent = a.nom + (a.ville ? " · " + a.ville : "");
-              listeAeroports.appendChild(option);
-            });
-          }).catch(function () {});
-      }, 300);
-    });
+/* --- Sélecteur de ville / aéroport ---------------------------------------
+   On tape un nom de ville ; la liste montre la ville puis chacun de ses
+   aéroports. Quand un code IATA de ville existe (PAR, LON…), une entrée
+   « tous les aéroports » cherche sur l'ensemble d'un coup. Le code retenu
+   vit dans un champ caché : le texte affiché reste lisible pour l'humain. */
+function installerSelecteurLieu(id) {
+  var saisie = document.getElementById(id);
+  var champCode = document.getElementById(id + "_code");
+  var liste = document.getElementById("liste_" + id);
+  var entrees = [];          // {code, libelle} dans l'ordre affiché
+  var actif = -1;
+  var attente = 0;
+  var dernierLibelle = saisie.value;   // dernier choix valide, pour le restaurer
+  var dernierCode = champCode.value;
+
+  function fermer() {
+    liste.hidden = true;
+    saisie.setAttribute("aria-expanded", "false");
+    actif = -1;
+  }
+
+  function surligner(index) {
+    var elements = liste.querySelectorAll("li[data-index]");
+    for (var i = 0; i < elements.length; i++)
+      elements[i].className = elements[i].className.replace(/ actif/g, "") +
+        (Number(elements[i].getAttribute("data-index")) === index ? " actif" : "");
+    actif = index;
+  }
+
+  function choisir(index) {
+    var entree = entrees[index];
+    if (!entree) return;
+    champCode.value = dernierCode = entree.code;
+    saisie.value = dernierLibelle = entree.libelle;
+    fermer();
+    saisie.blur();   // referme le clavier du téléphone après le choix
+    choixMemorise.aller = null; choixMemorise.retour = null;
+    actualiser();
+  }
+
+  // Repartir d'une saisie vierge quand le champ porte un choix précédent.
+  // Rendue par focus ET par clic : après une sélection dans la liste, le
+  // champ n'a jamais perdu le focus, donc le re-toucher n'émettrait aucun
+  // focus et le libellé resterait, la frappe venant s'y ajouter.
+  function repartirDeZero() {
+    if (saisie.value !== dernierLibelle) return false;
+    saisie.value = "";
+    fermer();
+    return true;
+  }
+
+  function rendre(lieux) {
+    entrees = [];
+    var html = "";
+    for (var i = 0; i < lieux.length; i++) {
+      var lieu = lieux[i];
+      var pays = lieu.pays ? echapper(lieu.pays) : "";
+      // « Tous les aéroports » n'a de sens qu'avec un vrai code de ville.
+      if (lieu.code_tous && lieu.aeroports.length > 1) {
+        entrees.push({ code: lieu.code_tous, libelle: lieu.ville + " — tous les aéroports" });
+        html += '<li class="tous" role="option" data-index="' + (entrees.length - 1) + '">' +
+          '<span class="principal"><span class="titre">' + echapper(lieu.ville) + '</span>' +
+          '<span class="detail">Tous les aéroports' + (pays ? " · " + pays : "") +
+          '</span></span>' +
+          '<span class="code">' + echapper(lieu.code_tous) + '</span></li>';
+      }
+      for (var j = 0; j < lieu.aeroports.length; j++) {
+        var a = lieu.aeroports[j];
+        var seul = lieu.aeroports.length === 1 && !lieu.code_tous;
+        entrees.push({ code: a.code, libelle: lieu.ville + " — " + a.nom });
+        // Dans une ville à plusieurs aéroports, répéter le pays sur chaque
+        // ligne n'apprend rien : il figure déjà sur l'entrée « tous ».
+        var detail = seul ? a.nom + (pays ? " · " + pays : "") : lieu.ville;
+        html += '<li class="' + (seul ? "" : "aeroport") + '" role="option" data-index="' +
+          (entrees.length - 1) + '">' +
+          '<span class="principal"><span class="titre">' +
+          echapper(seul ? lieu.ville : a.nom) + '</span>' +
+          '<span class="detail">' + echapper(detail) + '</span></span>' +
+          '<span class="code">' + echapper(a.code) + '</span></li>';
+      }
+    }
+    if (!html) html = '<li class="vide">Aucune ville ni aéroport pour cette saisie.</li>';
+    liste.innerHTML = html;
+    liste.hidden = false;
+    saisie.setAttribute("aria-expanded", "true");
+    actif = -1;
+  }
+
+  function interroger() {
+    var mot = saisie.value.trim();
+    if (mot.length < 2) { fermer(); return; }
+    fetch("/api/aeroports?q=" + encodeURIComponent(mot))
+      .then(function (r) { return r.json(); })
+      .then(function (d) { rendre(d.lieux || []); })
+      .catch(function () { fermer(); });
+  }
+
+  saisie.addEventListener("input", function () {
+    // Un code à trois lettres tapé directement reste accepté.
+    var brut = saisie.value.trim().toUpperCase();
+    champCode.value = /^[A-Z]{3}$/.test(brut) ? brut : "";
+    clearTimeout(attente);
+    attente = setTimeout(interroger, 200);
+  });
+
+  // On vide plutôt que de sélectionner le texte : le clic replace le curseur
+  // et annule aussitôt la sélection, si bien que la frappe s'y ajouterait.
+  saisie.addEventListener("focus", function () {
+    if (repartirDeZero()) return;
+    if (saisie.value.trim().length >= 2) interroger();
+  });
+  saisie.addEventListener("click", repartirDeZero);
+
+  saisie.addEventListener("keydown", function (e) {
+    if (liste.hidden) return;
+    if (e.key === "ArrowDown") { e.preventDefault(); surligner(Math.min(actif + 1, entrees.length - 1)); }
+    else if (e.key === "ArrowUp") { e.preventDefault(); surligner(Math.max(actif - 1, 0)); }
+    else if (e.key === "Enter" && actif >= 0) { e.preventDefault(); choisir(actif); }
+    else if (e.key === "Escape") { fermer(); }
+  });
+
+  // mousedown plutôt que click : le blur du champ ne doit pas fermer la liste
+  // avant que la sélection ne soit prise en compte.
+  liste.addEventListener("mousedown", function (e) {
+    var ligne = e.target.closest ? e.target.closest("li[data-index]") : null;
+    if (!ligne) return;
+    e.preventDefault();
+    choisir(Number(ligne.getAttribute("data-index")));
+  });
+
+  saisie.addEventListener("blur", function () {
+    setTimeout(function () {
+      fermer();
+      if (!champCode.value) {
+        // Saisie abandonnée sans choix : on remet le dernier lieu valide,
+        // libellé ET code, pour ne jamais laisser la recherche sans départ.
+        saisie.value = dernierLibelle;
+        champCode.value = dernierCode;
+      } else if (/^[A-Z]{3}$/.test(saisie.value.trim().toUpperCase())) {
+        dernierCode = champCode.value;
+        dernierLibelle = saisie.value = saisie.value.trim().toUpperCase();
+      }
+    }, 150);
   });
 }
+
+installerSelecteurLieu("origine");
+installerSelecteurLieu("destination");
 
 actualiser(); // prix et vols affichés dès l'ouverture
 

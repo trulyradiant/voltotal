@@ -226,20 +226,46 @@ class TestRechercheAeroports(unittest.TestCase):
     """L'autocomplétion doit marcher avec le seul jeton Duffel."""
 
     REPONSE = {"data": [
-        {"type": "airport", "iata_code": "BCN", "name": "Barcelona El Prat",
-         "city_name": "Barcelona", "iata_country_code": "ES"},
-        {"type": "city", "iata_code": "BCN", "name": "Barcelona",
-         "iata_country_code": "ES"},
-        {"type": "airport", "name": "Sans code IATA"},  # ignoré
+        {"type": "city", "iata_code": "LON", "name": "London",
+         "iata_country_code": "GB", "airports": [
+             {"iata_code": "LHR", "name": "Heathrow"},
+             {"iata_code": "LGW", "name": "Gatwick"}]},
+        {"type": "airport", "iata_code": "LHR", "name": "Heathrow",
+         "city_name": "London", "iata_country_code": "GB"},   # déjà couvert
+        {"type": "airport", "iata_code": "LTN", "name": "Luton",
+         "city_name": "London", "iata_country_code": "GB"},   # à ajouter
+        {"type": "airport", "name": "Sans code IATA"},        # ignoré
     ]}
 
-    def test_villes_avant_aeroports(self):
+    def _chercher(self):
         with mock.patch.dict("os.environ", {"DUFFEL_TOKEN": "t"}), \
              mock.patch.object(duffel, "_appeler", return_value=self.REPONSE):
-            resultats = duffel.chercher_aeroports("barcelone")
-        self.assertEqual(len(resultats), 2)  # l'entrée sans code IATA est écartée
-        self.assertEqual(resultats[0]["nom"], "Barcelona")  # la ville d'abord
-        self.assertEqual(resultats[1]["code"], "BCN")
+            return duffel.chercher_aeroports("london")
+
+    def test_ville_groupee_avec_ses_aeroports(self):
+        resultats = self._chercher()
+        ville = resultats[0]
+        self.assertEqual(ville["ville"], "London")
+        self.assertEqual(ville["code_tous"], "LON")  # plusieurs aéroports
+        self.assertEqual([a["code"] for a in ville["aeroports"]], ["LHR", "LGW"])
+
+    def test_aeroport_deja_couvert_non_duplique(self):
+        codes = [a["code"] for lieu in self._chercher() for a in lieu["aeroports"]]
+        self.assertEqual(codes.count("LHR"), 1)
+
+    def test_aeroport_isole_ajoute_et_entree_sans_code_ignoree(self):
+        resultats = self._chercher()
+        self.assertEqual(len(resultats), 2)  # la ville + Luton
+        self.assertEqual(resultats[1]["aeroports"][0]["code"], "LTN")
+        self.assertIsNone(resultats[1]["code_tous"])
+
+    def test_ville_a_un_seul_aeroport_sans_choix_global(self):
+        reponse = {"data": [{"type": "city", "iata_code": "NCE", "name": "Nice",
+                             "iata_country_code": "FR",
+                             "airports": [{"iata_code": "NCE", "nom": "Nice"}]}]}
+        with mock.patch.dict("os.environ", {"DUFFEL_TOKEN": "t"}), \
+             mock.patch.object(duffel, "_appeler", return_value=reponse):
+            self.assertIsNone(duffel.chercher_aeroports("nice")[0]["code_tous"])
 
     def test_duffel_utilise_sans_amadeus(self):
         from voltotal import fournisseurs
@@ -247,23 +273,24 @@ class TestRechercheAeroports(unittest.TestCase):
              mock.patch.object(amadeus, "configure", return_value=False), \
              mock.patch.object(duffel, "_appeler", return_value=self.REPONSE):
             self.assertTrue(fournisseurs.recherche_aeroports_disponible())
-            self.assertTrue(fournisseurs.chercher_aeroports("barcelone"))
+            self.assertTrue(fournisseurs.chercher_aeroports("london"))
 
     def test_repli_sur_amadeus_si_duffel_echoue(self):
         from voltotal import fournisseurs
-        attendu = [{"code": "BCN", "nom": "Barcelone", "ville": "Barcelone", "pays": "Espagne"}]
+        attendu = [{"ville": "Londres", "pays": "GB", "code_tous": None,
+                    "aeroports": [{"code": "LHR", "nom": "Heathrow"}]}]
         with mock.patch.object(duffel, "configure", return_value=True), \
              mock.patch.object(duffel, "chercher_aeroports", side_effect=duffel.ErreurDuffel("boum")), \
              mock.patch.object(amadeus, "configure", return_value=True), \
              mock.patch.object(amadeus, "chercher_aeroports", return_value=attendu):
-            self.assertEqual(fournisseurs.chercher_aeroports("barcelone"), attendu)
+            self.assertEqual(fournisseurs.chercher_aeroports("londres"), attendu)
 
     def test_aucune_source_ne_plante_pas(self):
         from voltotal import fournisseurs
         with mock.patch.object(duffel, "configure", return_value=False), \
              mock.patch.object(amadeus, "configure", return_value=False):
             self.assertFalse(fournisseurs.recherche_aeroports_disponible())
-            self.assertEqual(fournisseurs.chercher_aeroports("barcelone"), [])
+            self.assertEqual(fournisseurs.chercher_aeroports("londres"), [])
 
 
 class TestChoixDeLaSource(unittest.TestCase):
@@ -357,3 +384,63 @@ class TestApi(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestBaseLieux(unittest.TestCase):
+    """Saisie par nom de ville, sans aucune API."""
+
+    def setUp(self):
+        from voltotal.lieux import BaseLieux
+        self.base = BaseLieux()
+
+    def test_ville_entiere(self):
+        resultats = self.base.rechercher("paris")
+        self.assertEqual(resultats[0]["ville"], "Paris")
+        self.assertEqual(resultats[0]["code_tous"], "PAR")
+        self.assertEqual([a["code"] for a in resultats[0]["aeroports"]], ["CDG", "ORY", "BVA"])
+
+    def test_debut_de_nom_et_accents_ignores(self):
+        self.assertEqual(self.base.rechercher("lond")[0]["ville"], "Londres")
+        self.assertEqual(self.base.rechercher("geneve")[0]["ville"], "Genève")
+        self.assertEqual(self.base.rechercher("Genève")[0]["ville"], "Genève")
+
+    def test_recherche_par_code_ou_nom_d_aeroport(self):
+        self.assertEqual(self.base.rechercher("cdg")[0]["ville"], "Paris")
+        self.assertEqual(self.base.rechercher("gatwick")[0]["ville"], "Londres")
+
+    def test_ville_sans_code_global(self):
+        """Barcelone n'a pas de code IATA de ville : pas de « tous les aéroports »."""
+        barcelone = self.base.rechercher("barcelone")[0]
+        self.assertIsNone(barcelone["code_tous"])
+        self.assertEqual(len(barcelone["aeroports"]), 3)
+
+    def test_ville_prioritaire_sur_correspondance_interne(self):
+        # « nice » apparaît aussi dans d'autres champs : la ville passe devant.
+        self.assertEqual(self.base.rechercher("nice")[0]["ville"], "Nice")
+
+    def test_saisie_vide_ou_inconnue(self):
+        self.assertEqual(self.base.rechercher(""), [])
+        self.assertEqual(self.base.rechercher("zzzzz"), [])
+
+
+class TestFusionLieux(unittest.TestCase):
+    def test_l_api_complete_sans_doublon(self):
+        from voltotal import lieux
+        locaux = [{"ville": "Paris", "pays": "France", "code_tous": "PAR",
+                   "aeroports": [{"code": "CDG", "nom": "Roissy"}]}]
+        distants = [
+            {"ville": "paris", "pays": "FR", "code_tous": None,
+             "aeroports": [{"code": "CDG", "nom": "Charles de Gaulle"}]},  # doublon
+            {"ville": "Parme", "pays": "IT", "code_tous": None,
+             "aeroports": [{"code": "PMF", "nom": "Parme"}]},
+        ]
+        fusion = lieux.fusionner(locaux, distants)
+        self.assertEqual([v["ville"] for v in fusion], ["Paris", "Parme"])
+
+    def test_meme_aeroport_sous_un_autre_nom_de_ville(self):
+        from voltotal import lieux
+        locaux = [{"ville": "Nice", "pays": "France", "code_tous": None,
+                   "aeroports": [{"code": "NCE", "nom": "Côte d'Azur"}]}]
+        distants = [{"ville": "Nizza", "pays": "IT", "code_tous": None,
+                     "aeroports": [{"code": "NCE", "nom": "Nice"}]}]
+        self.assertEqual(len(lieux.fusionner(locaux, distants)), 1)

@@ -8,9 +8,11 @@ total tout compris**, calculé à l'avance.
 
 ## Comment ça marche
 
-1. Vous indiquez le trajet, les dates (aller simple ou aller-retour), le
-   nombre de passagers **et vos options** : bagage cabine, bagages en soute,
-   choix du siège, enregistrement à l'aéroport.
+1. Vous tapez une **ville** (« paris », « lond ») : la liste propose la ville
+   et chacun de ses aéroports. Quand un code IATA de ville existe (PAR, LON,
+   MIL…), une entrée **« tous les aéroports »** cherche sur l'ensemble d'un
+   coup. Puis les dates, le nombre de passagers **et vos options** : bagage
+   cabine, bagages en soute, choix du siège, enregistrement à l'aéroport.
 2. Le serveur cherche les vols — **en temps réel** (Duffel ou Amadeus) si des
    clés sont configurées, sinon des vols de démonstration.
 3. Pour chaque vol, il détermine les tarifs applicables (voir « D'où viennent
@@ -84,9 +86,10 @@ L'environnement **test** (par défaut) est gratuit mais ne couvre qu'une
 partie des vols et affiche des prix indicatifs. Passer en production
 (`AMADEUS_ENV=production`) demande un dossier validé et une facturation.
 
-Amadeus fournit aussi une **recherche d'aéroport par nom de ville**, mais
-Duffel le fait également : l'autocomplétion interroge Duffel en premier et ne
-retombe sur Amadeus qu'en cas d'échec.
+La saisie par nom de ville repose d'abord sur une **base locale**
+(`data/aeroports.json`) qui répond sans réseau ni clé : elle fonctionne donc
+même en mode démonstration. Duffel, puis Amadeus, ne font que la compléter
+pour les villes absentes de cette base.
 
 ### Ce que chaque source couvre
 
@@ -125,6 +128,7 @@ dans les Variables du service pour activer le temps réel. Vérifiez ensuite
 | `fournisseurs/amadeus.py` | Connecteur Amadeus : vols, franchises, tarifs bagages, recherche d'aéroports |
 | `fournisseurs/demo.py` | Générateur de vols de démonstration, déterministe |
 | `fournisseurs/__init__.py` | Choix de la source, cache mémoire, repli en cas de panne |
+| `lieux.py` | Base locale de villes et aéroports, pour la saisie par nom de ville |
 | `surcouts.py` | Grille interne et arbitrage entre tarif publié et estimation |
 | `app.py` | Routes Flask : page, `/api/vols`, `/api/aeroports`, `/sources`, `/sante` |
 | `templates/index.html` | Interface mobile (calcul instantané côté navigateur) |
@@ -136,7 +140,7 @@ dans les Variables du service pour activer le temps réel. Vérifiez ensuite
 python -m unittest discover -t . -s voltotal
 ```
 
-31 tests, sans aucun appel réseau : les réponses des API sont simulées.
+42 tests, sans aucun appel réseau : les réponses des API sont simulées.
 
 ## Limites connues
 
