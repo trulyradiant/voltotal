@@ -104,12 +104,27 @@ def _memoriser(cle: tuple, vols: list[Vol]) -> None:
                 _cache.pop(vieille, None)
 
 
+def recherche_aeroports_disponible() -> bool:
+    """Une source sait-elle traduire un nom de ville en code d'aéroport ?"""
+    return duffel.configure() or amadeus.configure()
+
+
 def chercher_aeroports(mot_cle: str) -> list[dict]:
-    """Recherche d'aéroport par nom de ville (Amadeus uniquement)."""
-    if not amadeus.configure():
-        return []
-    try:
-        return amadeus.chercher_aeroports(mot_cle)
-    except amadeus.ErreurAmadeus as erreur:
-        _LOG.info("Recherche d'aéroport indisponible : %s", erreur)
-        return []
+    """Recherche d'aéroport par nom de ville.
+
+    Duffel d'abord (son offre de lieux est ouverte avec le même jeton que les
+    vols), Amadeus en secours. Un échec ne remonte jamais à l'interface :
+    l'autocomplétion est un confort, pas une condition pour chercher un vol.
+    """
+    for module in (duffel, amadeus):
+        if not module.configure():
+            continue
+        try:
+            resultats = module.chercher_aeroports(mot_cle)
+        except Exception as erreur:
+            _LOG.info("Recherche d'aéroport indisponible via %s : %s",
+                      _NOMS.get(module.__name__.rsplit(".", 1)[-1], module.__name__), erreur)
+            continue
+        if resultats:
+            return resultats
+    return []

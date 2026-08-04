@@ -222,6 +222,50 @@ class TestConnecteurDuffel(unittest.TestCase):
         self.assertTrue(resultat.confirme)
 
 
+class TestRechercheAeroports(unittest.TestCase):
+    """L'autocomplétion doit marcher avec le seul jeton Duffel."""
+
+    REPONSE = {"data": [
+        {"type": "airport", "iata_code": "BCN", "name": "Barcelona El Prat",
+         "city_name": "Barcelona", "iata_country_code": "ES"},
+        {"type": "city", "iata_code": "BCN", "name": "Barcelona",
+         "iata_country_code": "ES"},
+        {"type": "airport", "name": "Sans code IATA"},  # ignoré
+    ]}
+
+    def test_villes_avant_aeroports(self):
+        with mock.patch.dict("os.environ", {"DUFFEL_TOKEN": "t"}), \
+             mock.patch.object(duffel, "_appeler", return_value=self.REPONSE):
+            resultats = duffel.chercher_aeroports("barcelone")
+        self.assertEqual(len(resultats), 2)  # l'entrée sans code IATA est écartée
+        self.assertEqual(resultats[0]["nom"], "Barcelona")  # la ville d'abord
+        self.assertEqual(resultats[1]["code"], "BCN")
+
+    def test_duffel_utilise_sans_amadeus(self):
+        from voltotal import fournisseurs
+        with mock.patch.object(duffel, "configure", return_value=True), \
+             mock.patch.object(amadeus, "configure", return_value=False), \
+             mock.patch.object(duffel, "_appeler", return_value=self.REPONSE):
+            self.assertTrue(fournisseurs.recherche_aeroports_disponible())
+            self.assertTrue(fournisseurs.chercher_aeroports("barcelone"))
+
+    def test_repli_sur_amadeus_si_duffel_echoue(self):
+        from voltotal import fournisseurs
+        attendu = [{"code": "BCN", "nom": "Barcelone", "ville": "Barcelone", "pays": "Espagne"}]
+        with mock.patch.object(duffel, "configure", return_value=True), \
+             mock.patch.object(duffel, "chercher_aeroports", side_effect=duffel.ErreurDuffel("boum")), \
+             mock.patch.object(amadeus, "configure", return_value=True), \
+             mock.patch.object(amadeus, "chercher_aeroports", return_value=attendu):
+            self.assertEqual(fournisseurs.chercher_aeroports("barcelone"), attendu)
+
+    def test_aucune_source_ne_plante_pas(self):
+        from voltotal import fournisseurs
+        with mock.patch.object(duffel, "configure", return_value=False), \
+             mock.patch.object(amadeus, "configure", return_value=False):
+            self.assertFalse(fournisseurs.recherche_aeroports_disponible())
+            self.assertEqual(fournisseurs.chercher_aeroports("barcelone"), [])
+
+
 class TestChoixDeLaSource(unittest.TestCase):
     def setUp(self):
         from voltotal import fournisseurs

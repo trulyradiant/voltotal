@@ -69,7 +69,12 @@ Airways »)** : c'est utile pour valider toute la chaîne technique, pas pour
 comparer de vrais prix. Le contenu réel des compagnies demande un compte
 validé par Duffel et un jeton `duffel_live_`.
 
-### Amadeus
+### Amadeus — optionnel, et peut-être fermé
+
+> ⚠️ L'offre Self-Service d'Amadeus ne semble plus ouverte aux nouvelles
+> inscriptions (constaté en août 2026). Le connecteur est conservé et
+> fonctionne pour qui possède déjà des clés, mais **Duffel seul suffit** :
+> il couvre désormais les vols *et* la recherche d'aéroports.
 
 1. Créez un compte Self-Service sur https://developers.amadeus.com.
 2. Créez une application et copiez la **API Key** et l'**API Secret**.
@@ -79,8 +84,9 @@ L'environnement **test** (par défaut) est gratuit mais ne couvre qu'une
 partie des vols et affiche des prix indicatifs. Passer en production
 (`AMADEUS_ENV=production`) demande un dossier validé et une facturation.
 
-Amadeus fournit aussi la **recherche d'aéroport par nom de ville**, utilisée
-pour l'autocomplétion des champs de départ et d'arrivée.
+Amadeus fournit aussi une **recherche d'aéroport par nom de ville**, mais
+Duffel le fait également : l'autocomplétion interroge Duffel en premier et ne
+retombe sur Amadeus qu'en cas d'échec.
 
 ### Ce que chaque source couvre
 
@@ -92,7 +98,7 @@ pour l'autocomplétion des champs de départ et d'arrivée.
 | Prix réel du bagage en soute | ✅ services annexes | ✅ tarification `include=bags` | — |
 | Prix du choix de siège | ❌ | ❌ | — |
 | Enregistrement à l'aéroport | ❌ | ❌ | — |
-| Recherche d'aéroport par ville | ❌ | ✅ | — |
+| Recherche d'aéroport par ville | ✅ `/places/suggestions` | ✅ | — |
 
 Aucune API publique ne donne le tarif du **choix de siège** ni de
 l'**enregistrement à l'aéroport** : ces deux montants restent estimés par la
@@ -115,7 +121,7 @@ dans les Variables du service pour activer le temps réel. Vérifiez ensuite
 | Fichier | Rôle |
 |---|---|
 | `modeles.py` | Objets partagés : `Vol`, `OptionsVoyage`, `Surcouts` |
-| `fournisseurs/duffel.py` | Connecteur Duffel : vols, franchises, services annexes (bagages) |
+| `fournisseurs/duffel.py` | Connecteur Duffel : vols, franchises, services annexes (bagages), recherche d'aéroports |
 | `fournisseurs/amadeus.py` | Connecteur Amadeus : vols, franchises, tarifs bagages, recherche d'aéroports |
 | `fournisseurs/demo.py` | Générateur de vols de démonstration, déterministe |
 | `fournisseurs/__init__.py` | Choix de la source, cache mémoire, repli en cas de panne |
@@ -130,7 +136,7 @@ dans les Variables du service pour activer le temps réel. Vérifiez ensuite
 python -m unittest discover -t . -s voltotal
 ```
 
-27 tests, sans aucun appel réseau : les réponses des API sont simulées.
+31 tests, sans aucun appel réseau : les réponses des API sont simulées.
 
 ## Limites connues
 

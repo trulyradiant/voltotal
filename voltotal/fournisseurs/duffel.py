@@ -185,6 +185,30 @@ def _completer_tarifs_bagages(vols: list[Vol]) -> None:
             list(pool.map(traiter, vols))
 
 
+def chercher_aeroports(mot_cle: str, limite: int = 8) -> list[dict]:
+    """« barcelone » → [{'code': 'BCN', 'nom': …, 'ville': …, 'pays': 'ES'}, …]
+
+    Duffel renvoie des aéroports et des villes. Les deux sont utiles : un code
+    de ville (PAR) couvre tous ses aéroports d'un coup, un code d'aéroport
+    (CDG) cible précisément. Les villes sont donc listées en premier.
+    """
+    params = urllib.parse.urlencode({"name": mot_cle})
+    donnees = _appeler(f"{_BASE}/places/suggestions?{params}")
+    villes, aeroports = [], []
+    for lieu in donnees.get("data") or []:
+        code = lieu.get("iata_code")
+        if not code:
+            continue
+        entree = {
+            "code": code,
+            "nom": lieu.get("name") or code,
+            "ville": lieu.get("city_name") or (lieu.get("city") or {}).get("name") or "",
+            "pays": lieu.get("iata_country_code") or "",
+        }
+        (villes if lieu.get("type") == "city" else aeroports).append(entree)
+    return (villes + aeroports)[:limite]
+
+
 def _prix_bagage(reference: str) -> float | None:
     """Prix du bagage en soute le moins cher proposé sur cette offre."""
     params = urllib.parse.urlencode({"return_available_services": "true"})

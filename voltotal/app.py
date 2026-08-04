@@ -31,7 +31,7 @@ def create_app() -> Flask:
             date_aller=(date.today() + timedelta(days=1)).isoformat(),
             date_retour=(date.today() + timedelta(days=8)).isoformat(),
             maj_grille=grille.derniere_mise_a_jour,
-            recherche_aeroports=fournisseurs.amadeus.configure(),
+            recherche_aeroports=fournisseurs.recherche_aeroports_disponible(),
         )
 
     @app.get("/sources")
