@@ -103,7 +103,7 @@ grille interne, et l'affichage le signale.
 Créez un second service sur le même dépôt avec la commande de démarrage :
 
 ```
-gunicorn voltotal.wsgi:app --bind 0.0.0.0:$PORT --workers 2 --threads 4
+gunicorn voltotal.wsgi:app --bind 0.0.0.0:${PORT:-8080} --workers 2 --threads 4
 ```
 
 Ajoutez `DUFFEL_TOKEN` (et/ou `AMADEUS_CLIENT_ID` + `AMADEUS_CLIENT_SECRET`)
