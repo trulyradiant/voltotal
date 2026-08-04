@@ -7,7 +7,9 @@ serveur, ce qui garde l'affichage instantané sur téléphone.
 """
 from __future__ import annotations
 
+import difflib
 import logging
+import os
 from datetime import date, timedelta
 
 from flask import Flask, jsonify, render_template, request
@@ -34,11 +36,30 @@ def create_app() -> Flask:
 
     @app.get("/sources")
     def sources():
-        """Quelle source est active, et laquelle manque pour couvrir les low-cost."""
+        """Quelle source est active, et ce que ce processus voit réellement.
+
+        Les *noms* des variables sont exposés, jamais leurs valeurs : c'est
+        le seul moyen de distinguer une variable mal orthographiée, posée sur
+        un autre service, ou simplement pas encore prise en compte faute de
+        redéploiement — trois pannes indiscernables de l'extérieur.
+        """
+        attendues = ("DUFFEL_TOKEN", "DUFFEL_VERSION", "AMADEUS_CLIENT_ID",
+                     "AMADEUS_CLIENT_SECRET", "AMADEUS_ENV", "FOURNISSEUR_VOLS")
+        # Comparaison par ressemblance, et non par sous-chaîne : la faute la
+        # plus fréquente (DUFFLE au lieu de DUFFEL) ne contient justement pas
+        # le mot attendu.
+        approchantes = sorted(
+            nom for nom in os.environ
+            if nom not in attendues
+            and difflib.get_close_matches(nom.upper(), attendues, n=1, cutoff=0.75)
+        )
         return jsonify(
             active=fournisseurs.source_active(),
             duffel_configure=fournisseurs.duffel.configure(),
             amadeus_configure=fournisseurs.amadeus.configure(),
+            variables_reconnues=[nom for nom in attendues if os.environ.get(nom)],
+            variables_non_reconnues=approchantes,
+            version_deployee=(os.environ.get("RAILWAY_GIT_COMMIT_SHA") or "")[:7] or None,
         )
 
     @app.get("/api/vols")
