@@ -542,3 +542,25 @@ class TestCalendrier(unittest.TestCase):
         for requete in ("origine=X&destination=BCN&date=2026-09-20",
                         "origine=CDG&destination=BCN&date=pasunedate"):
             self.assertEqual(self.client.get("/api/calendrier?" + requete).status_code, 400)
+
+
+class TestModeDuffel(unittest.TestCase):
+    """Distinguer le bac à sable des vrais vols, sans exposer le jeton."""
+
+    def test_prefixes_reconnus(self):
+        for jeton, attendu in [("duffel_test_abc", "test"), ("duffel_live_abc", "live"),
+                               ("nimportequoi", "inconnu")]:
+            with mock.patch.dict("os.environ", {"DUFFEL_TOKEN": jeton}):
+                self.assertEqual(duffel.mode(), attendu, jeton)
+
+    def test_sans_jeton(self):
+        with mock.patch.dict("os.environ", {}, clear=True):
+            self.assertIsNone(duffel.mode())
+
+    def test_expose_par_sources_sans_la_valeur(self):
+        from voltotal.app import create_app
+        with mock.patch.dict("os.environ", {"DUFFEL_TOKEN": "duffel_live_secret"}):
+            reponse = create_app().test_client().get("/sources")
+        corps = reponse.get_data(as_text=True)
+        self.assertEqual(json.loads(corps)["duffel_mode"], "live")
+        self.assertNotIn("secret", corps)  # le jeton ne fuite jamais

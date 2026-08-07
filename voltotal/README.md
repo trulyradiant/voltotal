@@ -98,6 +98,11 @@ Airways »)** : c'est utile pour valider toute la chaîne technique, pas pour
 comparer de vrais prix. Le contenu réel des compagnies demande un compte
 validé par Duffel et un jeton `duffel_live_`.
 
+**Passer en réel** : remplacez la *valeur* de `DUFFEL_TOKEN` par le jeton
+`duffel_live_…`. Le nom de la variable ne change pas, le code non plus.
+`/sources` renvoie alors `"duffel_mode": "live"` — c'est la seule façon de
+vérifier la bascule, les deux jetons se ressemblant beaucoup.
+
 ### Amadeus — optionnel, et peut-être fermé
 
 > ⚠️ L'offre Self-Service d'Amadeus ne semble plus ouverte aux nouvelles
@@ -167,7 +172,7 @@ dans les Variables du service pour activer le temps réel. Vérifiez ensuite
 python -m unittest discover -t . -s voltotal
 ```
 
-54 tests, sans aucun appel réseau : les réponses des API sont simulées.
+57 tests, sans aucun appel réseau : les réponses des API sont simulées.
 
 ## Limites connues
 

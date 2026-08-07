@@ -47,6 +47,21 @@ def configure() -> bool:
     return bool(os.environ.get("DUFFEL_TOKEN"))
 
 
+def mode() -> str | None:
+    """« test », « live » ou ``None``, d'après le préfixe du jeton.
+
+    Les deux jetons se ressemblent et se confondent facilement ; seul ce
+    préfixe dit si l'on regarde la compagnie fictive du bac à sable ou de
+    vrais vols. Le jeton lui-même n'est évidemment jamais exposé.
+    """
+    jeton = os.environ.get("DUFFEL_TOKEN") or ""
+    if jeton.startswith("duffel_live_"):
+        return "live"
+    if jeton.startswith("duffel_test_"):
+        return "test"
+    return "inconnu" if jeton else None
+
+
 def _entetes() -> dict:
     return {
         "Authorization": f"Bearer {os.environ['DUFFEL_TOKEN']}",

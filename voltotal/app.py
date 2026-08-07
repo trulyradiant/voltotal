@@ -59,6 +59,7 @@ def create_app() -> Flask:
         return jsonify(
             active=fournisseurs.source_active(),
             duffel_configure=fournisseurs.duffel.configure(),
+            duffel_mode=fournisseurs.duffel.mode(),
             amadeus_configure=fournisseurs.amadeus.configure(),
             variables_reconnues=[nom for nom in attendues if os.environ.get(nom)],
             variables_non_reconnues=approchantes,
