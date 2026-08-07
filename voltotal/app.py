@@ -15,6 +15,7 @@ from datetime import date, timedelta
 from flask import Flask, jsonify, render_template, request
 
 from . import fournisseurs, lieux
+from .modeles import EQUIPEMENTS, OptionsVoyage
 from .surcouts import GrilleFrais
 
 
@@ -33,6 +34,7 @@ def create_app() -> Flask:
             date_retour=(date.today() + timedelta(days=8)).isoformat(),
             maj_grille=grille.derniere_mise_a_jour,
             recherche_aeroports=True,  # la base locale répond même sans API
+            equipements=EQUIPEMENTS,
         )
 
     @app.get("/sources")
@@ -63,11 +65,28 @@ def create_app() -> Flask:
             version_deployee=(os.environ.get("RAILWAY_GIT_COMMIT_SHA") or "")[:7] or None,
         )
 
+    def _voyageurs_demandes() -> OptionsVoyage:
+        """Composition des voyageurs lue dans la requête.
+
+        Seule la composition compte ici : bagages et options sont appliqués
+        par le navigateur à partir des tarifs unitaires renvoyés.
+        """
+        ages = []
+        for brut in (request.args.get("enfants") or "").split(","):
+            brut = brut.strip()
+            if brut.isdigit():
+                ages.append(max(2, min(11, int(brut))))
+        return OptionsVoyage(
+            adultes=max(1, min(9, request.args.get("adultes", 1, type=int))),
+            enfants=ages[:8],
+            bebes=max(0, min(4, request.args.get("bebes", 0, type=int))),
+        )
+
     @app.get("/api/vols")
     def api_vols():
         origine = (request.args.get("origine") or "").strip().upper()
         destination = (request.args.get("destination") or "").strip().upper()
-        passagers = max(1, min(9, request.args.get("passagers", 1, type=int)))
+        voyageurs = _voyageurs_demandes()
 
         if not (origine.isalpha() and len(origine) == 3):
             return jsonify(erreur="Code aéroport de départ invalide."), 400
@@ -81,7 +100,7 @@ def create_app() -> Flask:
             return jsonify(erreur="Date invalide."), 400
 
         try:
-            resultat = fournisseurs.rechercher(origine, destination, jour, passagers)
+            resultat = fournisseurs.rechercher(origine, destination, jour, voyageurs)
         except Exception:  # le repli démonstration a déjà été tenté en amont
             app.logger.exception("Recherche de vols impossible")
             return jsonify(erreur="La recherche de vols a échoué, réessayez."), 502
@@ -92,6 +111,7 @@ def create_app() -> Flask:
             temps_reel=resultat.temps_reel,
             avertissement=resultat.avertissement,
             maj_grille=grille.derniere_mise_a_jour,
+            passagers_payants=voyageurs.passagers_payants,
             vols=[
                 {
                     "compagnie": vol.compagnie,
@@ -107,6 +127,53 @@ def create_app() -> Flask:
                 for vol in resultat.vols
             ],
         )
+
+    @app.get("/api/calendrier")
+    def api_calendrier():
+        """Prix du vol le moins cher pour chaque jour autour de la date visée.
+
+        Une recherche par jour : c'est coûteux en quota, d'où la fenêtre
+        volontairement étroite (``CALENDRIER_JOURS``) et le cache commun aux
+        recherches normales. Le prix renvoyé est le **prix d'appel** le plus
+        bas du jour ; le navigateur y ajoute les frais de vos options pour
+        afficher un prix réel comparable d'un jour à l'autre.
+        """
+        origine = (request.args.get("origine") or "").strip().upper()
+        destination = (request.args.get("destination") or "").strip().upper()
+        if not (origine.isalpha() and len(origine) == 3
+                and destination.isalpha() and len(destination) == 3):
+            return jsonify(erreur="Codes aéroport invalides."), 400
+        try:
+            centre = date.fromisoformat(request.args.get("date") or "")
+        except ValueError:
+            return jsonify(erreur="Date invalide."), 400
+
+        voyageurs = _voyageurs_demandes()
+        rayon = max(0, min(7, int(os.environ.get("CALENDRIER_JOURS", "3"))))
+        aujourdhui = date.today()
+
+        jours = []
+        for ecart in range(-rayon, rayon + 1):
+            jour = centre + timedelta(days=ecart)
+            if jour < aujourdhui:  # inutile de chiffrer un vol déjà parti
+                continue
+            try:
+                resultat = fournisseurs.rechercher(origine, destination, jour, voyageurs)
+            except Exception:
+                app.logger.exception("Calendrier : échec sur %s", jour)
+                continue
+            if not resultat.vols:
+                jours.append({"date": jour.isoformat(), "prix": None})
+                continue
+            # Le moins cher du jour, avec ses tarifs d'options : le navigateur
+            # doit pouvoir comparer des prix réels, pas des prix d'appel.
+            moins_cher = min(resultat.vols, key=lambda v: v.prix_affiche)
+            jours.append({
+                "date": jour.isoformat(),
+                "prix": moins_cher.prix_affiche,
+                "frais": grille.tarifs(moins_cher),
+            })
+        return jsonify(jours=jours, passagers_payants=voyageurs.passagers_payants)
 
     @app.get("/api/aeroports")
     def api_aeroports():

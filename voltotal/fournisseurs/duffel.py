@@ -27,7 +27,7 @@ import urllib.request
 from concurrent.futures import ThreadPoolExecutor
 from datetime import date, datetime
 
-from ..modeles import Vol
+from ..modeles import OptionsVoyage, Vol
 
 _LOG = logging.getLogger(__name__)
 
@@ -71,7 +71,16 @@ def _appeler(url: str, corps: bytes | None = None, methode: str = "GET") -> dict
 # --- Recherche de vols -----------------------------------------------------
 
 
-def rechercher(origine: str, destination: str, jour: date, passagers: int) -> list[Vol]:
+def _voyageurs(options: OptionsVoyage) -> list[dict]:
+    """Duffel attend un âge pour les enfants et un type pour les bébés."""
+    return (
+        [{"type": "adult"} for _ in range(max(1, options.adultes))]
+        + [{"age": age} for age in options.enfants]
+        + [{"type": "infant_without_seat"} for _ in range(options.bebes)]
+    )
+
+
+def rechercher(origine: str, destination: str, jour: date, options: OptionsVoyage) -> list[Vol]:
     corps = json.dumps(
         {
             "data": {
@@ -82,7 +91,7 @@ def rechercher(origine: str, destination: str, jour: date, passagers: int) -> li
                         "departure_date": jour.isoformat(),
                     }
                 ],
-                "passengers": [{"type": "adult"} for _ in range(max(1, passagers))],
+                "passengers": _voyageurs(options),
                 "cabin_class": "economy",
             }
         }
@@ -92,7 +101,7 @@ def rechercher(origine: str, destination: str, jour: date, passagers: int) -> li
     )
     offres = ((donnees.get("data") or {}).get("offers")) or []
 
-    vols = [_convertir(offre, passagers) for offre in offres]
+    vols = [_convertir(offre, max(1, options.passagers_payants)) for offre in offres]
     vols = [vol for vol in vols if vol is not None]
     vols.sort(key=lambda v: v.prix_affiche)
 

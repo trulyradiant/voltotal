@@ -5,11 +5,11 @@ Aucun appel réseau : les réponses Amadeus sont simulées.
 """
 import json
 import unittest
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from unittest import mock
 
 from voltotal.fournisseurs import amadeus, demo, duffel
-from voltotal.modeles import OptionsVoyage, Vol
+from voltotal.modeles import EQUIPEMENTS, OptionsVoyage, Vol
 from voltotal.surcouts import GrilleFrais
 
 
@@ -31,7 +31,7 @@ class TestGrilleInterne(unittest.TestCase):
         self.grille = GrilleFrais()
 
     def test_ryanair_tout_paye(self):
-        options = OptionsVoyage(passagers=1, bagage_cabine=True, bagages_soute=1,
+        options = OptionsVoyage(adultes=1, bagage_cabine=True, bagages_soute=1,
                                 choix_siege=True, enregistrement_aeroport=True)
         resultat = self.grille.calculer(vol_simple("FR"), options)
         self.assertEqual(resultat.total, 12.0 + 25.0 + 8.0 + 55.0)
@@ -42,7 +42,7 @@ class TestGrilleInterne(unittest.TestCase):
         self.assertEqual(resultat.total, 0.0)
 
     def test_multiplication_passagers_et_bagages(self):
-        options = OptionsVoyage(passagers=2, bagages_soute=2)
+        options = OptionsVoyage(adultes=2, bagages_soute=2)
         self.assertEqual(self.grille.calculer(vol_simple("VY"), options).total, 100.0)
 
     def test_compagnie_inconnue_estimation_prudente(self):
@@ -52,7 +52,7 @@ class TestGrilleInterne(unittest.TestCase):
         self.assertEqual(resultat.total, 15.0 + 35.0)
 
     def test_sans_options_aucun_frais(self):
-        self.assertEqual(self.grille.calculer(vol_simple("FR"), OptionsVoyage(passagers=4)).total, 0.0)
+        self.assertEqual(self.grille.calculer(vol_simple("FR"), OptionsVoyage(adultes=4)).total, 0.0)
 
 
 class TestDonneesCompagnie(unittest.TestCase):
@@ -124,7 +124,7 @@ class TestConnecteurAmadeus(unittest.TestCase):
 
         with mock.patch.object(amadeus, "_appeler", side_effect=faux_appel), \
              mock.patch.object(amadeus, "_jeton", return_value="jeton"):
-            vols = amadeus.rechercher("CDG", "BCN", date(2026, 9, 20), 2)
+            vols = amadeus.rechercher("CDG", "BCN", date(2026, 9, 20), OptionsVoyage(adultes=2))
 
         self.assertEqual(len(vols), 1)
         vol = vols[0]
@@ -139,14 +139,14 @@ class TestConnecteurAmadeus(unittest.TestCase):
         reponse = {"data": [{"id": "x"}, OFFRE_AMADEUS], "dictionaries": {}}
         with mock.patch.object(amadeus, "_appeler", return_value=reponse), \
              mock.patch.object(amadeus, "_jeton", return_value="jeton"):
-            vols = amadeus.rechercher("CDG", "BCN", date(2026, 9, 20), 1)
+            vols = amadeus.rechercher("CDG", "BCN", date(2026, 9, 20), OptionsVoyage())
         self.assertEqual(len(vols), 1)
 
     def test_erreur_http_convertie(self):
         with mock.patch.object(amadeus, "_jeton", return_value="jeton"), \
              mock.patch.object(amadeus, "_appeler", side_effect=amadeus.ErreurAmadeus("HTTP 401")):
             with self.assertRaises(amadeus.ErreurAmadeus):
-                amadeus.rechercher("CDG", "BCN", date(2026, 9, 20), 1)
+                amadeus.rechercher("CDG", "BCN", date(2026, 9, 20), OptionsVoyage())
 
 
 OFFRE_DUFFEL = {
@@ -179,7 +179,7 @@ class TestConnecteurDuffel(unittest.TestCase):
 
         with mock.patch.dict("os.environ", {"DUFFEL_TOKEN": "duffel_test_x"}), \
              mock.patch.object(duffel, "_appeler", side_effect=faux_appel):
-            vols = duffel.rechercher("CDG", "BCN", date(2026, 9, 20), 2)
+            vols = duffel.rechercher("CDG", "BCN", date(2026, 9, 20), OptionsVoyage(adultes=2))
 
         self.assertEqual(len(vols), 1)
         vol = vols[0]
@@ -201,7 +201,7 @@ class TestConnecteurDuffel(unittest.TestCase):
         offre["slices"][0]["segments"].append(second)
         with mock.patch.dict("os.environ", {"DUFFEL_TOKEN": "t"}), \
              mock.patch.object(duffel, "_appeler", return_value={"data": {"offers": [offre]}}):
-            vol = duffel.rechercher("CDG", "BCN", date(2026, 9, 20), 1)[0]
+            vol = duffel.rechercher("CDG", "BCN", date(2026, 9, 20), OptionsVoyage())[0]
         self.assertIs(vol.cabine_incluse, False)
         self.assertEqual(vol.bagages_soute_inclus, 0)
 
@@ -209,7 +209,7 @@ class TestConnecteurDuffel(unittest.TestCase):
         reponse = {"data": {"offers": [{"id": "x"}, OFFRE_DUFFEL]}}
         with mock.patch.dict("os.environ", {"DUFFEL_TOKEN": "t"}), \
              mock.patch.object(duffel, "_appeler", return_value=reponse):
-            vols = duffel.rechercher("CDG", "BCN", date(2026, 9, 20), 1)
+            vols = duffel.rechercher("CDG", "BCN", date(2026, 9, 20), OptionsVoyage())
         self.assertEqual(len(vols), 1)
 
     def test_prix_low_cost_confirme_par_la_compagnie(self):
@@ -314,14 +314,14 @@ class TestChoixDeLaSource(unittest.TestCase):
     def test_sans_cles_on_bascule_en_demonstration(self):
         with mock.patch.object(duffel, "configure", return_value=False), \
              mock.patch.object(amadeus, "configure", return_value=False):
-            resultat = self.fournisseurs.rechercher("CDG", "BCN", date(2026, 9, 20), 1)
+            resultat = self.fournisseurs.rechercher("CDG", "BCN", date(2026, 9, 20), OptionsVoyage())
         self.assertFalse(resultat.temps_reel)
         self.assertTrue(resultat.vols)
 
     def test_panne_du_fournisseur_repli_avec_avertissement(self):
         with mock.patch.object(duffel, "configure", return_value=True), \
              mock.patch.object(duffel, "rechercher", side_effect=duffel.ErreurDuffel("boum")):
-            resultat = self.fournisseurs.rechercher("CDG", "BCN", date(2026, 9, 21), 1)
+            resultat = self.fournisseurs.rechercher("CDG", "BCN", date(2026, 9, 21), OptionsVoyage())
         self.assertFalse(resultat.temps_reel)
         self.assertIn("temps réel", resultat.avertissement)
         self.assertTrue(resultat.vols)
@@ -329,20 +329,20 @@ class TestChoixDeLaSource(unittest.TestCase):
     def test_liaison_sans_vol_repli_annonce(self):
         with mock.patch.object(duffel, "configure", return_value=True), \
              mock.patch.object(duffel, "rechercher", return_value=[]):
-            resultat = self.fournisseurs.rechercher("CDG", "BCN", date(2026, 9, 22), 1)
+            resultat = self.fournisseurs.rechercher("CDG", "BCN", date(2026, 9, 22), OptionsVoyage())
         self.assertFalse(resultat.temps_reel)
         self.assertIn("Duffel", resultat.avertissement)
 
 
 class TestDemonstration(unittest.TestCase):
     def test_deterministe(self):
-        a = demo.rechercher("CDG", "BCN", date(2026, 9, 15), 1)
-        b = demo.rechercher("CDG", "BCN", date(2026, 9, 15), 1)
+        a = demo.rechercher("CDG", "BCN", date(2026, 9, 15), OptionsVoyage())
+        b = demo.rechercher("CDG", "BCN", date(2026, 9, 15), OptionsVoyage())
         self.assertEqual([(v.numero, v.prix_affiche) for v in a],
                          [(v.numero, v.prix_affiche) for v in b])
 
     def test_vols_plausibles(self):
-        for vol in demo.rechercher("CDG", "BCN", date(2026, 9, 15), 1):
+        for vol in demo.rechercher("CDG", "BCN", date(2026, 9, 15), OptionsVoyage()):
             self.assertGreater(vol.arrivee, vol.depart)
             self.assertGreater(vol.prix_affiche, 0)
 
@@ -360,7 +360,7 @@ class TestApi(unittest.TestCase):
         self.assertIn("VolTotal", reponse.get_data(as_text=True))
 
     def test_api_vols(self):
-        reponse = self.client.get("/api/vols?origine=CDG&destination=BCN&date=2026-09-20&passagers=2")
+        reponse = self.client.get("/api/vols?origine=CDG&destination=BCN&date=2026-09-20&adultes=2")
         self.assertEqual(reponse.status_code, 200)
         donnees = json.loads(reponse.get_data(as_text=True))
         self.assertTrue(donnees["vols"])
@@ -444,3 +444,101 @@ class TestFusionLieux(unittest.TestCase):
         distants = [{"ville": "Nizza", "pays": "IT", "code_tous": None,
                      "aeroports": [{"code": "NCE", "nom": "Nice"}]}]
         self.assertEqual(len(lieux.fusionner(locaux, distants)), 1)
+
+
+class TestVoyageurs(unittest.TestCase):
+    """Adultes, enfants et bébés ne comptent pas de la même façon."""
+
+    def setUp(self):
+        self.grille = GrilleFrais()
+
+    def test_bebe_ne_paie_ni_siege_ni_bagage(self):
+        """Un bébé sur les genoux n'ajoute aucun supplément."""
+        sans = OptionsVoyage(adultes=2, bagages_soute=1, choix_siege=True)
+        avec = OptionsVoyage(adultes=2, bebes=1, bagages_soute=1, choix_siege=True)
+        self.assertEqual(self.grille.calculer(vol_simple("FR"), sans).total,
+                         self.grille.calculer(vol_simple("FR"), avec).total)
+        self.assertEqual(avec.total_passagers, 3)
+        self.assertEqual(avec.passagers_payants, 2)
+
+    def test_enfant_compte_comme_un_passager_payant(self):
+        options = OptionsVoyage(adultes=2, enfants=[4, 9], bagages_soute=1)
+        # 4 passagers payants × 25 € de soute chez Vueling
+        self.assertEqual(self.grille.calculer(vol_simple("VY"), options).total, 100.0)
+
+    def test_resume_lisible(self):
+        self.assertEqual(OptionsVoyage(adultes=1).resume(), "1 adulte")
+        self.assertEqual(OptionsVoyage(adultes=2, enfants=[5], bebes=1).resume(),
+                         "2 adultes, 1 enfant, 1 bébé")
+
+    def test_duffel_transmet_ages_et_bebes(self):
+        options = OptionsVoyage(adultes=2, enfants=[4, 9], bebes=1)
+        self.assertEqual(
+            duffel._voyageurs(options),
+            [{"type": "adult"}, {"type": "adult"}, {"age": 4}, {"age": 9},
+             {"type": "infant_without_seat"}],
+        )
+
+
+class TestEquipementSportif(unittest.TestCase):
+    """Les équipements se facturent à la pièce, pas par passager."""
+
+    def setUp(self):
+        self.grille = GrilleFrais()
+
+    def test_prix_independant_du_nombre_de_passagers(self):
+        seul = OptionsVoyage(adultes=1, equipements={"ski": 1})
+        famille = OptionsVoyage(adultes=4, equipements={"ski": 1})
+        self.assertEqual(self.grille.calculer(vol_simple("FR"), seul).total, 60.0)
+        self.assertEqual(self.grille.calculer(vol_simple("FR"), famille).total, 60.0)
+
+    def test_plusieurs_pieces(self):
+        options = OptionsVoyage(equipements={"ski": 2})
+        resultat = self.grille.calculer(vol_simple("FR"), options)
+        self.assertEqual(resultat.total, 120.0)
+        self.assertIn("× 2", resultat.lignes[0].libelle)
+
+    def test_velo_a_son_propre_tarif(self):
+        velo = self.grille.calculer(vol_simple("VY"), OptionsVoyage(equipements={"velo": 1}))
+        ski = self.grille.calculer(vol_simple("VY"), OptionsVoyage(equipements={"ski": 1}))
+        self.assertEqual(velo.total, 60.0)
+        self.assertEqual(ski.total, 50.0)
+
+    def test_equipement_inconnu_ignore(self):
+        options = OptionsVoyage(equipements={"trottinette": 3})
+        self.assertEqual(self.grille.calculer(vol_simple("FR"), options).total, 0.0)
+
+    def test_tous_les_equipements_ont_un_tarif(self):
+        for cle in EQUIPEMENTS:
+            options = OptionsVoyage(equipements={cle: 1})
+            self.assertGreater(self.grille.calculer(vol_simple("FR"), options).total, 0.0, cle)
+
+
+class TestCalendrier(unittest.TestCase):
+    def setUp(self):
+        from voltotal.app import create_app
+        from voltotal import fournisseurs
+        fournisseurs._cache.clear()
+        self.client = create_app().test_client()
+
+    def test_fenetre_autour_de_la_date(self):
+        futur = (date.today() + timedelta(days=30)).isoformat()
+        donnees = json.loads(self.client.get(
+            f"/api/calendrier?origine=CDG&destination=BCN&date={futur}").get_data(as_text=True))
+        self.assertEqual(len(donnees["jours"]), 7)  # ±3 jours par défaut
+        for jour in donnees["jours"]:
+            self.assertIn("prix", jour)
+            self.assertIn("frais", jour)
+
+    def test_jours_passes_ecartes(self):
+        """Chiffrer un vol déjà parti n'a aucun intérêt."""
+        donnees = json.loads(self.client.get(
+            f"/api/calendrier?origine=CDG&destination=BCN&date={date.today().isoformat()}"
+        ).get_data(as_text=True))
+        self.assertEqual(len(donnees["jours"]), 4)  # aujourd'hui + 3 jours
+        self.assertEqual(donnees["jours"][0]["date"], date.today().isoformat())
+
+    def test_saisie_invalide(self):
+        for requete in ("origine=X&destination=BCN&date=2026-09-20",
+                        "origine=CDG&destination=BCN&date=pasunedate"):
+            self.assertEqual(self.client.get("/api/calendrier?" + requete).status_code, 400)

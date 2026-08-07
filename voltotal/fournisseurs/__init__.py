@@ -20,7 +20,7 @@ import threading
 import time
 from datetime import date
 
-from ..modeles import Vol
+from ..modeles import OptionsVoyage, Vol
 from . import amadeus, demo, duffel
 
 _LOG = logging.getLogger(__name__)
@@ -63,8 +63,12 @@ def source_active() -> str:
     return "demo"
 
 
-def rechercher(origine: str, destination: str, jour: date, passagers: int) -> ResultatRecherche:
-    cle = (origine.upper(), destination.upper(), jour.isoformat(), passagers)
+def rechercher(origine: str, destination: str, jour: date,
+               options: OptionsVoyage) -> ResultatRecherche:
+    # La composition des voyageurs entre dans la clé : un tarif enfant n'est
+    # pas un tarif adulte, le résultat mis en cache n'est pas interchangeable.
+    cle = (origine.upper(), destination.upper(), jour.isoformat(),
+           options.adultes, tuple(options.enfants), options.bebes)
     with _verrou:
         entree = _cache.get(cle)
         if entree and time.time() - entree[0] < _DUREE_CACHE:
@@ -76,7 +80,7 @@ def rechercher(origine: str, destination: str, jour: date, passagers: int) -> Re
     if nom in _SOURCES:
         module = _SOURCES[nom]
         try:
-            vols = module.rechercher(origine, destination, jour, passagers)
+            vols = module.rechercher(origine, destination, jour, options)
             if vols:
                 _memoriser(cle, vols)
                 return ResultatRecherche(vols, nom)
@@ -91,7 +95,7 @@ def rechercher(origine: str, destination: str, jour: date, passagers: int) -> Re
                 "vols de démonstration."
             )
 
-    vols = demo.rechercher(origine, destination, jour, passagers)
+    vols = demo.rechercher(origine, destination, jour, options)
     _memoriser(cle, vols)
     return ResultatRecherche(vols, "demo", avertissement)
 

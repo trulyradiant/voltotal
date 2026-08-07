@@ -1,5 +1,5 @@
 {
-  "_commentaire": "Frais annexes indicatifs par compagnie, en euros, par passager et par trajet (aller simple). Sources : grilles tarifaires publiques des compagnies. Mettre a jour regulierement.",
+  "_commentaire": "Frais annexes indicatifs par compagnie, en euros, par passager et par trajet (aller simple). Les equipements sportifs (equipement_sportif, velo) se facturent a la piece et non par passager. Sources : grilles tarifaires publiques des compagnies. Mettre a jour regulierement.",
   "_derniere_mise_a_jour": "2026-08-02",
   "compagnies": {
     "FR": {
@@ -8,7 +8,9 @@
       "bagage_soute": 25.0,
       "choix_siege": 8.0,
       "enregistrement_aeroport": 55.0,
-      "cabine_incluse": false
+      "cabine_incluse": false,
+      "equipement_sportif": 60.0,
+      "velo": 60.0
     },
     "U2": {
       "nom": "easyJet",
@@ -16,7 +18,9 @@
       "bagage_soute": 30.0,
       "choix_siege": 6.0,
       "enregistrement_aeroport": 0.0,
-      "cabine_incluse": false
+      "cabine_incluse": false,
+      "equipement_sportif": 47.0,
+      "velo": 47.0
     },
     "VY": {
       "nom": "Vueling",
@@ -24,7 +28,9 @@
       "bagage_soute": 25.0,
       "choix_siege": 7.0,
       "enregistrement_aeroport": 0.0,
-      "cabine_incluse": false
+      "cabine_incluse": false,
+      "equipement_sportif": 50.0,
+      "velo": 60.0
     },
     "W6": {
       "nom": "Wizz Air",
@@ -32,7 +38,9 @@
       "bagage_soute": 28.0,
       "choix_siege": 8.0,
       "enregistrement_aeroport": 35.0,
-      "cabine_incluse": false
+      "cabine_incluse": false,
+      "equipement_sportif": 60.0,
+      "velo": 60.0
     },
     "TO": {
       "nom": "Transavia France",
@@ -40,7 +48,9 @@
       "bagage_soute": 25.0,
       "choix_siege": 9.0,
       "enregistrement_aeroport": 0.0,
-      "cabine_incluse": false
+      "cabine_incluse": false,
+      "equipement_sportif": 50.0,
+      "velo": 60.0
     },
     "HV": {
       "nom": "Transavia",
@@ -48,7 +58,9 @@
       "bagage_soute": 25.0,
       "choix_siege": 9.0,
       "enregistrement_aeroport": 0.0,
-      "cabine_incluse": false
+      "cabine_incluse": false,
+      "equipement_sportif": 50.0,
+      "velo": 60.0
     },
     "V7": {
       "nom": "Volotea",
@@ -56,7 +68,9 @@
       "bagage_soute": 22.0,
       "choix_siege": 7.0,
       "enregistrement_aeroport": 0.0,
-      "cabine_incluse": false
+      "cabine_incluse": false,
+      "equipement_sportif": 50.0,
+      "velo": 60.0
     },
     "AF": {
       "nom": "Air France",
@@ -64,7 +78,9 @@
       "bagage_soute": 25.0,
       "choix_siege": 12.0,
       "enregistrement_aeroport": 0.0,
-      "cabine_incluse": true
+      "cabine_incluse": true,
+      "equipement_sportif": 55.0,
+      "velo": 55.0
     },
     "KL": {
       "nom": "KLM",
@@ -72,7 +88,9 @@
       "bagage_soute": 30.0,
       "choix_siege": 12.0,
       "enregistrement_aeroport": 0.0,
-      "cabine_incluse": true
+      "cabine_incluse": true,
+      "equipement_sportif": 55.0,
+      "velo": 55.0
     },
     "LH": {
       "nom": "Lufthansa",
@@ -80,7 +98,9 @@
       "bagage_soute": 30.0,
       "choix_siege": 15.0,
       "enregistrement_aeroport": 0.0,
-      "cabine_incluse": true
+      "cabine_incluse": true,
+      "equipement_sportif": 70.0,
+      "velo": 70.0
     },
     "IB": {
       "nom": "Iberia",
@@ -88,7 +108,9 @@
       "bagage_soute": 25.0,
       "choix_siege": 10.0,
       "enregistrement_aeroport": 0.0,
-      "cabine_incluse": true
+      "cabine_incluse": true,
+      "equipement_sportif": 70.0,
+      "velo": 70.0
     },
     "TP": {
       "nom": "TAP Air Portugal",
@@ -96,7 +118,9 @@
       "bagage_soute": 30.0,
       "choix_siege": 10.0,
       "enregistrement_aeroport": 0.0,
-      "cabine_incluse": true
+      "cabine_incluse": true,
+      "equipement_sportif": 60.0,
+      "velo": 60.0
     }
   },
   "defaut": {
@@ -105,6 +129,8 @@
     "bagage_soute": 35.0,
     "choix_siege": 10.0,
     "enregistrement_aeroport": 0.0,
-    "cabine_incluse": false
+    "cabine_incluse": false,
+    "equipement_sportif": 75.0,
+    "velo": 85.0
   }
 }

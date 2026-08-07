@@ -5,15 +5,48 @@ from dataclasses import dataclass, field
 from datetime import datetime
 
 
+# Équipements sportifs facturés à la pièce, et non par passager.
+EQUIPEMENTS = {
+    "ski": "Skis / snowboard",
+    "golf": "Clubs de golf",
+    "velo": "Vélo",
+    "surf": "Planche de surf",
+}
+
+
 @dataclass
 class OptionsVoyage:
-    """Ce que le voyageur veut vraiment emporter/choisir, par passager."""
+    """Qui voyage, et ce qu'il emporte vraiment.
 
-    passagers: int = 1
+    Les bagages et le siège se comptent par **passager payant** : un bébé sur
+    les genoux n'a ni siège ni franchise bagage. Les équipements sportifs, eux,
+    se comptent à la pièce — deux skieurs peuvent partager une housse.
+    """
+
+    adultes: int = 1
+    enfants: list[int] = field(default_factory=list)  # âges, 2 à 11 ans
+    bebes: int = 0  # moins de 2 ans, sur les genoux
     bagage_cabine: bool = False
     bagages_soute: int = 0
     choix_siege: bool = False
     enregistrement_aeroport: bool = False
+    equipements: dict[str, int] = field(default_factory=dict)
+
+    @property
+    def passagers_payants(self) -> int:
+        return self.adultes + len(self.enfants)
+
+    @property
+    def total_passagers(self) -> int:
+        return self.adultes + len(self.enfants) + self.bebes
+
+    def resume(self) -> str:
+        parts = [f"{self.adultes} adulte" + ("s" if self.adultes > 1 else "")]
+        if self.enfants:
+            parts.append(f"{len(self.enfants)} enfant" + ("s" if len(self.enfants) > 1 else ""))
+        if self.bebes:
+            parts.append(f"{self.bebes} bébé" + ("s" if self.bebes > 1 else ""))
+        return ", ".join(parts)
 
 
 @dataclass

@@ -23,7 +23,7 @@ import urllib.request
 from concurrent.futures import ThreadPoolExecutor
 from datetime import date, datetime
 
-from ..modeles import Vol
+from ..modeles import OptionsVoyage, Vol
 
 _LOG = logging.getLogger(__name__)
 
@@ -96,26 +96,29 @@ def _requete_json(chemin: str, params: dict) -> dict:
 # --- Recherche de vols -----------------------------------------------------
 
 
-def rechercher(origine: str, destination: str, jour: date, passagers: int) -> list[Vol]:
-    donnees = _requete_json(
-        "/v2/shopping/flight-offers",
-        {
-            "originLocationCode": origine.upper(),
-            "destinationLocationCode": destination.upper(),
-            "departureDate": jour.isoformat(),
-            "adults": passagers,
-            "currencyCode": "EUR",
-            "max": 20,
-        },
-    )
+def rechercher(origine: str, destination: str, jour: date, options: OptionsVoyage) -> list[Vol]:
+    parametres = {
+        "originLocationCode": origine.upper(),
+        "destinationLocationCode": destination.upper(),
+        "departureDate": jour.isoformat(),
+        "adults": max(1, options.adultes),
+        "currencyCode": "EUR",
+        "max": 20,
+    }
+    if options.enfants:
+        parametres["children"] = len(options.enfants)
+    if options.bebes:
+        parametres["infants"] = options.bebes
+    donnees = _requete_json("/v2/shopping/flight-offers", parametres)
     noms = (donnees.get("dictionaries") or {}).get("carriers") or {}
     offres = donnees.get("data") or []
 
-    vols = [_convertir(offre, noms, passagers) for offre in offres]
+    payants = max(1, options.passagers_payants)
+    vols = [_convertir(offre, noms, payants) for offre in offres]
     vols = [vol for vol in vols if vol is not None]
     vols.sort(key=lambda v: v.prix_affiche)
 
-    _completer_tarifs_bagages(vols[:_OFFRES_TARIFEES], offres, passagers)
+    _completer_tarifs_bagages(vols[:_OFFRES_TARIFEES], offres, payants)
     return vols
 
 

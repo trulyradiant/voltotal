@@ -62,24 +62,104 @@
       </div>
     </div>
 
-    <div class="options">
-      <label class="puce">Passagers <input type="number" id="passagers" min="1" max="9" value="1" inputmode="numeric"></label>
-      <label class="puce active"><input type="checkbox" id="bagage_cabine" checked> Bagage cabine</label>
-      <label class="puce">Soute <input type="number" id="bagages_soute" min="0" max="3" value="0" inputmode="numeric"></label>
-      <label class="puce"><input type="checkbox" id="choix_siege"> Choix du siège</label>
-      <label class="puce"><input type="checkbox" id="enregistrement_aeroport"> Enreg. à l'aéroport</label>
+    <!-- Bandes de prix par jour : le vrai prix tout compris, jour par jour,
+         pour voir d'un coup d'œil si décaler d'un jour fait gagner 40 €. -->
+    <div class="calendriers">
+      <div class="calendrier" id="cal_aller" data-sens="aller">
+        <div class="cal-titre">Aller — prix réel par jour</div>
+        <div class="cal-bande" role="group" aria-label="Prix par jour à l'aller"></div>
+      </div>
+      <div class="calendrier" id="cal_retour" data-sens="retour">
+        <div class="cal-titre">Retour — prix réel par jour</div>
+        <div class="cal-bande" role="group" aria-label="Prix par jour au retour"></div>
+      </div>
     </div>
+
+    <details class="volet" id="volet_voyageurs">
+      <summary><span class="volet-titre">Voyageurs</span>
+        <span class="volet-resume" id="resume_voyageurs">1 adulte</span></summary>
+      <div class="volet-corps">
+        <div class="ligne-compteur">
+          <div><span class="nom">Adultes</span><span class="precision">12 ans et plus</span></div>
+          <div class="compteur" data-cible="adultes" data-min="1" data-max="9">
+            <button type="button" class="moins" aria-label="Un adulte de moins">−</button>
+            <output id="adultes">1</output>
+            <button type="button" class="plus" aria-label="Un adulte de plus">+</button>
+          </div>
+        </div>
+        <div class="ligne-compteur">
+          <div><span class="nom">Enfants</span><span class="precision">2 à 11 ans</span></div>
+          <div class="compteur" data-cible="enfants" data-min="0" data-max="8">
+            <button type="button" class="moins" aria-label="Un enfant de moins">−</button>
+            <output id="enfants">0</output>
+            <button type="button" class="plus" aria-label="Un enfant de plus">+</button>
+          </div>
+        </div>
+        <!-- L'âge de chaque enfant conditionne son tarif : les compagnies ne
+             facturent pas un enfant de 3 ans comme un enfant de 11 ans. -->
+        <div class="ages" id="ages_enfants" hidden></div>
+        <div class="ligne-compteur">
+          <div><span class="nom">Bébés</span><span class="precision">moins de 2 ans, sur les genoux</span></div>
+          <div class="compteur" data-cible="bebes" data-min="0" data-max="4">
+            <button type="button" class="moins" aria-label="Un bébé de moins">−</button>
+            <output id="bebes">0</output>
+            <button type="button" class="plus" aria-label="Un bébé de plus">+</button>
+          </div>
+        </div>
+        <p class="note-volet">Un bébé sur les genoux n'a ni siège ni franchise
+          bagage : il n'est pas compté dans les suppléments.</p>
+      </div>
+    </details>
+
+    <details class="volet" id="volet_bagages">
+      <summary><span class="volet-titre">Bagages et options</span>
+        <span class="volet-resume" id="resume_bagages">bagage cabine</span></summary>
+      <div class="volet-corps">
+        <label class="ligne-case">
+          <span><span class="nom">Bagage cabine</span><span class="precision">par passager</span></span>
+          <input type="checkbox" id="bagage_cabine" checked>
+        </label>
+        <div class="ligne-compteur">
+          <div><span class="nom">Bagages en soute</span><span class="precision">par passager</span></div>
+          <div class="compteur" data-cible="bagages_soute" data-min="0" data-max="3">
+            <button type="button" class="moins" aria-label="Un bagage de moins">−</button>
+            <output id="bagages_soute">0</output>
+            <button type="button" class="plus" aria-label="Un bagage de plus">+</button>
+          </div>
+        </div>
+        <label class="ligne-case">
+          <span><span class="nom">Choix du siège</span><span class="precision">par passager</span></span>
+          <input type="checkbox" id="choix_siege">
+        </label>
+        <label class="ligne-case">
+          <span><span class="nom">Enregistrement à l'aéroport</span><span class="precision">au lieu d'en ligne</span></span>
+          <input type="checkbox" id="enregistrement_aeroport">
+        </label>
+
+        <div class="sous-titre">Équipement sportif <span class="precision">facturé à la pièce</span></div>
+        {% for cle, libelle in equipements.items() %}
+        <div class="ligne-compteur">
+          <div><span class="nom">{{ libelle }}</span></div>
+          <div class="compteur" data-cible="equip_{{ cle }}" data-min="0" data-max="4">
+            <button type="button" class="moins" aria-label="Un de moins">−</button>
+            <output id="equip_{{ cle }}">0</output>
+            <button type="button" class="plus" aria-label="Un de plus">+</button>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </details>
 
     <div id="avertissement" class="avertissement" hidden></div>
   </form>
-
 
   <section id="resultats" aria-live="polite"></section>
 
   <footer id="pied">
     Grille de frais interne mise à jour le {{ maj_grille }} — utilisée pour les
-    options que les compagnies ne publient pas (siège, enregistrement).
-    Les frais marqués « tarif compagnie » viennent directement de la compagnie.
+    options que les compagnies ne publient pas (siège, enregistrement,
+    équipement sportif). Les frais marqués « tarif compagnie » viennent
+    directement de la compagnie.
   </footer>
 </div>
 
@@ -96,13 +176,14 @@ window.addEventListener("error", function (e) { signalerPanne(e.message); });
 
 try {
 
-var RECHERCHE_AEROPORTS = {{ 'true' if recherche_aeroports else 'false' }};
+var EQUIPEMENTS = {{ equipements | tojson }};
 
 /* --- Utilitaires d'affichage --- */
 function euros(m) {
   try { return m.toLocaleString("fr-FR", { style: "currency", currency: "EUR" }); }
   catch (e) { return m.toFixed(2).replace(".", ",") + " €"; }
 }
+function eurosCourt(m) { return Math.round(m) + " €"; }
 function heureTexte(iso) { return iso.slice(11, 16); }
 function echapper(t) { var d = document.createElement("div"); d.textContent = t; return d.innerHTML; }
 function dateTexte(iso) {
@@ -111,11 +192,13 @@ function dateTexte(iso) {
       { weekday: "short", day: "numeric", month: "short" });
   } catch (e) { return iso; }
 }
+function valeur(id) { return Number(document.getElementById(id).textContent) || 0; }
+function poser(id, n) { document.getElementById(id).textContent = String(n); }
 
-/* --- Surcoûts : le serveur donne les tarifs unitaires et leur origine,
-       le navigateur ne fait que multiplier. L'affichage reste instantané. --- */
+/* --- Surcoûts : le serveur donne les tarifs unitaires et leur origine, le
+       navigateur ne fait que multiplier. L'affichage reste instantané. --- */
 function calculerSurcouts(frais, options) {
-  var lignes = [], pax = options.passagers, confirme = true;
+  var lignes = [], pax = options.passagersPayants, confirme = true;
   function ajouter(libelle, total, source) {
     lignes.push({ libelle: libelle, total: Math.round(total * 100) / 100, source: source });
     if (source !== "compagnie") confirme = false;
@@ -136,6 +219,14 @@ function calculerSurcouts(frais, options) {
   if (options.enregistrementAeroport && frais.enregistrement_aeroport.prix > 0)
     ajouter("Enregistrement à l'aéroport", frais.enregistrement_aeroport.prix * pax,
             frais.enregistrement_aeroport.source);
+  // Les équipements sportifs se paient à la pièce : une housse à skis coûte
+  // le même prix qu'elle accompagne un skieur ou quatre.
+  for (var cle in EQUIPEMENTS) {
+    var nombre = options.equipements[cle] || 0;
+    if (!nombre) continue;
+    var prix = (cle === "velo" ? frais.velo.prix : frais.equipement_sportif.prix);
+    ajouter(EQUIPEMENTS[cle] + (nombre > 1 ? " × " + nombre : ""), prix * nombre, "grille");
+  }
   var somme = 0;
   for (var i = 0; i < lignes.length; i++) somme += lignes[i].total;
   return { lignes: lignes, total: Math.round(somme * 100) / 100,
@@ -143,13 +234,20 @@ function calculerSurcouts(frais, options) {
 }
 
 /* --- Appels au serveur, avec cache : cocher une option ne redemande rien --- */
+function parametresVoyageurs(options) {
+  return "adultes=" + options.adultes +
+    (options.enfants.length ? "&enfants=" + options.enfants.join(",") : "") +
+    (options.bebes ? "&bebes=" + options.bebes : "");
+}
+
 var cacheVols = {};
-function chargerVols(origine, destination, jour, passagers) {
-  var cle = origine + "|" + destination + "|" + jour + "|" + passagers;
+function chargerVols(origine, destination, jour, options) {
+  var suffixe = parametresVoyageurs(options);
+  var cle = origine + "|" + destination + "|" + jour + "|" + suffixe;
   if (cacheVols[cle]) return Promise.resolve(cacheVols[cle]);
   var url = "/api/vols?origine=" + encodeURIComponent(origine) +
     "&destination=" + encodeURIComponent(destination) +
-    "&date=" + encodeURIComponent(jour) + "&passagers=" + passagers;
+    "&date=" + encodeURIComponent(jour) + "&" + suffixe;
   return fetch(url).then(function (r) {
     return r.json().then(function (donnees) {
       if (!r.ok) throw new Error(donnees.erreur || "Recherche impossible");
@@ -159,12 +257,24 @@ function chargerVols(origine, destination, jour, passagers) {
   });
 }
 
+var cacheCalendrier = {};
+function chargerCalendrier(origine, destination, jour, options) {
+  var suffixe = parametresVoyageurs(options);
+  var cle = origine + "|" + destination + "|" + jour + "|" + suffixe;
+  if (cacheCalendrier[cle]) return Promise.resolve(cacheCalendrier[cle]);
+  var url = "/api/calendrier?origine=" + encodeURIComponent(origine) +
+    "&destination=" + encodeURIComponent(destination) +
+    "&date=" + encodeURIComponent(jour) + "&" + suffixe;
+  return fetch(url).then(function (r) { return r.json(); })
+    .then(function (d) { cacheCalendrier[cle] = d; return d; });
+}
+
 var choixMemorise = { aller: null, retour: null };
 
 function preparerResultats(vols, options) {
   var liste = vols.map(function (vol) {
     var surcouts = calculerSurcouts(vol.frais, options);
-    var prixBase = Math.round(vol.prix_affiche * options.passagers * 100) / 100;
+    var prixBase = Math.round(vol.prix_affiche * options.passagersPayants * 100) / 100;
     return { vol: vol, surcouts: surcouts, prixBase: prixBase,
              prixReel: Math.round((prixBase + surcouts.total) * 100) / 100 };
   });
@@ -188,7 +298,7 @@ function carteBillet(r, sens, index, choisi, options) {
     }).join("");
     bas = '<details><summary>Détail des frais : ' + euros(r.surcouts.total) +
       (r.surcouts.confirme ? " ✔" : " (estimation)") + '</summary>' +
-      '<table><tr><td>Billet' + (options.passagers > 1 ? "s" : "") + '</td>' +
+      '<table><tr><td>Billet' + (options.passagersPayants > 1 ? "s" : "") + '</td>' +
       '<td class="mono">' + euros(r.prixBase) + '</td></tr>' + lignes + '</table></details>';
   } else {
     bas = '<div class="sans-frais">Aucun frais caché avec vos options ✔</div>';
@@ -210,24 +320,92 @@ function carteBillet(r, sens, index, choisi, options) {
     '</span></button><hr class="perforation">' + bas + '</article>';
 }
 
+/* --- Le bandeau de prix, en tête de page --- */
 function rendreSommaire(aller, retour, criteres) {
+  var options = criteres.options;
   var total = Math.round((aller.prixReel + (retour ? retour.prixReel : 0)) * 100) / 100;
   var frais = Math.round((aller.surcouts.total + (retour ? retour.surcouts.total : 0)) * 100) / 100;
-  function ligne(sens, r, de, vers) {
-    return '<div><span class="sens">' + sens + '</span><span class="desc">' +
-      echapper(r.vol.nom) + ' · ' + de + '→' + vers + ' ' + heureTexte(r.vol.depart) +
-      '</span><span class="mono">' + euros(r.prixReel) + '</span></div>';
+  function trajet(sens, r, de, vers) {
+    return '<div class="trajet-resume">' +
+      '<span class="sens">' + sens + '</span>' +
+      '<span class="details">' +
+        '<span class="cie">' + echapper(r.vol.nom) + '</span>' +
+        '<span class="route">' + de + ' → ' + vers + ' · ' +
+          heureTexte(r.vol.depart) + '–' + heureTexte(r.vol.arrivee) + '</span>' +
+      '</span>' +
+      '<span class="montant mono">' + euros(r.prixReel) + '</span></div>';
   }
   document.getElementById("sommaire").innerHTML =
-    '<div class="sommaire"><div class="entete"><div>' +
-    '<div class="libelle">Total ' + (retour ? "aller-retour" : "aller simple") + ', frais inclus</div>' +
-    '<div class="frais">' + (frais > 0
-      ? "dont <strong>" + euros(frais) + "</strong> de frais pré-calculés"
-      : "aucun frais caché avec vos options ✔") + '</div>' +
-    '</div><div class="montant mono">' + euros(total) + '</div></div>' +
-    '<div class="lignes">' + ligne("Aller", aller, criteres.origine, criteres.destination) +
-    (retour ? ligne("Retour", retour, criteres.destination, criteres.origine) : "") + '</div>' +
-    '<div class="rappel">↓ Tous les vols et le détail des frais sont plus bas.</div></div>';
+    '<div class="bandeau">' +
+      '<div class="bandeau-haut">' +
+        '<div class="intitule">Prix réel</div>' +
+        '<div class="somme mono">' + euros(total) + '</div>' +
+      '</div>' +
+      '<div class="bandeau-sous">' + (retour ? "Aller-retour" : "Aller simple") +
+        ' · ' + echapper(options.resume) +
+        (frais > 0 ? ' · dont <strong>' + euros(frais) + '</strong> de suppléments'
+                   : ' · aucun supplément avec vos options ✔') + '</div>' +
+      '<div class="bandeau-trajets">' +
+        trajet("Aller", aller, criteres.origine, criteres.destination) +
+        (retour ? trajet("Retour", retour, criteres.destination, criteres.origine) : "") +
+      '</div>' +
+    '</div>';
+}
+
+/* --- Bandes de prix par jour --- */
+function rendreCalendrier(sens, donnees, criteres) {
+  var bloc = document.getElementById("cal_" + sens);
+  var bande = bloc.querySelector(".cal-bande");
+  var jourChoisi = sens === "aller" ? criteres.dateAller : criteres.dateRetour;
+  var options = criteres.options;
+
+  var jours = (donnees.jours || []).map(function (j) {
+    if (j.prix === null || j.prix === undefined) return { date: j.date, total: null };
+    var surcouts = calculerSurcouts(j.frais, options);
+    return { date: j.date,
+             total: Math.round((j.prix * options.passagersPayants + surcouts.total) * 100) / 100 };
+  });
+  var valides = jours.filter(function (j) { return j.total !== null; });
+  var mini = valides.length ? Math.min.apply(null, valides.map(function (j) { return j.total; })) : null;
+
+  bande.innerHTML = jours.map(function (j) {
+    var d = new Date(j.date + "T12:00:00");
+    var jourCourt = d.toLocaleDateString("fr-FR", { weekday: "short" }).replace(".", "");
+    var dateCourte = d.toLocaleDateString("fr-FR", { day: "numeric", month: "short" }).replace(".", "");
+    var classes = "cal-jour";
+    if (j.date === jourChoisi) classes += " actif";
+    if (j.total !== null && j.total === mini) classes += " mini";
+    return '<button type="button" class="' + classes + '" data-date="' + j.date + '"' +
+      (j.date === jourChoisi ? ' aria-current="date"' : '') + '>' +
+      '<span class="cal-jour-nom">' + echapper(jourCourt) + '</span>' +
+      '<span class="cal-jour-date">' + echapper(dateCourte) + '</span>' +
+      '<span class="cal-jour-prix">' + (j.total === null ? "—" : eurosCourt(j.total)) + '</span>' +
+      '</button>';
+  }).join("");
+
+  var boutons = bande.querySelectorAll(".cal-jour");
+  for (var i = 0; i < boutons.length; i++) {
+    boutons[i].addEventListener("click", function () {
+      var champ = sens === "aller" ? champAller : champRetour;
+      champ.value = this.getAttribute("data-date");
+      if (sens === "aller" && allerRetour && champRetour.value < champAller.value)
+        champRetour.value = champAller.value;
+      choixMemorise.aller = null; choixMemorise.retour = null;
+      actualiser();
+    });
+  }
+  var actif = bande.querySelector(".cal-jour.actif");
+  if (actif && actif.scrollIntoView)
+    actif.scrollIntoView({ block: "nearest", inline: "center" });
+}
+
+function majCalendriers(criteres) {
+  document.getElementById("cal_retour").hidden = !criteres.dateRetour;
+  chargerCalendrier(criteres.origine, criteres.destination, criteres.dateAller, criteres.options)
+    .then(function (d) { rendreCalendrier("aller", d, criteres); }).catch(function () {});
+  if (criteres.dateRetour)
+    chargerCalendrier(criteres.destination, criteres.origine, criteres.dateRetour, criteres.options)
+      .then(function (d) { rendreCalendrier("retour", d, criteres); }).catch(function () {});
 }
 
 function rendre(criteres, donneesAller, donneesRetour) {
@@ -236,7 +414,7 @@ function rendre(criteres, donneesAller, donneesRetour) {
   var listeRetour = donneesRetour ? preparerResultats(donneesRetour.vols, opt) : null;
   if (!listeAller.length) {
     document.getElementById("sommaire").innerHTML =
-      '<div class="panne">Aucun vol trouvé sur ' + criteres.origine + ' → ' +
+      '<div class="panne">Aucun vol sur ' + criteres.origine + ' → ' +
       criteres.destination + ' à cette date.</div>';
     document.getElementById("resultats").innerHTML = "";
     return;
@@ -314,22 +492,84 @@ document.getElementById("inverser").addEventListener("click", function () {
   actualiser();
 });
 
+/* --- Compteurs − / + --------------------------------------------------- */
+var compteurs = document.querySelectorAll(".compteur");
+for (var c = 0; c < compteurs.length; c++) {
+  (function (bloc) {
+    var cible = bloc.getAttribute("data-cible");
+    var min = Number(bloc.getAttribute("data-min"));
+    var max = Number(bloc.getAttribute("data-max"));
+    function ajuster(pas) {
+      var neuf = Math.max(min, Math.min(max, valeur(cible) + pas));
+      poser(cible, neuf);
+      if (cible === "enfants") majAgesEnfants();
+      actualiser();
+    }
+    bloc.querySelector(".moins").addEventListener("click", function () { ajuster(-1); });
+    bloc.querySelector(".plus").addEventListener("click", function () { ajuster(1); });
+  })(compteurs[c]);
+}
+
+/* Un sélecteur d'âge par enfant : le tarif en dépend. */
+function majAgesEnfants() {
+  var zone = document.getElementById("ages_enfants");
+  var nombre = valeur("enfants");
+  zone.hidden = nombre === 0;
+  var actuels = {};
+  var selects = zone.querySelectorAll("select");
+  for (var i = 0; i < selects.length; i++) actuels[i] = selects[i].value;
+  var html = "";
+  for (var e = 0; e < nombre; e++) {
+    var options = "";
+    for (var age = 2; age <= 11; age++)
+      options += '<option value="' + age + '"' +
+        (String(actuels[e] || 8) === String(age) ? " selected" : "") + '>' + age + ' ans</option>';
+    html += '<label class="age"><span>Enfant ' + (e + 1) + '</span><select>' + options + '</select></label>';
+  }
+  zone.innerHTML = html;
+  var neufs = zone.querySelectorAll("select");
+  for (var s = 0; s < neufs.length; s++)
+    neufs[s].addEventListener("change", actualiser);
+}
+
 function lireOptions() {
+  var enfants = [];
+  var selects = document.getElementById("ages_enfants").querySelectorAll("select");
+  for (var i = 0; i < selects.length; i++) enfants.push(Number(selects[i].value));
+  var equipements = {};
+  for (var cle in EQUIPEMENTS) equipements[cle] = valeur("equip_" + cle);
+  var adultes = valeur("adultes"), bebes = valeur("bebes");
+  var resume = adultes + " adulte" + (adultes > 1 ? "s" : "");
+  if (enfants.length) resume += ", " + enfants.length + " enfant" + (enfants.length > 1 ? "s" : "");
+  if (bebes) resume += ", " + bebes + " bébé" + (bebes > 1 ? "s" : "");
   return {
-    passagers: Math.min(9, Math.max(1, Number(document.getElementById("passagers").value) || 1)),
+    adultes: adultes, enfants: enfants, bebes: bebes,
+    passagersPayants: adultes + enfants.length,
+    resume: resume,
     bagageCabine: document.getElementById("bagage_cabine").checked,
-    bagagesSoute: Math.min(3, Math.max(0, Number(document.getElementById("bagages_soute").value) || 0)),
+    bagagesSoute: valeur("bagages_soute"),
     choixSiege: document.getElementById("choix_siege").checked,
-    enregistrementAeroport: document.getElementById("enregistrement_aeroport").checked
+    enregistrementAeroport: document.getElementById("enregistrement_aeroport").checked,
+    equipements: equipements
   };
 }
 
+function majResumes(options) {
+  document.getElementById("resume_voyageurs").textContent = options.resume;
+  var parts = [];
+  if (options.bagageCabine) parts.push("cabine");
+  if (options.bagagesSoute) parts.push(options.bagagesSoute + " soute");
+  if (options.choixSiege) parts.push("siège");
+  if (options.enregistrementAeroport) parts.push("enreg. aéroport");
+  for (var cle in EQUIPEMENTS)
+    if (options.equipements[cle]) parts.push(EQUIPEMENTS[cle].toLowerCase());
+  document.getElementById("resume_bagages").textContent =
+    parts.length ? parts.join(", ") : "aucune option";
+}
+
 function actualiser() {
-  var puces = document.querySelectorAll(".options label.puce");
-  for (var i = 0; i < puces.length; i++) {
-    var coche = puces[i].querySelector('input[type="checkbox"]');
-    puces[i].className = "puce" + (coche && coche.checked ? " active" : "");
-  }
+  var options = lireOptions();
+  majResumes(options);
 
   var origine = codeOrigine.value.toUpperCase();
   var destination = codeDestination.value.toUpperCase();
@@ -354,34 +594,33 @@ function actualiser() {
     avertissement.hidden = true;
   }
 
-  var options = lireOptions();
   var criteres = { origine: origine, destination: destination, dateAller: dateAller,
                    dateRetour: dateRetour, options: options };
-  var demandes = [chargerVols(origine, destination, dateAller, options.passagers)];
-  if (dateRetour) demandes.push(chargerVols(destination, origine, dateRetour, options.passagers));
+  var demandes = [chargerVols(origine, destination, dateAller, options)];
+  if (dateRetour) demandes.push(chargerVols(destination, origine, dateRetour, options));
 
   Promise.all(demandes).then(function (reponses) {
     rendre(criteres, reponses[0], reponses[1] || null);
+    majCalendriers(criteres);
   }).catch(function (erreur) {
     signalerPanne(erreur.message || erreur);
   });
 }
 
 var form = document.getElementById("recherche");
-var attente = 0;
-form.addEventListener("input", function () {
-  clearTimeout(attente); attente = setTimeout(actualiser, 250);
+form.addEventListener("change", function (e) {
+  if (e.target.type === "checkbox" || e.target.tagName === "SELECT") actualiser();
 });
-form.addEventListener("change", function () { actualiser(); });
 form.addEventListener("submit", function (e) { e.preventDefault(); actualiser(); });
 champAller.addEventListener("change", function () {
   if (allerRetour && champRetour.value && champRetour.value < champAller.value)
     champRetour.value = champAller.value;
+  choixMemorise.aller = null; choixMemorise.retour = null;
+  actualiser();
 });
-[champAller, champRetour].forEach(function (champ) {
-  champ.addEventListener("change", function () {
-    choixMemorise.aller = null; choixMemorise.retour = null;
-  });
+champRetour.addEventListener("change", function () {
+  choixMemorise.retour = null;
+  actualiser();
 });
 
 /* --- Sélecteur de ville / aéroport ---------------------------------------
@@ -393,7 +632,7 @@ function installerSelecteurLieu(id) {
   var saisie = document.getElementById(id);
   var champCode = document.getElementById(id + "_code");
   var liste = document.getElementById("liste_" + id);
-  var entrees = [];          // {code, libelle} dans l'ordre affiché
+  var entrees = [];
   var actif = -1;
   var attente = 0;
   var dernierLibelle = saisie.value;   // dernier choix valide, pour le restaurer
@@ -435,7 +674,7 @@ function installerSelecteurLieu(id) {
     return true;
   }
 
-  function rendre(lieux) {
+  function rendreListe(lieux) {
     entrees = [];
     var html = "";
     for (var i = 0; i < lieux.length; i++) {
@@ -453,10 +692,10 @@ function installerSelecteurLieu(id) {
       for (var j = 0; j < lieu.aeroports.length; j++) {
         var a = lieu.aeroports[j];
         var seul = lieu.aeroports.length === 1 && !lieu.code_tous;
-        entrees.push({ code: a.code, libelle: lieu.ville + " — " + a.nom });
         // Dans une ville à plusieurs aéroports, répéter le pays sur chaque
         // ligne n'apprend rien : il figure déjà sur l'entrée « tous ».
         var detail = seul ? a.nom + (pays ? " · " + pays : "") : lieu.ville;
+        entrees.push({ code: a.code, libelle: lieu.ville + " — " + a.nom });
         html += '<li class="' + (seul ? "" : "aeroport") + '" role="option" data-index="' +
           (entrees.length - 1) + '">' +
           '<span class="principal"><span class="titre">' +
@@ -477,7 +716,7 @@ function installerSelecteurLieu(id) {
     if (mot.length < 2) { fermer(); return; }
     fetch("/api/aeroports?q=" + encodeURIComponent(mot))
       .then(function (r) { return r.json(); })
-      .then(function (d) { rendre(d.lieux || []); })
+      .then(function (d) { rendreListe(d.lieux || []); })
       .catch(function () { fermer(); });
   }
 

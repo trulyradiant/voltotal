@@ -199,3 +199,125 @@
 .suggestions li.aeroport .titre { font-weight: 500; font-size: .92rem; }
 .suggestions .vide { color: var(--sourdine); font-size: .88rem; padding: .5rem .55rem; cursor: default; }
 .suggestions .vide:hover { background: none; }
+
+/* --- Bandeau de prix ------------------------------------------------------
+   Le prix est le produit : il occupe le haut de l'écran, seul contre son
+   fond, sans cadre criard. Le vert ne sert qu'au montant. */
+.bandeau {
+  background: var(--carte); border: 1px solid var(--ligne);
+  border-radius: 16px; padding: .95rem 1rem .85rem;
+  box-shadow: 0 2px 10px rgba(10, 20, 50, .06);
+  margin-bottom: .7rem;
+}
+.bandeau-haut { display: flex; justify-content: space-between; align-items: baseline; gap: .8rem; }
+.bandeau .intitule {
+  font-size: .74rem; font-weight: 650; letter-spacing: .04em;
+  text-transform: uppercase; color: var(--sourdine); white-space: nowrap;
+}
+.bandeau .somme {
+  color: var(--vert); font-size: 2rem; font-weight: 780;
+  letter-spacing: -.03em; line-height: 1.05; white-space: nowrap;
+}
+.bandeau-sous { font-size: .84rem; color: var(--sourdine); margin-top: .15rem; }
+.bandeau-sous strong { color: var(--encre); font-weight: 650; }
+.bandeau-trajets {
+  margin-top: .75rem; padding-top: .7rem; border-top: 1px solid var(--ligne);
+  display: flex; flex-direction: column; gap: .5rem;
+}
+.trajet-resume { display: flex; align-items: center; gap: .6rem; }
+.trajet-resume .sens {
+  flex-shrink: 0; width: 3.6rem;
+  font-size: .66rem; font-weight: 700; letter-spacing: .06em;
+  text-transform: uppercase; color: var(--accent);
+}
+.trajet-resume .details { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.trajet-resume .cie {
+  font-size: .9rem; font-weight: 600;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.trajet-resume .route { font-size: .76rem; color: var(--sourdine); }
+.trajet-resume .montant { font-size: .92rem; font-weight: 650; flex-shrink: 0; }
+
+/* --- Bandes de prix par jour --------------------------------------------- */
+.calendriers { display: flex; flex-direction: column; gap: .5rem; margin-top: .7rem; }
+.cal-titre {
+  font-size: .64rem; font-weight: 700; letter-spacing: .06em;
+  text-transform: uppercase; color: var(--sourdine); margin-bottom: .25rem;
+}
+.cal-bande {
+  display: flex; gap: .3rem; overflow-x: auto; padding-bottom: .2rem;
+  scrollbar-width: thin;
+}
+.cal-jour {
+  flex: 0 0 auto; min-width: 3.9rem;
+  display: flex; flex-direction: column; align-items: center; gap: .05rem;
+  padding: .4rem .35rem; border: 1px solid var(--ligne); border-radius: 9px;
+  background: var(--fond); color: var(--encre); font: inherit; cursor: pointer;
+}
+.cal-jour-nom { font-size: .66rem; color: var(--sourdine); text-transform: capitalize; }
+.cal-jour-date { font-size: .78rem; font-weight: 600; }
+.cal-jour-prix {
+  font-size: .82rem; font-weight: 700;
+  font-variant-numeric: tabular-nums; color: var(--sourdine);
+}
+.cal-jour.mini .cal-jour-prix { color: var(--vert); }
+.cal-jour.actif {
+  border-color: var(--accent); background: var(--accent-doux);
+  box-shadow: 0 0 0 1px var(--accent);
+}
+.cal-jour.actif .cal-jour-date { color: var(--accent); }
+
+/* --- Volets Voyageurs / Bagages ------------------------------------------ */
+.volet {
+  margin-top: .55rem; border: 1px solid var(--ligne);
+  border-radius: 10px; background: var(--fond);
+}
+.volet > summary {
+  display: flex; justify-content: space-between; align-items: baseline; gap: .6rem;
+  padding: .65rem .75rem; min-height: 46px; box-sizing: border-box;
+  cursor: pointer; list-style: none;
+}
+.volet > summary::-webkit-details-marker { display: none; }
+.volet > summary::after { content: "▾"; color: var(--sourdine); font-size: .8rem; }
+.volet[open] > summary::after { content: "▴"; }
+.volet-titre { font-size: .92rem; font-weight: 650; }
+.volet-resume {
+  flex: 1; text-align: right; font-size: .82rem; color: var(--sourdine);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.volet-corps { padding: 0 .75rem .7rem; }
+.ligne-compteur, .ligne-case {
+  display: flex; justify-content: space-between; align-items: center; gap: .6rem;
+  padding: .45rem 0; border-top: 1px solid var(--ligne); min-height: 46px;
+}
+.ligne-case { cursor: pointer; }
+.ligne-compteur .nom, .ligne-case .nom { font-size: .92rem; display: block; }
+.ligne-compteur .precision, .ligne-case .precision {
+  font-size: .74rem; color: var(--sourdine); display: block;
+}
+.ligne-case input[type="checkbox"] { width: 20px; height: 20px; accent-color: var(--accent); }
+.compteur { display: flex; align-items: center; gap: .1rem; flex-shrink: 0; }
+.compteur button {
+  width: 34px; height: 34px; border-radius: 50%;
+  border: 1px solid var(--ligne); background: var(--carte); color: var(--accent);
+  font-size: 1.1rem; line-height: 1; cursor: pointer;
+}
+.compteur button:active { background: var(--accent-doux); }
+.compteur output {
+  min-width: 2rem; text-align: center; font-size: 1rem; font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}
+.ages { display: flex; flex-wrap: wrap; gap: .4rem; padding: .4rem 0; }
+.ages .age { display: flex; flex-direction: column; gap: .15rem; }
+.ages .age span { font-size: .7rem; color: var(--sourdine); }
+.ages select {
+  padding: .35rem .4rem; border: 1px solid var(--ligne); border-radius: 8px;
+  background: var(--carte); color: var(--encre); font-size: .9rem; min-height: 38px;
+}
+.sous-titre {
+  margin-top: .6rem; padding-top: .55rem; border-top: 1px solid var(--ligne);
+  font-size: .76rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase;
+  color: var(--sourdine);
+}
+.sous-titre .precision { text-transform: none; letter-spacing: 0; font-weight: 400; }
+.note-volet { font-size: .76rem; color: var(--sourdine); margin: .5rem 0 0; }

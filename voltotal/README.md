@@ -11,15 +11,42 @@ total tout compris**, calculé à l'avance.
 1. Vous tapez une **ville** (« paris », « lond ») : la liste propose la ville
    et chacun de ses aéroports. Quand un code IATA de ville existe (PAR, LON,
    MIL…), une entrée **« tous les aéroports »** cherche sur l'ensemble d'un
-   coup. Puis les dates, le nombre de passagers **et vos options** : bagage
-   cabine, bagages en soute, choix du siège, enregistrement à l'aéroport.
-2. Le serveur cherche les vols — **en temps réel** (Duffel ou Amadeus) si des
+   coup.
+2. Vous déclarez **qui voyage** — adultes, enfants avec leur âge, bébés sur
+   les genoux — **et ce que vous emportez** : bagage cabine, bagages en soute,
+   choix du siège, enregistrement à l'aéroport, équipement sportif (skis,
+   golf, vélo, surf).
+3. Le serveur cherche les vols — **en temps réel** (Duffel ou Amadeus) si des
    clés sont configurées, sinon des vols de démonstration.
-3. Pour chaque vol, il détermine les tarifs applicables (voir « D'où viennent
+4. Pour chaque vol, il détermine les tarifs applicables (voir « D'où viennent
    les prix » ci-dessous) et les renvoie au navigateur.
-4. L'interface affiche **le total tout compris en haut de l'écran**, puis les
-   deux listes triées par prix réel. Cocher une option recalcule tout
-   instantanément, sans nouvel appel au serveur.
+5. L'interface affiche **le total tout compris en haut de l'écran**, une
+   **bande de prix par jour** autour de vos dates, puis les deux listes triées
+   par prix réel. Modifier une option recalcule tout instantanément, sans
+   nouvel appel au serveur.
+
+## Comment les suppléments sont comptés
+
+| Poste | Unité |
+|---|---|
+| Bagage cabine, bagages en soute, choix du siège, enregistrement | par **passager payant** et par trajet |
+| Équipement sportif (skis, golf, vélo, surf) | **à la pièce** et par trajet — une housse à skis coûte pareil pour un skieur ou quatre |
+
+Un **bébé de moins de 2 ans** voyage sur les genoux : ni siège, ni franchise
+bagage. Il n'entre donc pas dans le calcul des suppléments. Les **enfants de
+2 à 11 ans** comptent comme des passagers payants, et leur âge est transmis
+au fournisseur, qui applique le tarif enfant de la compagnie.
+
+## Bande de prix par jour
+
+Sous chaque date, une bande montre le **prix réel le moins cher** de chaque
+jour, options comprises, le plus bas en vert. Toucher un jour déplace la
+recherche.
+
+C'est une recherche par jour : coûteux en quota d'API. La fenêtre est donc
+volontairement étroite (`CALENDRIER_JOURS`, ±3 jours par défaut) et partage
+le cache des recherches normales. Mettez-la à `0` pour n'afficher que le jour
+choisi.
 
 ## D'où viennent les prix
 
@@ -123,14 +150,14 @@ dans les Variables du service pour activer le temps réel. Vérifiez ensuite
 
 | Fichier | Rôle |
 |---|---|
-| `modeles.py` | Objets partagés : `Vol`, `OptionsVoyage`, `Surcouts` |
+| `modeles.py` | Objets partagés : `Vol`, `OptionsVoyage`, `Surcouts`, équipements |
 | `fournisseurs/duffel.py` | Connecteur Duffel : vols, franchises, services annexes (bagages), recherche d'aéroports |
 | `fournisseurs/amadeus.py` | Connecteur Amadeus : vols, franchises, tarifs bagages, recherche d'aéroports |
 | `fournisseurs/demo.py` | Générateur de vols de démonstration, déterministe |
 | `fournisseurs/__init__.py` | Choix de la source, cache mémoire, repli en cas de panne |
 | `lieux.py` | Base locale de villes et aéroports, pour la saisie par nom de ville |
 | `surcouts.py` | Grille interne et arbitrage entre tarif publié et estimation |
-| `app.py` | Routes Flask : page, `/api/vols`, `/api/aeroports`, `/sources`, `/sante` |
+| `app.py` | Routes Flask : page, `/api/vols`, `/api/calendrier`, `/api/aeroports`, `/sources`, `/sante` |
 | `templates/index.html` | Interface mobile (calcul instantané côté navigateur) |
 | `demo_statique.html` | Version autonome sans serveur |
 
@@ -140,7 +167,7 @@ dans les Variables du service pour activer le temps réel. Vérifiez ensuite
 python -m unittest discover -t . -s voltotal
 ```
 
-42 tests, sans aucun appel réseau : les réponses des API sont simulées.
+54 tests, sans aucun appel réseau : les réponses des API sont simulées.
 
 ## Limites connues
 

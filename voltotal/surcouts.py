@@ -18,7 +18,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from .modeles import LigneFrais, OptionsVoyage, Surcouts, Vol
+from .modeles import EQUIPEMENTS, LigneFrais, OptionsVoyage, Surcouts, Vol
 
 _FICHIER_FRAIS = Path(__file__).parent / "data" / "frais_compagnies.json"
 
@@ -71,6 +71,8 @@ class GrilleFrais:
                 "source": source_soute,
             },
             "choix_siege": {"prix": grille["choix_siege"], "source": "grille"},
+            "equipement_sportif": {"prix": grille["equipement_sportif"], "source": "grille"},
+            "velo": {"prix": grille["velo"], "source": "grille"},
             "enregistrement_aeroport": {
                 "prix": grille["enregistrement_aeroport"],
                 "source": "grille",
@@ -83,7 +85,7 @@ class GrilleFrais:
         if grille is None:
             grille = self.defaut
 
-        pax = options.passagers
+        pax = options.passagers_payants
 
         # --- Bagage cabine ---
         if options.bagage_cabine:
@@ -125,5 +127,14 @@ class GrilleFrais:
                     "grille",
                 )
             )
+
+        # Les équipements sportifs se paient à la pièce : une housse à skis
+        # coûte le même prix qu'elle accompagne un skieur ou quatre.
+        for cle, nombre in (options.equipements or {}).items():
+            if nombre <= 0 or cle not in EQUIPEMENTS:
+                continue
+            prix = grille["velo"] if cle == "velo" else grille["equipement_sportif"]
+            libelle = EQUIPEMENTS[cle] + (f" × {nombre}" if nombre > 1 else "")
+            resultat.lignes.append(LigneFrais(libelle, round(prix * nombre, 2), "grille"))
 
         return resultat

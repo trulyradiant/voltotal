@@ -10,7 +10,7 @@ import hashlib
 import random
 from datetime import date, datetime, timedelta
 
-from ..modeles import Vol
+from ..modeles import OptionsVoyage, Vol
 
 _COMPAGNIES = {
     "FR": "Ryanair", "U2": "easyJet", "VY": "Vueling", "W6": "Wizz Air",
@@ -20,7 +20,7 @@ _COMPAGNIES = {
 _LOW_COST = {"FR", "U2", "VY", "TO", "V7", "W6"}
 
 
-def rechercher(origine: str, destination: str, jour: date, passagers: int) -> list[Vol]:
+def rechercher(origine: str, destination: str, jour: date, options: OptionsVoyage) -> list[Vol]:
     graine = f"{origine.upper()}-{destination.upper()}-{jour.isoformat()}"
     alea = random.Random(hashlib.sha256(graine.encode()).hexdigest())
 
