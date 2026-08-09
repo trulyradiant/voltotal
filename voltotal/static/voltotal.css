@@ -1,323 +1,368 @@
+/* VolTotal — habillage inspiré de Material Design, la langue visuelle de
+   Google Flights : surfaces blanches posées sur un fond gris clair, ombres
+   très douces plutôt que des bordures marquées, bleu pour l'action, vert
+   réservé au prix. Les résultats sont une liste plate séparée par des
+   filets, et non une pile de cartes : c'est ce qui donne l'impression de
+   densité calme du modèle. */
+
 :root {
-    --fond: #F3F5FA; --carte: #FFFFFF; --encre: #1A2138; --sourdine: #5D6785;
-    --ligne: #D9DFEC; --accent: #1E4BD8; --accent-fonce: #143795;
-    --accent-doux: #E8EDFD; --accent-encre: #FFFFFF; --vert: #0B7A4B;
-    --ambre: #9C5E0B; --ambre-fond: #FFF6E4; --ambre-ligne: #EBD9B0;
-    --rouge: #B3261E; --rouge-fond: #FDECEA;
-  }
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --fond: #0E1424; --carte: #171F35; --encre: #E8ECF7; --sourdine: #96A0BC;
-      --ligne: #2A3453; --accent: #7B96F4; --accent-fonce: #A5B8F8;
-      --accent-doux: #1D2A52; --accent-encre: #0E1424; --vert: #4CC38A;
-      --ambre: #E4B063; --ambre-fond: #241D0F; --ambre-ligne: #4A3B1D;
-      --rouge: #F2B8B5; --rouge-fond: #3A1512;
-    }
-  }
-  :root[data-theme="light"] {
-    --fond: #F3F5FA; --carte: #FFFFFF; --encre: #1A2138; --sourdine: #5D6785;
-    --ligne: #D9DFEC; --accent: #1E4BD8; --accent-fonce: #143795;
-    --accent-doux: #E8EDFD; --accent-encre: #FFFFFF; --vert: #0B7A4B;
-    --ambre: #9C5E0B; --ambre-fond: #FFF6E4; --ambre-ligne: #EBD9B0;
-    --rouge: #B3261E; --rouge-fond: #FDECEA;
-  }
-  :root[data-theme="dark"] {
-    --fond: #0E1424; --carte: #171F35; --encre: #E8ECF7; --sourdine: #96A0BC;
-    --ligne: #2A3453; --accent: #7B96F4; --accent-fonce: #A5B8F8;
-    --accent-doux: #1D2A52; --accent-encre: #0E1424; --vert: #4CC38A;
-    --ambre: #E4B063; --ambre-fond: #241D0F; --ambre-ligne: #4A3B1D;
-    --rouge: #F2B8B5; --rouge-fond: #3A1512;
-  }
-
-  body {
-    margin: 0; background: var(--fond); color: var(--encre);
-    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-    line-height: 1.4; font-size: 16px; -webkit-tap-highlight-color: transparent;
-  }
-  .mono { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-          font-variant-numeric: tabular-nums; }
-  .page { max-width: 40rem; margin: 0 auto; padding: 0 .8rem 3rem; }
-
-  header { padding: .8rem 0 .6rem; display: flex; align-items: baseline;
-           justify-content: space-between; gap: .5rem; flex-wrap: wrap; }
-  header .marque { display: flex; align-items: baseline; gap: .35rem;
-                   font-size: 1.3rem; font-weight: 750; letter-spacing: -.02em; }
-  header .marque .total { color: var(--accent); }
-  header .accroche { color: var(--sourdine); font-size: .8rem; }
-
-  .carte { background: var(--carte); border: 1px solid var(--ligne);
-           border-radius: 14px; padding: .85rem; }
-
-  /* --- Le prix, tout en haut : la première chose qu'on voit --- */
-  .sommaire {
-    background: var(--carte); border: 2px solid var(--vert);
-    border-radius: 14px; padding: .8rem .9rem; margin-bottom: .7rem;
-  }
-  .sommaire .entete { display: flex; justify-content: space-between;
-                      align-items: baseline; gap: .7rem; }
-  .sommaire .libelle { font-size: .68rem; font-weight: 700; letter-spacing: .06em;
-                       text-transform: uppercase; color: var(--sourdine); }
-  .sommaire .montant { color: var(--vert); font-size: 1.7rem; font-weight: 750;
-                       letter-spacing: -.02em; white-space: nowrap; }
-  .sommaire .frais { font-size: .82rem; color: var(--sourdine); margin-top: .05rem; }
-  .sommaire .frais strong { color: var(--encre); }
-  .sommaire .lignes { margin-top: .6rem; padding-top: .6rem;
-                      border-top: 1px dashed var(--ligne);
-                      display: flex; flex-direction: column; gap: .25rem; font-size: .85rem; }
-  .sommaire .lignes > div { display: flex; align-items: baseline; gap: .5rem; }
-  .sommaire .sens { color: var(--sourdine); text-transform: uppercase;
-                    font-size: .64rem; font-weight: 700; letter-spacing: .06em;
-                    min-width: 3.1rem; flex-shrink: 0; }
-  .sommaire .desc { flex: 1; min-width: 0; }
-  .sommaire .rappel { margin-top: .5rem; font-size: .8rem; color: var(--accent); }
-
-  .panne { background: var(--rouge-fond); border: 1px solid var(--rouge);
-           color: var(--rouge); border-radius: 12px; padding: .8rem; font-size: .9rem; }
-
-  /* --- Formulaire compact --- */
-  .type-trajet { display: grid; grid-template-columns: 1fr 1fr; gap: 4px;
-                 background: var(--fond); border: 1px solid var(--ligne);
-                 border-radius: 10px; padding: 3px; margin-bottom: .6rem; }
-  .type-trajet button { border: 0; border-radius: 7px; padding: .45rem;
-                        background: transparent; color: var(--sourdine);
-                        font: inherit; font-size: .92rem; font-weight: 600;
-                        cursor: pointer; min-height: 42px; }
-  .type-trajet button[aria-pressed="true"] { background: var(--carte); color: var(--encre);
-                        box-shadow: 0 1px 3px rgba(10, 20, 50, .12); }
-
-  .trajet { display: grid; grid-template-columns: 1fr auto 1fr; gap: .4rem; align-items: end; }
-  .dates { display: grid; grid-template-columns: 1fr 1fr; gap: .4rem; margin-top: .55rem; }
-  .dates.simple { grid-template-columns: 1fr; }
-  .champ label { display: block; font-size: .64rem; font-weight: 700; letter-spacing: .06em;
-                 text-transform: uppercase; color: var(--sourdine); margin-bottom: .15rem; }
-  .champ input { width: 100%; box-sizing: border-box; padding: .5rem .55rem;
-                 border: 1px solid var(--ligne); border-radius: 10px;
-                 background: var(--fond); color: var(--encre);
-                 font-size: 1rem; font-family: inherit; min-height: 46px; }
-  .champ input.iata { text-transform: uppercase; font-weight: 700; letter-spacing: .04em; }
-  .inverser { width: 42px; height: 46px; border: 1px solid var(--ligne); border-radius: 10px;
-              background: var(--fond); color: var(--accent); font-size: 1.1rem; cursor: pointer; }
-  input:focus-visible, button:focus-visible, summary:focus-visible {
-    outline: 2px solid var(--accent); outline-offset: 2px; }
-
-  .options { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .6rem; }
-  .options label.puce { display: inline-flex; align-items: center; gap: .4rem;
-    padding: .45rem .75rem; min-height: 42px; box-sizing: border-box;
-    border: 1px solid var(--ligne); border-radius: 999px; background: var(--fond);
-    font-size: .9rem; cursor: pointer; user-select: none; }
-  .options label.puce.active { background: var(--accent); border-color: var(--accent);
-                               color: var(--accent-encre); }
-  .options input[type="checkbox"] { accent-color: var(--accent); margin: 0; width: 17px; height: 17px; }
-  .options input[type="number"] { width: 2.8rem; padding: .15rem .25rem;
-    border: 1px solid var(--ligne); border-radius: 6px;
-    background: var(--carte); color: var(--encre); font-size: .95rem; }
-
-  .avertissement { margin-top: .6rem; padding: .55rem .75rem; border-radius: 10px;
-    background: var(--ambre-fond); border: 1px solid var(--ambre-ligne);
-    color: var(--ambre); font-size: .88rem; }
-
-  #resultats { margin-top: .8rem; display: flex; flex-direction: column; gap: .6rem; }
-  .bandeau-demo { padding: .5rem .75rem; border-radius: 10px;
-    background: var(--ambre-fond); border: 1px solid var(--ambre-ligne);
-    color: var(--ambre); font-size: .8rem; }
-  .titre-direction { margin: .4rem 0 0; font-size: .95rem; font-weight: 700; }
-  .titre-direction .sous { color: var(--sourdine); font-weight: 400; font-size: .82rem; }
-
-  .billet { padding: 0; overflow: hidden; }
-  .billet.choisi { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
-  .billet .zone { display: flex; justify-content: space-between; align-items: flex-start;
-    gap: .7rem; padding: .7rem .85rem .6rem; width: 100%; box-sizing: border-box;
-    background: none; border: 0; font: inherit; color: inherit; text-align: left; cursor: pointer; }
-  .billet.choisi .zone { background: var(--accent-doux); }
-  .billet .compagnie { font-weight: 650; font-size: .92rem; }
-  .billet .numero { color: var(--sourdine); font-size: .8rem; font-weight: 400; }
-  .billet .horaires { font-size: 1.12rem; margin-top: .15rem; }
-  .billet .trajet-detail { color: var(--sourdine); font-size: .8rem; }
-  .billet .prix { text-align: right; flex-shrink: 0; }
-  .billet .prix .appel { color: var(--sourdine); text-decoration: line-through; font-size: .82rem; }
-  .billet .prix .reel { color: var(--vert); font-size: 1.22rem; font-weight: 750; }
-  .billet .prix .etiquette { font-size: .62rem; letter-spacing: .05em;
-                             text-transform: uppercase; color: var(--sourdine); }
-  .billet .prix .coche { font-size: .68rem; font-weight: 700; letter-spacing: .04em;
-                         text-transform: uppercase; color: var(--accent); }
-  .billet .perforation { border: 0; border-top: 2px dashed var(--ligne); margin: 0 .85rem; }
-  .billet details { padding: .45rem .85rem .65rem; }
-  .billet summary { cursor: pointer; color: var(--accent); font-size: .86rem;
-    list-style-position: inside; min-height: 30px; display: flex; align-items: center; }
-  .billet .sans-frais { padding: .45rem .85rem .65rem; color: var(--vert); font-size: .86rem; }
-  .billet table { margin-top: .35rem; border-collapse: collapse; font-size: .86rem; width: 100%; }
-  .billet td { padding: .15rem 0; }
-  .billet td:first-child { color: var(--sourdine); }
-  .billet td:last-child { text-align: right; }
-  .billet .estimation { color: var(--ambre); font-size: .8rem; margin-top: .3rem; }
-
-  footer { margin-top: 1.4rem; color: var(--sourdine); font-size: .78rem;
-           border-top: 1px solid var(--ligne); padding-top: .8rem; }
-  @media (prefers-reduced-motion: no-preference) {
-    .billet { transition: box-shadow .12s ease, border-color .12s ease; }
-  }
-
-/* --- Sélecteur de ville / aéroport --------------------------------------- */
-.champ.lieu { position: relative; }
-.champ.lieu input[type="text"], .champ.lieu > input:not([type="hidden"]) {
-  text-transform: none; font-weight: 500; letter-spacing: 0;
+  --fond: #f1f3f4;
+  --surface: #ffffff;
+  --surface-douce: #f8f9fa;
+  --encre: #202124;
+  --sourdine: #5f6368;
+  --ligne: #dadce0;
+  --ligne-douce: #e8eaed;
+  --accent: #1a73e8;
+  --accent-fonce: #174ea6;
+  --accent-doux: #e8f0fe;
+  --accent-encre: #ffffff;
+  --vert: #188038;
+  --vert-doux: #e6f4ea;
+  --ambre: #b06000;
+  --ambre-fond: #fef7e0;
+  --ambre-ligne: #feefc3;
+  --rouge: #c5221f;
+  --rouge-fond: #fce8e6;
+  --ombre-1: 0 1px 2px rgba(60, 64, 67, .3), 0 1px 3px 1px rgba(60, 64, 67, .15);
+  --ombre-2: 0 1px 3px rgba(60, 64, 67, .3), 0 4px 8px 3px rgba(60, 64, 67, .15);
 }
-.suggestions {
-  position: absolute; z-index: 30; top: 100%; left: 0; right: 0;
-  margin: .25rem 0 0; padding: .25rem; list-style: none;
-  background: var(--carte); border: 1px solid var(--ligne); border-radius: 10px;
-  box-shadow: 0 8px 24px rgba(10, 20, 50, .18);
-  max-height: 15rem; overflow-y: auto;
-  /* Le panneau déborde volontairement de sa colonne : à la largeur d'un
-     demi-champ, les noms d'aéroport se casseraient sur quatre lignes. */
-  min-width: min(17rem, 76vw);
+@media (prefers-color-scheme: dark) {
+  :root {
+    --fond: #202124;
+    --surface: #303134;
+    --surface-douce: #35363a;
+    --encre: #e8eaed;
+    --sourdine: #9aa0a6;
+    --ligne: #5f6368;
+    --ligne-douce: #3c4043;
+    --accent: #8ab4f8;
+    --accent-fonce: #aecbfa;
+    --accent-doux: #283142;
+    --accent-encre: #202124;
+    --vert: #81c995;
+    --vert-doux: #1e3226;
+    --ambre: #fdd663;
+    --ambre-fond: #322a12;
+    --ambre-ligne: #4a3c17;
+    --rouge: #f28b82;
+    --rouge-fond: #3a1c1a;
+    --ombre-1: 0 1px 2px rgba(0, 0, 0, .5), 0 1px 3px 1px rgba(0, 0, 0, .3);
+    --ombre-2: 0 1px 3px rgba(0, 0, 0, .5), 0 4px 8px 3px rgba(0, 0, 0, .3);
+  }
 }
-.champ.lieu.vers-gauche .suggestions { left: auto; right: 0; }
-.suggestions li {
-  display: flex; justify-content: space-between; align-items: baseline; gap: .5rem;
-  padding: .5rem .55rem; border-radius: 7px; cursor: pointer;
-  min-height: 44px; box-sizing: border-box;
+:root[data-theme="light"] {
+  --fond: #f1f3f4; --surface: #ffffff; --surface-douce: #f8f9fa;
+  --encre: #202124; --sourdine: #5f6368; --ligne: #dadce0; --ligne-douce: #e8eaed;
+  --accent: #1a73e8; --accent-fonce: #174ea6; --accent-doux: #e8f0fe;
+  --accent-encre: #ffffff; --vert: #188038; --vert-doux: #e6f4ea;
+  --ambre: #b06000; --ambre-fond: #fef7e0; --ambre-ligne: #feefc3;
+  --rouge: #c5221f; --rouge-fond: #fce8e6;
 }
-.suggestions li.actif, .suggestions li:hover { background: var(--accent-doux); }
-.suggestions .principal { display: flex; flex-direction: column; min-width: 0; }
-.suggestions .titre {
-  font-weight: 650; font-size: .95rem;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+:root[data-theme="dark"] {
+  --fond: #202124; --surface: #303134; --surface-douce: #35363a;
+  --encre: #e8eaed; --sourdine: #9aa0a6; --ligne: #5f6368; --ligne-douce: #3c4043;
+  --accent: #8ab4f8; --accent-fonce: #aecbfa; --accent-doux: #283142;
+  --accent-encre: #202124; --vert: #81c995; --vert-doux: #1e3226;
+  --ambre: #fdd663; --ambre-fond: #322a12; --ambre-ligne: #4a3c17;
+  --rouge: #f28b82; --rouge-fond: #3a1c1a;
 }
-.suggestions .detail {
-  color: var(--sourdine); font-size: .78rem;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--fond); color: var(--encre);
+  font-family: Roboto, "Helvetica Neue", system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size: 14px; line-height: 1.45;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-font-smoothing: antialiased;
 }
-.suggestions .code {
-  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-  font-size: .82rem; color: var(--sourdine); flex-shrink: 0;
+.mono { font-variant-numeric: tabular-nums; }
+.page { max-width: 46rem; margin: 0 auto; padding: 0 .75rem 3rem; }
+
+/* --- En-tête ------------------------------------------------------------- */
+header {
+  display: flex; align-items: baseline; justify-content: space-between;
+  gap: .5rem; flex-wrap: wrap; padding: 1rem .25rem .75rem;
 }
-.suggestions li.tous { border-bottom: 1px dashed var(--ligne); border-radius: 7px 7px 0 0; }
-.suggestions li.tous .titre { color: var(--accent); }
-.suggestions li.tous .code { color: var(--accent); font-weight: 700; }
-.suggestions li.aeroport { padding-left: 1.5rem; }
-.suggestions li.aeroport .titre { font-weight: 500; font-size: .92rem; }
-.suggestions .vide { color: var(--sourdine); font-size: .88rem; padding: .5rem .55rem; cursor: default; }
-.suggestions .vide:hover { background: none; }
+header .marque {
+  display: flex; align-items: baseline; gap: .4rem;
+  font-size: 1.35rem; font-weight: 400; letter-spacing: -.01em; color: var(--encre);
+}
+header .marque .total { color: var(--accent); font-weight: 500; }
+header .accroche { color: var(--sourdine); font-size: .8125rem; }
+
+/* --- Surfaces ------------------------------------------------------------ */
+.carte {
+  background: var(--surface); border-radius: 8px;
+  box-shadow: var(--ombre-1); padding: 1rem .9rem;
+}
 
 /* --- Bandeau de prix ------------------------------------------------------
-   Le prix est le produit : il occupe le haut de l'écran, seul contre son
-   fond, sans cadre criard. Le vert ne sert qu'au montant. */
+   Le prix est le produit : grande taille, vert Material, sans cadre criard. */
 .bandeau {
-  background: var(--carte); border: 1px solid var(--ligne);
-  border-radius: 16px; padding: .95rem 1rem .85rem;
-  box-shadow: 0 2px 10px rgba(10, 20, 50, .06);
-  margin-bottom: .7rem;
+  background: var(--surface); border-radius: 8px; box-shadow: var(--ombre-1);
+  padding: 1rem .9rem .85rem; margin-bottom: .75rem;
 }
 .bandeau-haut { display: flex; justify-content: space-between; align-items: baseline; gap: .8rem; }
 .bandeau .intitule {
-  font-size: .74rem; font-weight: 650; letter-spacing: .04em;
+  font-size: .75rem; font-weight: 500; letter-spacing: .05em;
   text-transform: uppercase; color: var(--sourdine); white-space: nowrap;
 }
 .bandeau .somme {
-  color: var(--vert); font-size: 2rem; font-weight: 780;
-  letter-spacing: -.03em; line-height: 1.05; white-space: nowrap;
+  color: var(--vert); font-size: 2rem; font-weight: 500;
+  letter-spacing: -.02em; line-height: 1.05; white-space: nowrap;
 }
-.bandeau-sous { font-size: .84rem; color: var(--sourdine); margin-top: .15rem; }
-.bandeau-sous strong { color: var(--encre); font-weight: 650; }
+.bandeau-sous { font-size: .8125rem; color: var(--sourdine); margin-top: .1rem; }
+.bandeau-sous strong { color: var(--encre); font-weight: 500; }
 .bandeau-trajets {
-  margin-top: .75rem; padding-top: .7rem; border-top: 1px solid var(--ligne);
-  display: flex; flex-direction: column; gap: .5rem;
+  margin-top: .85rem; padding-top: .75rem; border-top: 1px solid var(--ligne-douce);
+  display: flex; flex-direction: column; gap: .55rem;
 }
-.trajet-resume { display: flex; align-items: center; gap: .6rem; }
+.trajet-resume { display: flex; align-items: center; gap: .7rem; }
 .trajet-resume .sens {
-  flex-shrink: 0; width: 3.6rem;
-  font-size: .66rem; font-weight: 700; letter-spacing: .06em;
-  text-transform: uppercase; color: var(--accent);
+  flex-shrink: 0; width: 3.5rem;
+  font-size: .6875rem; font-weight: 500; letter-spacing: .04em;
+  text-transform: uppercase; color: var(--sourdine);
 }
 .trajet-resume .details { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 .trajet-resume .cie {
-  font-size: .9rem; font-weight: 600;
+  font-size: .875rem; font-weight: 500;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-.trajet-resume .route { font-size: .76rem; color: var(--sourdine); }
-.trajet-resume .montant { font-size: .92rem; font-weight: 650; flex-shrink: 0; }
+.trajet-resume .route { font-size: .75rem; color: var(--sourdine); }
+.trajet-resume .montant { font-size: .9375rem; font-weight: 500; flex-shrink: 0; }
 
-/* --- Bandes de prix par jour --------------------------------------------- */
-.calendriers { display: flex; flex-direction: column; gap: .5rem; margin-top: .7rem; }
-.cal-titre {
-  font-size: .64rem; font-weight: 700; letter-spacing: .06em;
+.panne {
+  background: var(--rouge-fond); color: var(--rouge);
+  border-radius: 8px; padding: .85rem .9rem; font-size: .875rem;
+}
+
+/* --- Formulaire ---------------------------------------------------------- */
+.type-trajet {
+  display: inline-flex; gap: .35rem; margin-bottom: .85rem;
+}
+.type-trajet button {
+  border: 1px solid var(--ligne); border-radius: 999px;
+  padding: .4rem .95rem; min-height: 36px;
+  background: var(--surface); color: var(--encre);
+  font: inherit; font-size: .8125rem; font-weight: 500; cursor: pointer;
+}
+.type-trajet button[aria-pressed="true"] {
+  background: var(--accent-doux); border-color: var(--accent-doux); color: var(--accent);
+}
+
+.trajet { display: grid; grid-template-columns: 1fr auto 1fr; gap: .4rem; align-items: end; }
+.dates { display: grid; grid-template-columns: 1fr 1fr; gap: .5rem; margin-top: .6rem; }
+.dates.simple { grid-template-columns: 1fr; }
+
+.champ label {
+  display: block; font-size: .6875rem; font-weight: 500; letter-spacing: .03em;
   text-transform: uppercase; color: var(--sourdine); margin-bottom: .25rem;
 }
-.cal-bande {
-  display: flex; gap: .3rem; overflow-x: auto; padding-bottom: .2rem;
-  scrollbar-width: thin;
+.champ input {
+  width: 100%; padding: .6rem .65rem; min-height: 48px;
+  border: 1px solid var(--ligne); border-radius: 4px;
+  background: var(--surface); color: var(--encre);
+  font: inherit; font-size: .9375rem;
 }
+.champ input:focus {
+  outline: none; border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent);
+}
+.inverser {
+  width: 40px; height: 48px; border: 1px solid var(--ligne); border-radius: 4px;
+  background: var(--surface); color: var(--accent); font-size: 1.05rem; cursor: pointer;
+}
+input:focus-visible, button:focus-visible, summary:focus-visible, select:focus-visible {
+  outline: 2px solid var(--accent); outline-offset: 2px;
+}
+
+/* --- Sélecteur de ville / aéroport --------------------------------------- */
+.champ.lieu { position: relative; }
+.suggestions {
+  position: absolute; z-index: 30; top: 100%; left: 0; right: 0;
+  margin: .25rem 0 0; padding: .5rem 0; list-style: none;
+  background: var(--surface); border-radius: 8px; box-shadow: var(--ombre-2);
+  max-height: 16rem; overflow-y: auto;
+  /* Le panneau déborde volontairement de sa colonne : à la largeur d'un
+     demi-champ, les noms d'aéroport se casseraient sur quatre lignes. */
+  min-width: min(18rem, 78vw);
+}
+.champ.lieu.vers-gauche .suggestions { left: auto; right: 0; }
+.suggestions li {
+  display: flex; justify-content: space-between; align-items: center; gap: .6rem;
+  padding: .55rem .9rem; cursor: pointer; min-height: 48px;
+}
+.suggestions li.actif, .suggestions li:hover { background: var(--surface-douce); }
+.suggestions .principal { display: flex; flex-direction: column; min-width: 0; }
+.suggestions .titre {
+  font-size: .9375rem; font-weight: 400;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.suggestions .detail {
+  color: var(--sourdine); font-size: .75rem;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.suggestions .code {
+  font-size: .75rem; color: var(--sourdine); flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+}
+.suggestions li.tous { border-bottom: 1px solid var(--ligne-douce); }
+.suggestions li.tous .titre { font-weight: 500; }
+.suggestions li.tous .code { color: var(--accent); font-weight: 500; }
+.suggestions li.aeroport { padding-left: 1.6rem; }
+.suggestions .vide { color: var(--sourdine); font-size: .875rem; cursor: default; }
+.suggestions .vide:hover { background: none; }
+
+/* --- Bandes de prix par jour --------------------------------------------- */
+.calendriers { display: flex; flex-direction: column; gap: .55rem; margin-top: .8rem; }
+.cal-titre {
+  font-size: .6875rem; font-weight: 500; letter-spacing: .03em;
+  text-transform: uppercase; color: var(--sourdine); margin-bottom: .3rem;
+}
+.cal-bande { display: flex; gap: .35rem; overflow-x: auto; padding-bottom: .25rem; }
 .cal-jour {
-  flex: 0 0 auto; min-width: 3.9rem;
+  flex: 0 0 auto; min-width: 4rem;
   display: flex; flex-direction: column; align-items: center; gap: .05rem;
-  padding: .4rem .35rem; border: 1px solid var(--ligne); border-radius: 9px;
-  background: var(--fond); color: var(--encre); font: inherit; cursor: pointer;
+  padding: .45rem .4rem; border: 1px solid var(--ligne); border-radius: 8px;
+  background: var(--surface); color: var(--encre); font: inherit; cursor: pointer;
 }
-.cal-jour-nom { font-size: .66rem; color: var(--sourdine); text-transform: capitalize; }
-.cal-jour-date { font-size: .78rem; font-weight: 600; }
+.cal-jour-nom { font-size: .6875rem; color: var(--sourdine); text-transform: capitalize; }
+.cal-jour-date { font-size: .8125rem; font-weight: 500; }
 .cal-jour-prix {
-  font-size: .82rem; font-weight: 700;
+  font-size: .8125rem; font-weight: 500;
   font-variant-numeric: tabular-nums; color: var(--sourdine);
 }
 .cal-jour.mini .cal-jour-prix { color: var(--vert); }
-.cal-jour.actif {
-  border-color: var(--accent); background: var(--accent-doux);
-  box-shadow: 0 0 0 1px var(--accent);
-}
-.cal-jour.actif .cal-jour-date { color: var(--accent); }
+.cal-jour.actif { border-color: var(--accent); background: var(--accent-doux); }
+.cal-jour.actif .cal-jour-date, .cal-jour.actif .cal-jour-nom { color: var(--accent); }
 
 /* --- Volets Voyageurs / Bagages ------------------------------------------ */
 .volet {
-  margin-top: .55rem; border: 1px solid var(--ligne);
-  border-radius: 10px; background: var(--fond);
+  margin-top: .6rem; border: 1px solid var(--ligne);
+  border-radius: 8px; background: var(--surface);
 }
 .volet > summary {
-  display: flex; justify-content: space-between; align-items: baseline; gap: .6rem;
-  padding: .65rem .75rem; min-height: 46px; box-sizing: border-box;
-  cursor: pointer; list-style: none;
+  display: flex; justify-content: space-between; align-items: center; gap: .6rem;
+  padding: .7rem .8rem; min-height: 48px; cursor: pointer; list-style: none;
 }
 .volet > summary::-webkit-details-marker { display: none; }
-.volet > summary::after { content: "▾"; color: var(--sourdine); font-size: .8rem; }
+.volet > summary::after { content: "▾"; color: var(--sourdine); font-size: .75rem; }
 .volet[open] > summary::after { content: "▴"; }
-.volet-titre { font-size: .92rem; font-weight: 650; }
+.volet-titre { font-size: .9375rem; font-weight: 500; }
 .volet-resume {
-  flex: 1; text-align: right; font-size: .82rem; color: var(--sourdine);
+  flex: 1; text-align: right; font-size: .8125rem; color: var(--sourdine);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-.volet-corps { padding: 0 .75rem .7rem; }
+.volet-corps { padding: 0 .8rem .75rem; }
 .ligne-compteur, .ligne-case {
   display: flex; justify-content: space-between; align-items: center; gap: .6rem;
-  padding: .45rem 0; border-top: 1px solid var(--ligne); min-height: 46px;
+  padding: .5rem 0; border-top: 1px solid var(--ligne-douce); min-height: 48px;
 }
 .ligne-case { cursor: pointer; }
-.ligne-compteur .nom, .ligne-case .nom { font-size: .92rem; display: block; }
+.ligne-compteur .nom, .ligne-case .nom { font-size: .9375rem; display: block; }
 .ligne-compteur .precision, .ligne-case .precision {
-  font-size: .74rem; color: var(--sourdine); display: block;
+  font-size: .75rem; color: var(--sourdine); display: block;
 }
 .ligne-case input[type="checkbox"] { width: 20px; height: 20px; accent-color: var(--accent); }
-.compteur { display: flex; align-items: center; gap: .1rem; flex-shrink: 0; }
+.compteur { display: flex; align-items: center; gap: .15rem; flex-shrink: 0; }
 .compteur button {
-  width: 34px; height: 34px; border-radius: 50%;
-  border: 1px solid var(--ligne); background: var(--carte); color: var(--accent);
-  font-size: 1.1rem; line-height: 1; cursor: pointer;
+  width: 36px; height: 36px; border-radius: 50%;
+  border: 1px solid var(--ligne); background: var(--surface); color: var(--accent);
+  font-size: 1.15rem; line-height: 1; cursor: pointer;
 }
 .compteur button:active { background: var(--accent-doux); }
 .compteur output {
-  min-width: 2rem; text-align: center; font-size: 1rem; font-weight: 650;
+  min-width: 2rem; text-align: center; font-size: .9375rem; font-weight: 500;
   font-variant-numeric: tabular-nums;
 }
-.ages { display: flex; flex-wrap: wrap; gap: .4rem; padding: .4rem 0; }
+.ages { display: flex; flex-wrap: wrap; gap: .45rem; padding: .45rem 0; }
 .ages .age { display: flex; flex-direction: column; gap: .15rem; }
-.ages .age span { font-size: .7rem; color: var(--sourdine); }
+.ages .age span { font-size: .6875rem; color: var(--sourdine); }
 .ages select {
-  padding: .35rem .4rem; border: 1px solid var(--ligne); border-radius: 8px;
-  background: var(--carte); color: var(--encre); font-size: .9rem; min-height: 38px;
+  padding: .4rem .45rem; min-height: 40px;
+  border: 1px solid var(--ligne); border-radius: 4px;
+  background: var(--surface); color: var(--encre); font: inherit; font-size: .875rem;
 }
 .sous-titre {
-  margin-top: .6rem; padding-top: .55rem; border-top: 1px solid var(--ligne);
-  font-size: .76rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase;
+  margin-top: .65rem; padding-top: .6rem; border-top: 1px solid var(--ligne-douce);
+  font-size: .75rem; font-weight: 500; letter-spacing: .03em; text-transform: uppercase;
   color: var(--sourdine);
 }
 .sous-titre .precision { text-transform: none; letter-spacing: 0; font-weight: 400; }
-.note-volet { font-size: .76rem; color: var(--sourdine); margin: .5rem 0 0; }
+.note-volet { font-size: .75rem; color: var(--sourdine); margin: .55rem 0 0; }
+
+.avertissement {
+  margin-top: .7rem; padding: .6rem .8rem; border-radius: 4px;
+  background: var(--ambre-fond); color: var(--ambre); font-size: .875rem;
+}
+
+/* --- Résultats ------------------------------------------------------------
+   Une liste plate, séparée par des filets : c'est la densité calme de
+   Google Flights, là où une pile de cartes fatigue vite l'œil. */
+#resultats { margin-top: 1rem; }
+.bandeau-demo {
+  padding: .65rem .85rem; border-radius: 8px; margin-bottom: .75rem;
+  background: var(--ambre-fond); color: var(--ambre); font-size: .8125rem;
+}
+.titre-direction {
+  margin: 1.1rem .25rem .4rem; font-size: .9375rem; font-weight: 500;
+}
+.titre-direction .sous { color: var(--sourdine); font-weight: 400; font-size: .8125rem; }
+
+.liste-vols {
+  background: var(--surface); border-radius: 8px;
+  box-shadow: var(--ombre-1); overflow: hidden;
+}
+.vol { border-top: 1px solid var(--ligne-douce); }
+.vol:first-child { border-top: 0; }
+.vol.choisi { background: var(--accent-doux); }
+.vol-ligne {
+  display: grid; grid-template-columns: 1fr auto; gap: .7rem; align-items: start;
+  width: 100%; padding: .85rem .9rem .75rem;
+  background: none; border: 0; font: inherit; color: inherit;
+  text-align: left; cursor: pointer;
+}
+.vol-heures { font-size: 1rem; font-weight: 500; letter-spacing: -.01em; }
+.vol-cie { font-size: .8125rem; color: var(--sourdine); margin-top: .1rem; }
+.vol-duree { font-size: .8125rem; color: var(--sourdine); }
+.vol-prix { text-align: right; }
+.vol-prix .montant {
+  font-size: 1.05rem; font-weight: 500; color: var(--vert);
+  font-variant-numeric: tabular-nums;
+}
+.vol-prix .barre {
+  font-size: .75rem; color: var(--sourdine); text-decoration: line-through;
+  font-variant-numeric: tabular-nums;
+}
+.vol-prix .mention { font-size: .6875rem; color: var(--sourdine); }
+.badges { display: flex; gap: .3rem; flex-wrap: wrap; margin-top: .35rem; }
+.badge {
+  font-size: .6875rem; font-weight: 500; padding: .1rem .45rem;
+  border-radius: 4px; background: var(--vert-doux); color: var(--vert);
+}
+.badge.choix { background: var(--accent-doux); color: var(--accent); }
+.vol-detail { padding: 0 .9rem .8rem; }
+.vol-detail summary {
+  cursor: pointer; color: var(--accent); font-size: .8125rem;
+  min-height: 32px; display: flex; align-items: center; list-style-position: inside;
+}
+.vol-detail table {
+  margin-top: .4rem; border-collapse: collapse; width: 100%; font-size: .8125rem;
+}
+.vol-detail td { padding: .2rem 0; }
+.vol-detail td:first-child { color: var(--sourdine); }
+.vol-detail td:last-child { text-align: right; font-variant-numeric: tabular-nums; }
+.sans-frais { padding: 0 .9rem .8rem; color: var(--vert); font-size: .8125rem; }
+.etiquette {
+  font-size: .625rem; font-weight: 500; text-transform: uppercase;
+  letter-spacing: .03em; color: var(--vert); margin-left: .3rem;
+}
+
+footer {
+  margin-top: 1.6rem; color: var(--sourdine); font-size: .75rem;
+  border-top: 1px solid var(--ligne); padding-top: .9rem;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .vol, .cal-jour, .type-trajet button { transition: background-color .12s ease; }
+}

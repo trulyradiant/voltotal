@@ -4,6 +4,9 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>VolTotal — vols au prix réel</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap">
   <link rel="stylesheet" href="{{ url_for('static', filename='voltotal.css') }}">
 </head>
 <body>
@@ -288,36 +291,37 @@ function indexChoisi(liste, sens) {
   return 0; // à défaut, le moins cher au prix réel
 }
 
-function carteBillet(r, sens, index, choisi, options) {
+function carteBillet(r, sens, index, choisi, options, moinsCher) {
   var v = r.vol, h = Math.floor(v.duree_minutes / 60), m = v.duree_minutes % 60, bas;
   if (r.surcouts.lignes.length) {
     var lignes = r.surcouts.lignes.map(function (l) {
       return '<tr><td>' + echapper(l.libelle) +
         (l.source === "compagnie" ? ' <span class="etiquette">tarif compagnie</span>' : '') +
-        '</td><td class="mono">+ ' + euros(l.total) + '</td></tr>';
+        '</td><td>+ ' + euros(l.total) + '</td></tr>';
     }).join("");
-    bas = '<details><summary>Détail des frais : ' + euros(r.surcouts.total) +
+    bas = '<details class="vol-detail"><summary>Détail des frais : ' + euros(r.surcouts.total) +
       (r.surcouts.confirme ? " ✔" : " (estimation)") + '</summary>' +
       '<table><tr><td>Billet' + (options.passagersPayants > 1 ? "s" : "") + '</td>' +
-      '<td class="mono">' + euros(r.prixBase) + '</td></tr>' + lignes + '</table></details>';
+      '<td>' + euros(r.prixBase) + '</td></tr>' + lignes + '</table></details>';
   } else {
     bas = '<div class="sans-frais">Aucun frais caché avec vos options ✔</div>';
   }
-  return '<article class="carte billet' + (choisi ? " choisi" : "") + '">' +
-    '<button type="button" class="zone" data-sens="' + sens + '" data-index="' + index + '" ' +
+  var badges = "";
+  if (moinsCher) badges += '<span class="badge">Prix le plus bas</span>';
+  if (choisi) badges += '<span class="badge choix">Choisi</span>';
+  return '<article class="vol' + (choisi ? " choisi" : "") + '">' +
+    '<button type="button" class="vol-ligne" data-sens="' + sens + '" data-index="' + index + '" ' +
     'aria-pressed="' + choisi + '"><span>' +
-    '<span class="compagnie">' + echapper(v.nom) +
-      ' <span class="numero mono">· ' + echapper(v.numero) + '</span></span>' +
-    '<span class="horaires mono" style="display:block">' + heureTexte(v.depart) +
-      ' — ' + heureTexte(v.arrivee) + '</span>' +
-    '<span class="trajet-detail" style="display:block">' + h + 'h' + (m < 10 ? "0" : "") + m +
+    '<span class="vol-heures">' + heureTexte(v.depart) + ' — ' + heureTexte(v.arrivee) + '</span>' +
+    '<span class="vol-cie" style="display:block">' + echapper(v.nom) + ' · ' + echapper(v.numero) + '</span>' +
+    '<span class="vol-duree" style="display:block">' + h + ' h ' + (m < 10 ? "0" : "") + m +
       ' · ' + (v.escales === 0 ? "direct" : v.escales + " escale") + '</span>' +
-    '</span><span class="prix">' +
-    (r.surcouts.total > 0 ? '<span class="appel mono" style="display:block">' + euros(r.prixBase) + '</span>' : "") +
-    '<span class="reel mono" style="display:block">' + euros(r.prixReel) + '</span>' +
-    '<span class="etiquette" style="display:block">prix réel</span>' +
-    (choisi ? '<span class="coche" style="display:block">Choisi ✔</span>' : "") +
-    '</span></button><hr class="perforation">' + bas + '</article>';
+    (badges ? '<span class="badges">' + badges + '</span>' : "") +
+    '</span><span class="vol-prix">' +
+    (r.surcouts.total > 0 ? '<span class="barre" style="display:block">' + euros(r.prixBase) + '</span>' : "") +
+    '<span class="montant" style="display:block">' + euros(r.prixReel) + '</span>' +
+    '<span class="mention" style="display:block">prix réel</span>' +
+    '</span></button>' + bas + '</article>';
 }
 
 /* --- Le bandeau de prix, en tête de page --- */
@@ -437,20 +441,22 @@ function rendre(criteres, donneesAller, donneesRetour) {
       '« tarif compagnie » sont ceux publiés par la compagnie pour cette offre.</div>';
 
   html += '<h2 class="titre-direction">Aller · ' + criteres.origine + ' → ' + criteres.destination +
-    ' <span class="sous">' + dateTexte(criteres.dateAller) + '</span></h2>';
+    ' <span class="sous">' + dateTexte(criteres.dateAller) + '</span></h2><div class="liste-vols">';
   for (var i = 0; i < listeAller.length; i++)
-    html += carteBillet(listeAller[i], "aller", i, i === iAller, opt);
+    html += carteBillet(listeAller[i], "aller", i, i === iAller, opt, i === 0);
+  html += '</div>';
 
   if (listeRetour && listeRetour.length) {
     html += '<h2 class="titre-direction">Retour · ' + criteres.destination + ' → ' + criteres.origine +
-      ' <span class="sous">' + dateTexte(criteres.dateRetour) + '</span></h2>';
+      ' <span class="sous">' + dateTexte(criteres.dateRetour) + '</span></h2><div class="liste-vols">';
     for (var j = 0; j < listeRetour.length; j++)
-      html += carteBillet(listeRetour[j], "retour", j, j === iRetour, opt);
+      html += carteBillet(listeRetour[j], "retour", j, j === iRetour, opt, j === 0);
+    html += '</div>';
   }
 
   var conteneur = document.getElementById("resultats");
   conteneur.innerHTML = html;
-  var zones = conteneur.querySelectorAll(".zone");
+  var zones = conteneur.querySelectorAll(".vol-ligne");
   for (var k = 0; k < zones.length; k++) {
     zones[k].addEventListener("click", function () {
       choixMemorise[this.getAttribute("data-sens")] =

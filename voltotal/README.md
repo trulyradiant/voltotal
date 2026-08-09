@@ -75,7 +75,24 @@ mêmes résultats), surcoûts calculés avec la grille interne.
 
 Le fichier `demo_statique.html` est une version autonome de l'interface
 (HTML + JavaScript, sans serveur) : elle s'ouvre directement dans un
-navigateur ou un téléphone, uniquement en mode démonstration.
+navigateur ou un téléphone, uniquement en mode démonstration. C'est un
+**instantané simplifié**, figé à une version antérieure : il n'a ni la
+saisie par ville, ni les voyageurs détaillés, ni la bande de prix par jour,
+qui demandent toutes un serveur.
+
+## Habillage
+
+L'interface suit les conventions de **Material Design**, la langue visuelle
+de Google Flights : surfaces blanches posées sur un fond gris clair, ombres
+douces plutôt que bordures marquées, bleu `#1a73e8` pour l'action, vert
+`#188038` réservé au prix, et des résultats en **liste plate séparée par des
+filets** plutôt qu'en pile de cartes. Roboto est chargée depuis Google Fonts,
+avec repli sur la police système (Roboto nativement sur Android) si la
+requête échoue.
+
+Il s'agit d'une reprise des conventions publiques de Material Design, pas
+d'une copie de la marque : aucun logo ni élément d'identité Google n'est
+utilisé.
 
 ## Brancher les vols en temps réel
 
