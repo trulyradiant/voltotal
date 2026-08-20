@@ -1,0 +1,5 @@
+# VolTotal n'a pas de base de données : Flask, un serveur, et de quoi lire
+# un fichier .env en local. Rien de plus.
+Flask==3.0.3
+gunicorn==22.0.0
+python-dotenv==1.1.1

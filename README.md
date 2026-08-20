@@ -65,7 +65,7 @@ la grille est affichée en bas de page.
 
 ```
 python -m venv .venv
-.venv/bin/pip install -r requirements.txt      # celui à la racine du dépôt
+.venv/bin/pip install -r requirements.txt
 .venv/bin/python -m voltotal.wsgi
 ```
 
@@ -156,9 +156,10 @@ Aucune API publique ne donne le tarif du **choix de siège** ni de
 l'**enregistrement à l'aéroport** : ces deux montants restent estimés par la
 grille interne, et l'affichage le signale.
 
-## Déploiement (Railway, comme MailGuard)
+## Déploiement (Railway)
 
-Créez un second service sur le même dépôt avec la commande de démarrage :
+Créez un service sur ce dépôt. Le `Procfile` s'applique automatiquement —
+rien à saisir. Pour la fixer explicitement :
 
 ```
 gunicorn voltotal.wsgi:app --bind 0.0.0.0:${PORT:-8080} --workers 2 --threads 4
