@@ -10,7 +10,8 @@
       "enregistrement_aeroport": 55.0,
       "cabine_incluse": false,
       "equipement_sportif": 60.0,
-      "velo": 60.0
+      "velo": 60.0,
+      "site": "https://www.ryanair.com/fr/fr"
     },
     "U2": {
       "nom": "easyJet",
@@ -20,7 +21,8 @@
       "enregistrement_aeroport": 0.0,
       "cabine_incluse": false,
       "equipement_sportif": 47.0,
-      "velo": 47.0
+      "velo": 47.0,
+      "site": "https://www.easyjet.com/fr"
     },
     "VY": {
       "nom": "Vueling",
@@ -30,7 +32,8 @@
       "enregistrement_aeroport": 0.0,
       "cabine_incluse": false,
       "equipement_sportif": 50.0,
-      "velo": 60.0
+      "velo": 60.0,
+      "site": "https://www.vueling.com/fr"
     },
     "W6": {
       "nom": "Wizz Air",
@@ -40,7 +43,8 @@
       "enregistrement_aeroport": 35.0,
       "cabine_incluse": false,
       "equipement_sportif": 60.0,
-      "velo": 60.0
+      "velo": 60.0,
+      "site": "https://wizzair.com/fr-fr"
     },
     "TO": {
       "nom": "Transavia France",
@@ -50,7 +54,8 @@
       "enregistrement_aeroport": 0.0,
       "cabine_incluse": false,
       "equipement_sportif": 50.0,
-      "velo": 60.0
+      "velo": 60.0,
+      "site": "https://www.transavia.com/fr-FR"
     },
     "HV": {
       "nom": "Transavia",
@@ -60,7 +65,8 @@
       "enregistrement_aeroport": 0.0,
       "cabine_incluse": false,
       "equipement_sportif": 50.0,
-      "velo": 60.0
+      "velo": 60.0,
+      "site": "https://www.transavia.com/fr-FR"
     },
     "V7": {
       "nom": "Volotea",
@@ -70,7 +76,8 @@
       "enregistrement_aeroport": 0.0,
       "cabine_incluse": false,
       "equipement_sportif": 50.0,
-      "velo": 60.0
+      "velo": 60.0,
+      "site": "https://www.volotea.com/fr"
     },
     "AF": {
       "nom": "Air France",
@@ -80,7 +87,8 @@
       "enregistrement_aeroport": 0.0,
       "cabine_incluse": true,
       "equipement_sportif": 55.0,
-      "velo": 55.0
+      "velo": 55.0,
+      "site": "https://www.airfrance.fr"
     },
     "KL": {
       "nom": "KLM",
@@ -90,7 +98,8 @@
       "enregistrement_aeroport": 0.0,
       "cabine_incluse": true,
       "equipement_sportif": 55.0,
-      "velo": 55.0
+      "velo": 55.0,
+      "site": "https://www.klm.fr"
     },
     "LH": {
       "nom": "Lufthansa",
@@ -100,7 +109,8 @@
       "enregistrement_aeroport": 0.0,
       "cabine_incluse": true,
       "equipement_sportif": 70.0,
-      "velo": 70.0
+      "velo": 70.0,
+      "site": "https://www.lufthansa.com/fr/fr"
     },
     "IB": {
       "nom": "Iberia",
@@ -110,7 +120,8 @@
       "enregistrement_aeroport": 0.0,
       "cabine_incluse": true,
       "equipement_sportif": 70.0,
-      "velo": 70.0
+      "velo": 70.0,
+      "site": "https://www.iberia.com/fr"
     },
     "TP": {
       "nom": "TAP Air Portugal",
@@ -120,7 +131,8 @@
       "enregistrement_aeroport": 0.0,
       "cabine_incluse": true,
       "equipement_sportif": 60.0,
-      "velo": 60.0
+      "velo": 60.0,
+      "site": "https://www.flytap.com/fr-fr"
     }
   },
   "defaut": {
@@ -131,6 +143,7 @@
     "enregistrement_aeroport": 0.0,
     "cabine_incluse": false,
     "equipement_sportif": 75.0,
-    "velo": 85.0
+    "velo": 85.0,
+    "site": null
   }
 }

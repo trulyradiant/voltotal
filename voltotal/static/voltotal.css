@@ -366,3 +366,23 @@ footer {
 @media (prefers-reduced-motion: no-preference) {
   .vol, .cal-jour, .type-trajet button { transition: background-color .12s ease; }
 }
+
+/* --- Réservation ---------------------------------------------------------
+   VolTotal s'arrête au bon prix ; l'achat se fait chez la compagnie. Le
+   bouton est donc net mais second, sous le récapitulatif du voyage. */
+.bandeau .reserver {
+  display: block; margin-top: .8rem; padding: .7rem 1rem;
+  border-radius: 4px; background: var(--accent); color: var(--accent-encre);
+  font-size: .9375rem; font-weight: 500; text-align: center; text-decoration: none;
+  min-height: 44px; box-sizing: border-box;
+}
+.bandeau .reserver:active { background: var(--accent-fonce); }
+.bandeau .reserver-note {
+  margin-top: .5rem; font-size: .75rem; color: var(--sourdine); text-align: center;
+}
+.reserver-vol { padding: 0 .9rem .8rem; }
+.reserver-vol a {
+  color: var(--accent); font-size: .8125rem; text-decoration: none;
+  display: inline-flex; align-items: center; min-height: 32px;
+}
+.reserver-vol a:hover { text-decoration: underline; }

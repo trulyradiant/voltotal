@@ -190,7 +190,24 @@ dans les Variables du service pour activer le temps réel. Vérifiez ensuite
 python -m unittest discover -t . -s voltotal
 ```
 
-57 tests, sans aucun appel réseau : les réponses des API sont simulées.
+60 tests, sans aucun appel réseau : les réponses des API sont simulées.
+
+## Réserver
+
+VolTotal compare et calcule ; il ne vend pas de billet. Deux sorties sont
+proposées une fois le vol choisi :
+
+- **Sur chaque vol**, un lien vers la page de réservation de la compagnie.
+  C'est délibérément l'accueil de son site, et non un lien profond
+  pré-rempli : la forme de ces URL change souvent, et un lien périmé
+  enverrait le voyageur sur une page d'erreur au moment de payer.
+- **Sous le récapitulatif**, un lien vers une recherche Google Flights
+  pré-remplie avec le trajet, les dates et le nombre de voyageurs. La
+  requête est écrite en toutes lettres plutôt qu'en paramètres figés, pour
+  la même raison de durabilité.
+
+Ces liens sortent vers des sites tiers : leur bon fonctionnement dépend de
+ces sites et ne peut pas être couvert par les tests.
 
 ## Limites connues
 

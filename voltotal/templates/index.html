@@ -306,6 +306,12 @@ function carteBillet(r, sens, index, choisi, options, moinsCher) {
   } else {
     bas = '<div class="sans-frais">Aucun frais caché avec vos options ✔</div>';
   }
+  // Le lien mène à l'accueil du site de la compagnie : c'est là qu'on paie
+  // le tarif qu'on vient de calculer, sans passer par un intermédiaire.
+  if (v.site)
+    bas += '<div class="reserver-vol"><a href="' + echapper(v.site) +
+      '" target="_blank" rel="noopener noreferrer">Réserver sur ' +
+      echapper(v.nom) + ' ↗</a></div>';
   var badges = "";
   if (moinsCher) badges += '<span class="badge">Prix le plus bas</span>';
   if (choisi) badges += '<span class="badge choix">Choisi</span>';
@@ -322,6 +328,19 @@ function carteBillet(r, sens, index, choisi, options, moinsCher) {
     '<span class="montant" style="display:block">' + euros(r.prixReel) + '</span>' +
     '<span class="mention" style="display:block">prix réel</span>' +
     '</span></button>' + bas + '</article>';
+}
+
+/* Lien de recherche pré-rempli vers Google Flights. On y envoie le trajet,
+   les dates et le nombre de voyageurs sous forme de requête en toutes
+   lettres : ce format tolère les variations, là où des paramètres d'URL
+   figés se périment. */
+function lienComparateur(c) {
+  var o = c.options;
+  var q = "Vols de " + c.origine + " à " + c.destination + " le " + c.dateAller;
+  if (c.dateRetour) q += " retour le " + c.dateRetour;
+  q += " pour " + o.adultes + " adulte" + (o.adultes > 1 ? "s" : "");
+  if (o.enfants.length) q += " et " + o.enfants.length + " enfant" + (o.enfants.length > 1 ? "s" : "");
+  return "https://www.google.com/travel/flights?q=" + encodeURIComponent(q);
 }
 
 /* --- Le bandeau de prix, en tête de page --- */
@@ -353,6 +372,10 @@ function rendreSommaire(aller, retour, criteres) {
         trajet("Aller", aller, criteres.origine, criteres.destination) +
         (retour ? trajet("Retour", retour, criteres.destination, criteres.origine) : "") +
       '</div>' +
+      '<a class="reserver" href="' + lienComparateur(criteres) +
+        '" target="_blank" rel="noopener noreferrer">Voir les offres et réserver ↗</a>' +
+      '<div class="reserver-note">VolTotal compare et calcule ; la réservation se fait ' +
+        'chez la compagnie. Vérifiez que les options facturées correspondent.</div>' +
     '</div>';
 }
 

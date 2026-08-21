@@ -33,6 +33,15 @@ class GrilleFrais:
     def nom_compagnie(self, code: str) -> str:
         return self.compagnies.get(code.upper(), {}).get("nom", code.upper())
 
+    def site_reservation(self, code: str) -> str | None:
+        """Page de réservation officielle de la compagnie, si on la connaît.
+
+        Volontairement l'accueil du site et non un lien profond pré-rempli :
+        la forme de ces URL change souvent, et un lien périmé enverrait le
+        voyageur sur une page d'erreur au moment de payer.
+        """
+        return (self.compagnies.get(code.upper()) or {}).get("site")
+
     def _prix_cabine(self, grille: dict) -> float:
         """Prix du bagage cabine lorsqu'il n'est pas compris.
 

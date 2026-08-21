@@ -123,6 +123,7 @@ def create_app() -> Flask:
                     "duree_minutes": vol.duree_minutes,
                     "escales": vol.escales,
                     "prix_affiche": vol.prix_affiche,
+                    "site": grille.site_reservation(vol.compagnie),
                     "frais": grille.tarifs(vol),
                 }
                 for vol in resultat.vols

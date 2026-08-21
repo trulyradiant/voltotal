@@ -564,3 +564,31 @@ class TestModeDuffel(unittest.TestCase):
         corps = reponse.get_data(as_text=True)
         self.assertEqual(json.loads(corps)["duffel_mode"], "live")
         self.assertNotIn("secret", corps)  # le jeton ne fuite jamais
+
+
+class TestReservation(unittest.TestCase):
+    """Le voyageur doit pouvoir agir sur le prix qu'on lui a calculé."""
+
+    def setUp(self):
+        self.grille = GrilleFrais()
+
+    def test_site_connu_pour_les_compagnies_de_la_grille(self):
+        for code in ("FR", "U2", "AF", "KL", "VY", "W6", "TO", "V7", "LH", "IB", "TP"):
+            site = self.grille.site_reservation(code)
+            self.assertIsNotNone(site, code)
+            self.assertTrue(site.startswith("https://"), code)
+
+    def test_compagnie_inconnue_sans_site(self):
+        """Mieux vaut aucun lien qu'un lien inventé menant à une erreur."""
+        self.assertIsNone(self.grille.site_reservation("ZZ"))
+
+    def test_site_expose_par_l_api(self):
+        from voltotal.app import create_app
+        from voltotal import fournisseurs
+        fournisseurs._cache.clear()
+        reponse = create_app().test_client().get(
+            "/api/vols?origine=CDG&destination=BCN&date=2026-10-01")
+        vols = json.loads(reponse.get_data(as_text=True))["vols"]
+        self.assertTrue(vols)
+        for vol in vols:
+            self.assertIn("site", vol)
