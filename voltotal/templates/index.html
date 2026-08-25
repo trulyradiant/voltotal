@@ -153,6 +153,35 @@
       </div>
     </details>
 
+    <details class="volet" id="volet_filtres">
+      <summary><span class="volet-titre">Filtres</span>
+        <span class="volet-resume" id="resume_filtres">aucun</span></summary>
+      <div class="volet-corps">
+        <label class="ligne-case">
+          <span><span class="nom">Vols directs seulement</span></span>
+          <input type="checkbox" id="f_direct">
+        </label>
+        <div class="ligne-compteur">
+          <div><span class="nom">Départ au plus tôt</span><span class="precision">heure locale</span></div>
+          <input type="time" id="f_depart_min" class="filtre-heure" value="00:00">
+        </div>
+        <div class="ligne-compteur">
+          <div><span class="nom">Départ au plus tard</span></div>
+          <input type="time" id="f_depart_max" class="filtre-heure" value="23:59">
+        </div>
+        <div class="ligne-compteur">
+          <div><span class="nom">Durée maximale</span><span class="precision">0 = sans limite</span></div>
+          <div class="compteur" data-cible="f_duree" data-min="0" data-max="24">
+            <button type="button" class="moins" aria-label="Une heure de moins">−</button>
+            <output id="f_duree">0</output>
+            <button type="button" class="plus" aria-label="Une heure de plus">+</button>
+          </div>
+        </div>
+        <div class="sous-titre">Compagnies <span class="precision">décochez pour exclure</span></div>
+        <div class="compagnies" id="f_compagnies"></div>
+      </div>
+    </details>
+
     <div id="avertissement" class="avertissement" hidden></div>
   </form>
 
@@ -283,6 +312,68 @@ function preparerResultats(vols, options) {
   });
   liste.sort(function (a, b) { return a.prixReel - b.prixReel; });
   return liste;
+}
+
+/* --- Filtres ------------------------------------------------------------
+   Ils s'appliquent dans le navigateur, sur les vols deja recus : affiner
+   une recherche ne doit pas coûter un appel reseau de plus. Les compagnies
+   exclues sont memorisees par code, pour survivre a un changement de date. */
+var compagniesExclues = {};
+
+function lireFiltres() {
+  var duree = valeur("f_duree");
+  return {
+    direct: document.getElementById("f_direct").checked,
+    departMin: document.getElementById("f_depart_min").value || "00:00",
+    departMax: document.getElementById("f_depart_max").value || "23:59",
+    dureeMax: duree > 0 ? duree * 60 : 0,
+    exclues: compagniesExclues
+  };
+}
+
+function retenu(r, f) {
+  var v = r.vol;
+  if (f.direct && v.escales > 0) return false;
+  if (f.dureeMax && v.duree_minutes > f.dureeMax) return false;
+  if (f.exclues[v.compagnie]) return false;
+  var heure = v.depart.slice(11, 16);
+  return heure >= f.departMin && heure <= f.departMax;
+}
+
+function resumeFiltres(f) {
+  var parts = [];
+  if (f.direct) parts.push("direct");
+  if (f.departMin !== "00:00" || f.departMax !== "23:59")
+    parts.push(f.departMin + "–" + f.departMax);
+  if (f.dureeMax) parts.push("≤ " + (f.dureeMax / 60) + " h");
+  var nb = 0;
+  for (var c in f.exclues) if (f.exclues[c]) nb++;
+  if (nb) parts.push(nb + " compagnie" + (nb > 1 ? "s" : "") + " exclue" + (nb > 1 ? "s" : ""));
+  return parts.length ? parts.join(", ") : "aucun";
+}
+
+/* La liste des compagnies depend des vols recus : on la reconstruit a
+   chaque recherche, en gardant les exclusions deja posees. */
+function majListeCompagnies(listes) {
+  var vues = {};
+  for (var i = 0; i < listes.length; i++)
+    if (listes[i])
+      for (var j = 0; j < listes[i].length; j++)
+        vues[listes[i][j].vol.compagnie] = listes[i][j].vol.nom;
+  var codes = Object.keys(vues).sort(function (a, b) { return vues[a].localeCompare(vues[b]); });
+  var zone = document.getElementById("f_compagnies");
+  zone.innerHTML = codes.map(function (code) {
+    var exclue = !!compagniesExclues[code];
+    return '<label class="' + (exclue ? "exclue" : "") + '"><input type="checkbox" ' +
+      'data-compagnie="' + code + '"' + (exclue ? "" : " checked") + '> ' +
+      echapper(vues[code]) + '</label>';
+  }).join("");
+  var cases = zone.querySelectorAll("input[data-compagnie]");
+  for (var k = 0; k < cases.length; k++)
+    cases[k].addEventListener("change", function () {
+      compagniesExclues[this.getAttribute("data-compagnie")] = !this.checked;
+      actualiser();
+    });
 }
 
 function indexChoisi(liste, sens) {
@@ -437,8 +528,25 @@ function majCalendriers(criteres) {
 
 function rendre(criteres, donneesAller, donneesRetour) {
   var opt = criteres.options;
-  var listeAller = preparerResultats(donneesAller.vols, opt);
-  var listeRetour = donneesRetour ? preparerResultats(donneesRetour.vols, opt) : null;
+  var toutAller = preparerResultats(donneesAller.vols, opt);
+  var toutRetour = donneesRetour ? preparerResultats(donneesRetour.vols, opt) : null;
+  majListeCompagnies([toutAller, toutRetour]);
+
+  var f = lireFiltres();
+  document.getElementById("resume_filtres").textContent = resumeFiltres(f);
+  function filtrer(liste) {
+    if (!liste) return null;
+    var gardes = liste.filter(function (r) { return retenu(r, f); });
+    // Un filtre qui ne laisse rien ne doit pas vider l'écran sans explication :
+    // on le signale et on retombe sur la liste complète.
+    return gardes.length ? gardes : null;
+  }
+  var allerFiltre = filtrer(toutAller);
+  var retourFiltre = toutRetour ? filtrer(toutRetour) : null;
+  var trop = (toutAller.length && !allerFiltre) || (toutRetour && toutRetour.length && !retourFiltre);
+  var listeAller = allerFiltre || toutAller;
+  var listeRetour = retourFiltre || toutRetour;
+
   if (!listeAller.length) {
     document.getElementById("sommaire").innerHTML =
       '<div class="panne">Aucun vol sur ' + criteres.origine + ' → ' +
@@ -455,6 +563,16 @@ function rendre(criteres, donneesAller, donneesRetour) {
   rendreSommaire(listeAller[iAller], iRetour === null ? null : listeRetour[iRetour], criteres);
 
   var html = "";
+  if (trop)
+    html += '<div class="aucun-vol">Aucun vol ne correspond à vos filtres — ' +
+      'la liste complète est affichée. Assouplissez-les pour affiner.</div>';
+  else {
+    var gardes = listeAller.length + (listeRetour ? listeRetour.length : 0);
+    var tous = toutAller.length + (toutRetour ? toutRetour.length : 0);
+    if (gardes < tous)
+      html += '<div class="aucun-vol">Filtres actifs : ' + gardes + ' vol(s) sur ' +
+        tous + ' affiché(s).</div>';
+  }
   if (!donneesAller.temps_reel)
     html += '<div class="bandeau-demo">' +
       (donneesAller.avertissement || "Mode démonstration : vols fictifs.") +
@@ -628,6 +746,7 @@ function actualiser() {
   var demandes = [chargerVols(origine, destination, dateAller, options)];
   if (dateRetour) demandes.push(chargerVols(destination, origine, dateRetour, options));
 
+  ecrireAdresse(criteres);
   Promise.all(demandes).then(function (reponses) {
     rendre(criteres, reponses[0], reponses[1] || null);
     majCalendriers(criteres);
@@ -638,7 +757,12 @@ function actualiser() {
 
 var form = document.getElementById("recherche");
 form.addEventListener("change", function (e) {
-  if (e.target.type === "checkbox" || e.target.tagName === "SELECT") actualiser();
+  // Les lieux et les dates ont leur propre traitement ; tout le reste —
+  // cases, listes, compteurs, champs d'heure — recalcule directement.
+  var t = e.target;
+  if (t === champOrigine || t === champDestination) return;
+  if (t === champAller || t === champRetour) return;
+  actualiser();
 });
 form.addEventListener("submit", function (e) { e.preventDefault(); actualiser(); });
 champAller.addEventListener("change", function () {
@@ -801,6 +925,76 @@ function installerSelecteurLieu(id) {
 installerSelecteurLieu("origine");
 installerSelecteurLieu("destination");
 
+/* --- Recherche mémorisée dans l'adresse ---------------------------------
+   Le trajet, les dates et les options passent dans l'URL : une recherche
+   devient partageable, plaçable en favori, et retrouvée au retour sur le
+   site. On remplace l'entrée d'historique au lieu d'en empiler une par
+   frappe, sinon le bouton Retour du téléphone devient inutilisable. */
+function ecrireAdresse(criteres) {
+  var o = criteres.options, p = [];
+  p.push("de=" + criteres.origine, "a=" + criteres.destination, "aller=" + criteres.dateAller);
+  if (criteres.dateRetour) p.push("retour=" + criteres.dateRetour);
+  if (o.adultes !== 1) p.push("adultes=" + o.adultes);
+  if (o.enfants.length) p.push("enfants=" + o.enfants.join(","));
+  if (o.bebes) p.push("bebes=" + o.bebes);
+  if (!o.bagageCabine) p.push("cabine=0");
+  if (o.bagagesSoute) p.push("soute=" + o.bagagesSoute);
+  if (o.choixSiege) p.push("siege=1");
+  if (o.enregistrementAeroport) p.push("aeroport=1");
+  for (var cle in EQUIPEMENTS)
+    if (o.equipements[cle]) p.push(cle + "=" + o.equipements[cle]);
+  try {
+    history.replaceState(null, "", location.pathname + "?" + p.join("&"));
+  } catch (e) { /* navigation privée ou navigateur restrictif : sans effet */ }
+}
+
+function lireAdresse() {
+  var params;
+  try { params = new URLSearchParams(location.search); } catch (e) { return false; }
+  var de = (params.get("de") || "").toUpperCase();
+  var a = (params.get("a") || "").toUpperCase();
+  if (!/^[A-Z]{3}$/.test(de) || !/^[A-Z]{3}$/.test(a)) return false;
+
+  codeOrigine.value = de; champOrigine.value = de;
+  codeDestination.value = a; champDestination.value = a;
+  if (params.get("aller")) champAller.value = params.get("aller");
+  if (params.get("retour")) champRetour.value = params.get("retour");
+  else if (params.has("aller")) basculerType(false);
+
+  poser("adultes", Math.max(1, Math.min(9, Number(params.get("adultes")) || 1)));
+  poser("bebes", Math.max(0, Math.min(4, Number(params.get("bebes")) || 0)));
+  var ages = (params.get("enfants") || "").split(",").filter(function (x) { return x; });
+  poser("enfants", Math.min(8, ages.length));
+  majAgesEnfants();
+  var selects = document.getElementById("ages_enfants").querySelectorAll("select");
+  for (var i = 0; i < selects.length && i < ages.length; i++) selects[i].value = ages[i];
+
+  document.getElementById("bagage_cabine").checked = params.get("cabine") !== "0";
+  poser("bagages_soute", Math.max(0, Math.min(3, Number(params.get("soute")) || 0)));
+  document.getElementById("choix_siege").checked = params.get("siege") === "1";
+  document.getElementById("enregistrement_aeroport").checked = params.get("aeroport") === "1";
+  for (var cle in EQUIPEMENTS)
+    poser("equip_" + cle, Math.max(0, Math.min(4, Number(params.get(cle)) || 0)));
+
+  // Le libellé lisible remplacera le code dès que la recherche de lieux répond.
+  [["origine", de], ["destination", a]].forEach(function (paire) {
+    fetch("/api/aeroports?q=" + paire[1]).then(function (r) { return r.json(); })
+      .then(function (d) {
+        var lieux = d.lieux || [];
+        for (var i = 0; i < lieux.length; i++) {
+          if (lieux[i].code_tous === paire[1])
+            return document.getElementById(paire[0]).value = lieux[i].ville + " — tous les aéroports";
+          for (var j = 0; j < lieux[i].aeroports.length; j++)
+            if (lieux[i].aeroports[j].code === paire[1])
+              return document.getElementById(paire[0]).value =
+                lieux[i].ville + " — " + lieux[i].aeroports[j].nom;
+        }
+      }).catch(function () {});
+  });
+  return true;
+}
+
+lireAdresse();
 actualiser(); // prix et vols affichés dès l'ouverture
 
 } catch (erreur) {

@@ -192,6 +192,25 @@ python -m unittest discover -t . -s voltotal
 
 60 tests, sans aucun appel réseau : les réponses des API sont simulées.
 
+## Filtrer
+
+Un volet **Filtres** affine la liste sans rappeler le serveur : vols directs
+seulement, plage horaire de départ, durée maximale, et exclusion de
+compagnies (la liste se construit à partir des vols réellement reçus).
+
+Un filtre qui ne laisse aucun vol **ne vide pas l'écran** : la liste
+complète reste affichée avec un message invitant à l'assouplir. Sinon on ne
+comprend pas si la recherche a échoué ou si le filtre est trop strict.
+
+## Recherche partageable
+
+Le trajet, les dates et toutes les options passent dans l'adresse
+(`?de=PAR&a=BCN&aller=…`). Une recherche devient donc partageable, plaçable
+en favori, et retrouvée telle quelle au retour sur le site.
+
+L'entrée d'historique est **remplacée** plutôt qu'empilée : sans cela, le
+bouton Retour du téléphone deviendrait inutilisable après quelques réglages.
+
 ## Réserver
 
 VolTotal compare et calcule ; il ne vend pas de billet. Deux sorties sont

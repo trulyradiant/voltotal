@@ -1,6 +1,6 @@
 {
-  "_commentaire": "Frais annexes indicatifs par compagnie, en euros, par passager et par trajet (aller simple). Les equipements sportifs (equipement_sportif, velo) se facturent a la piece et non par passager. Sources : grilles tarifaires publiques des compagnies. Mettre a jour regulierement.",
-  "_derniere_mise_a_jour": "2026-08-02",
+  "_commentaire": "Frais annexes indicatifs par compagnie, en euros. Bagages, siege et enregistrement se comptent par passager et par trajet (aller simple) ; les equipements sportifs se facturent a la piece. ATTENTION : ces montants sont des ordres de grandeur tires des grilles publiques, non verifies automatiquement. Ils varient selon la route, la saison et le tarif choisi. Quand le fournisseur publie le tarif reel de l offre, c est lui qui prime et l affichage le signale comme confirme.",
+  "_derniere_mise_a_jour": "2026-08-19",
   "compagnies": {
     "FR": {
       "nom": "Ryanair",
@@ -133,6 +133,204 @@
       "equipement_sportif": 60.0,
       "velo": 60.0,
       "site": "https://www.flytap.com/fr-fr"
+    },
+    "BA": {
+      "nom": "British Airways",
+      "bagage_cabine": 0.0,
+      "bagage_soute": 40.0,
+      "choix_siege": 12.0,
+      "enregistrement_aeroport": 0.0,
+      "cabine_incluse": true,
+      "equipement_sportif": 65.0,
+      "velo": 65.0,
+      "site": "https://www.britishairways.com/fr-fr"
+    },
+    "LX": {
+      "nom": "Swiss",
+      "bagage_cabine": 0.0,
+      "bagage_soute": 30.0,
+      "choix_siege": 15.0,
+      "enregistrement_aeroport": 0.0,
+      "cabine_incluse": true,
+      "equipement_sportif": 70.0,
+      "velo": 70.0,
+      "site": "https://www.swiss.com/fr/fr"
+    },
+    "OS": {
+      "nom": "Austrian Airlines",
+      "bagage_cabine": 0.0,
+      "bagage_soute": 30.0,
+      "choix_siege": 15.0,
+      "enregistrement_aeroport": 0.0,
+      "cabine_incluse": true,
+      "equipement_sportif": 70.0,
+      "velo": 70.0,
+      "site": "https://www.austrian.com/fr/fr"
+    },
+    "SN": {
+      "nom": "Brussels Airlines",
+      "bagage_cabine": 0.0,
+      "bagage_soute": 30.0,
+      "choix_siege": 12.0,
+      "enregistrement_aeroport": 0.0,
+      "cabine_incluse": true,
+      "equipement_sportif": 65.0,
+      "velo": 65.0,
+      "site": "https://www.brusselsairlines.com/fr/fr"
+    },
+    "SK": {
+      "nom": "SAS",
+      "bagage_cabine": 0.0,
+      "bagage_soute": 35.0,
+      "choix_siege": 12.0,
+      "enregistrement_aeroport": 0.0,
+      "cabine_incluse": true,
+      "equipement_sportif": 65.0,
+      "velo": 65.0,
+      "site": "https://www.flysas.com/fr-fr"
+    },
+    "AY": {
+      "nom": "Finnair",
+      "bagage_cabine": 0.0,
+      "bagage_soute": 35.0,
+      "choix_siege": 14.0,
+      "enregistrement_aeroport": 0.0,
+      "cabine_incluse": true,
+      "equipement_sportif": 65.0,
+      "velo": 65.0,
+      "site": "https://www.finnair.com/fr-fr"
+    },
+    "DY": {
+      "nom": "Norwegian",
+      "bagage_cabine": 14.0,
+      "bagage_soute": 30.0,
+      "choix_siege": 10.0,
+      "enregistrement_aeroport": 0.0,
+      "cabine_incluse": false,
+      "equipement_sportif": 60.0,
+      "velo": 60.0,
+      "site": "https://www.norwegian.com/fr"
+    },
+    "EI": {
+      "nom": "Aer Lingus",
+      "bagage_cabine": 12.0,
+      "bagage_soute": 30.0,
+      "choix_siege": 10.0,
+      "enregistrement_aeroport": 30.0,
+      "cabine_incluse": false,
+      "equipement_sportif": 60.0,
+      "velo": 60.0,
+      "site": "https://www.aerlingus.com/html/fr-fr"
+    },
+    "AZ": {
+      "nom": "ITA Airways",
+      "bagage_cabine": 0.0,
+      "bagage_soute": 30.0,
+      "choix_siege": 12.0,
+      "enregistrement_aeroport": 0.0,
+      "cabine_incluse": true,
+      "equipement_sportif": 65.0,
+      "velo": 65.0,
+      "site": "https://www.ita-airways.com/fr_fr"
+    },
+    "UX": {
+      "nom": "Air Europa",
+      "bagage_cabine": 0.0,
+      "bagage_soute": 30.0,
+      "choix_siege": 12.0,
+      "enregistrement_aeroport": 0.0,
+      "cabine_incluse": true,
+      "equipement_sportif": 60.0,
+      "velo": 60.0,
+      "site": "https://www.aireuropa.com/fr/fr"
+    },
+    "AT": {
+      "nom": "Royal Air Maroc",
+      "bagage_cabine": 0.0,
+      "bagage_soute": 40.0,
+      "choix_siege": 12.0,
+      "enregistrement_aeroport": 0.0,
+      "cabine_incluse": true,
+      "equipement_sportif": 70.0,
+      "velo": 70.0,
+      "site": "https://www.royalairmaroc.com/fr-fr"
+    },
+    "TU": {
+      "nom": "Tunisair",
+      "bagage_cabine": 0.0,
+      "bagage_soute": 40.0,
+      "choix_siege": 12.0,
+      "enregistrement_aeroport": 0.0,
+      "cabine_incluse": true,
+      "equipement_sportif": 70.0,
+      "velo": 70.0,
+      "site": "https://www.tunisair.com/fr"
+    },
+    "TK": {
+      "nom": "Turkish Airlines",
+      "bagage_cabine": 0.0,
+      "bagage_soute": 35.0,
+      "choix_siege": 15.0,
+      "enregistrement_aeroport": 0.0,
+      "cabine_incluse": true,
+      "equipement_sportif": 70.0,
+      "velo": 70.0,
+      "site": "https://www.turkishairlines.com/fr-fr"
+    },
+    "A3": {
+      "nom": "Aegean",
+      "bagage_cabine": 0.0,
+      "bagage_soute": 30.0,
+      "choix_siege": 12.0,
+      "enregistrement_aeroport": 0.0,
+      "cabine_incluse": true,
+      "equipement_sportif": 60.0,
+      "velo": 60.0,
+      "site": "https://fr.aegeanair.com"
+    },
+    "LO": {
+      "nom": "LOT",
+      "bagage_cabine": 0.0,
+      "bagage_soute": 30.0,
+      "choix_siege": 12.0,
+      "enregistrement_aeroport": 0.0,
+      "cabine_incluse": true,
+      "equipement_sportif": 65.0,
+      "velo": 65.0,
+      "site": "https://www.lot.com/fr/fr"
+    },
+    "PC": {
+      "nom": "Pegasus",
+      "bagage_cabine": 12.0,
+      "bagage_soute": 25.0,
+      "choix_siege": 8.0,
+      "enregistrement_aeroport": 25.0,
+      "cabine_incluse": false,
+      "equipement_sportif": 55.0,
+      "velo": 60.0,
+      "site": "https://www.flypgs.com/fr"
+    },
+    "FI": {
+      "nom": "Icelandair",
+      "bagage_cabine": 0.0,
+      "bagage_soute": 35.0,
+      "choix_siege": 12.0,
+      "enregistrement_aeroport": 0.0,
+      "cabine_incluse": true,
+      "equipement_sportif": 70.0,
+      "velo": 70.0,
+      "site": "https://www.icelandair.com/fr-fr"
+    },
+    "EK": {
+      "nom": "Emirates",
+      "bagage_cabine": 0.0,
+      "bagage_soute": 0.0,
+      "choix_siege": 15.0,
+      "enregistrement_aeroport": 0.0,
+      "cabine_incluse": true,
+      "equipement_sportif": 80.0,
+      "velo": 80.0,
+      "site": "https://www.emirates.com/fr/french"
     }
   },
   "defaut": {

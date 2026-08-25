@@ -386,3 +386,23 @@ footer {
   display: inline-flex; align-items: center; min-height: 32px;
 }
 .reserver-vol a:hover { text-decoration: underline; }
+
+/* --- Filtres -------------------------------------------------------------- */
+.filtre-heure {
+  padding: .4rem .5rem; min-height: 40px; border: 1px solid var(--ligne);
+  border-radius: 4px; background: var(--surface); color: var(--encre);
+  font: inherit; font-size: .9375rem;
+}
+.compagnies { display: flex; flex-wrap: wrap; gap: .4rem; padding: .5rem 0; }
+.compagnies label {
+  display: inline-flex; align-items: center; gap: .35rem;
+  padding: .4rem .7rem; min-height: 40px; box-sizing: border-box;
+  border: 1px solid var(--ligne); border-radius: 999px;
+  background: var(--surface); font-size: .8125rem; cursor: pointer;
+}
+.compagnies label.exclue { opacity: .45; }
+.compagnies input { accent-color: var(--accent); margin: 0; }
+.aucun-vol {
+  padding: .9rem; border-radius: 8px; background: var(--ambre-fond);
+  color: var(--ambre); font-size: .875rem;
+}
