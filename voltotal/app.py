@@ -10,6 +10,7 @@ from __future__ import annotations
 import difflib
 import logging
 import os
+from concurrent.futures import ThreadPoolExecutor
 from datetime import date, timedelta
 
 from flask import Flask, jsonify, render_template, request
@@ -17,6 +18,10 @@ from flask import Flask, jsonify, render_template, request
 from . import fournisseurs, lieux
 from .modeles import EQUIPEMENTS, OptionsVoyage
 from .surcouts import GrilleFrais
+
+# Appels simultanés du calendrier. Au-delà, on risque les limites de débit
+# du fournisseur pour un gain qui s'amenuise.
+_CALENDRIER_PARALLELE = max(1, min(8, int(os.environ.get("CALENDRIER_PARALLELE", "4"))))
 
 
 def create_app() -> Flask:
@@ -154,27 +159,34 @@ def create_app() -> Flask:
         rayon = max(0, min(7, int(os.environ.get("CALENDRIER_JOURS", "3"))))
         aujourdhui = date.today()
 
-        jours = []
-        for ecart in range(-rayon, rayon + 1):
-            jour = centre + timedelta(days=ecart)
-            if jour < aujourdhui:  # inutile de chiffrer un vol déjà parti
-                continue
+        # Inutile de chiffrer un vol déjà parti.
+        dates = [centre + timedelta(days=e) for e in range(-rayon, rayon + 1)]
+        dates = [j for j in dates if j >= aujourdhui]
+
+        def chiffrer(jour):
             try:
                 resultat = fournisseurs.rechercher(origine, destination, jour, voyageurs)
             except Exception:
                 app.logger.exception("Calendrier : échec sur %s", jour)
-                continue
+                return None
             if not resultat.vols:
-                jours.append({"date": jour.isoformat(), "prix": None})
-                continue
+                return {"date": jour.isoformat(), "prix": None}
             # Le moins cher du jour, avec ses tarifs d'options : le navigateur
             # doit pouvoir comparer des prix réels, pas des prix d'appel.
             moins_cher = min(resultat.vols, key=lambda v: v.prix_affiche)
-            jours.append({
+            return {
                 "date": jour.isoformat(),
                 "prix": moins_cher.prix_affiche,
                 "frais": grille.tarifs(moins_cher),
-            })
+            }
+
+        # En série, chaque jour ajoutait sa latence à celle du précédent : sept
+        # jours faisaient sept fois l'attente d'une recherche. Le parallélisme
+        # est plafonné pour ne pas déclencher les limites de débit du
+        # fournisseur, et l'ordre des jours est celui des dates, pas des
+        # réponses.
+        with ThreadPoolExecutor(max_workers=_CALENDRIER_PARALLELE) as pool:
+            jours = [j for j in pool.map(chiffrer, dates) if j is not None]
         return jsonify(jours=jours, passagers_payants=voyageurs.passagers_payants)
 
     @app.get("/api/aeroports")

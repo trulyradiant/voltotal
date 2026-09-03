@@ -48,6 +48,12 @@ volontairement étroite (`CALENDRIER_JOURS`, ±3 jours par défaut) et partage
 le cache des recherches normales. Mettez-la à `0` pour n'afficher que le jour
 choisi.
 
+Ces recherches sont menées **en parallèle** (`CALENDRIER_PARALLELE`, 4 par
+défaut). En série, chaque jour ajoutait sa latence à celle du précédent :
+avec un fournisseur réel à une seconde par appel, sept jours prenaient sept
+secondes. Le plafond évite de déclencher les limites de débit du
+fournisseur.
+
 ## D'où viennent les prix
 
 Deux sources, dans cet ordre de confiance :
@@ -194,9 +200,14 @@ python -m unittest discover -t . -s voltotal
 
 ## Filtrer
 
-Un volet **Filtres** affine la liste sans rappeler le serveur : vols directs
-seulement, plage horaire de départ, durée maximale, et exclusion de
-compagnies (la liste se construit à partir des vols réellement reçus).
+Un volet **Filtres** affine la liste sans rappeler le serveur : tri (prix
+réel, heure de départ, durée), vols directs seulement, plage horaire de
+départ, durée maximale, et exclusion de compagnies (la liste se construit à
+partir des vols réellement reçus).
+
+Le badge « prix le plus bas » et la sélection par défaut désignent toujours
+le vol le moins cher, **quel que soit le tri affiché** : ils se déterminent
+par le prix, jamais par la position dans la liste.
 
 Un filtre qui ne laisse aucun vol **ne vide pas l'écran** : la liste
 complète reste affichée avec un message invitant à l'assouplir. Sinon on ne

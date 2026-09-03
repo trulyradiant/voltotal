@@ -157,6 +157,14 @@
       <summary><span class="volet-titre">Filtres</span>
         <span class="volet-resume" id="resume_filtres">aucun</span></summary>
       <div class="volet-corps">
+        <div class="ligne-compteur">
+          <div><span class="nom">Trier par</span></div>
+          <select id="f_tri" class="filtre-heure">
+            <option value="prix">Prix réel</option>
+            <option value="depart">Heure de départ</option>
+            <option value="duree">Durée</option>
+          </select>
+        </div>
         <label class="ligne-case">
           <span><span class="nom">Vols directs seulement</span></span>
           <input type="checkbox" id="f_direct">
@@ -323,6 +331,7 @@ var compagniesExclues = {};
 function lireFiltres() {
   var duree = valeur("f_duree");
   return {
+    tri: document.getElementById("f_tri").value,
     direct: document.getElementById("f_direct").checked,
     departMin: document.getElementById("f_depart_min").value || "00:00",
     departMax: document.getElementById("f_depart_max").value || "23:59",
@@ -340,8 +349,21 @@ function retenu(r, f) {
   return heure >= f.departMin && heure <= f.departMax;
 }
 
+/* Le tri par prix reste le tri par défaut : c'est la raison d'être de
+   l'application. Les deux autres servent quand l'horaire prime sur le coût. */
+function trier(liste, tri) {
+  var copie = liste.slice();
+  if (tri === "depart")
+    copie.sort(function (a, b) { return a.vol.depart.localeCompare(b.vol.depart); });
+  else if (tri === "duree")
+    copie.sort(function (a, b) { return a.vol.duree_minutes - b.vol.duree_minutes; });
+  return copie;  // déjà trié par prix réel en amont
+}
+
 function resumeFiltres(f) {
   var parts = [];
+  if (f.tri === "depart") parts.push("par heure");
+  else if (f.tri === "duree") parts.push("par durée");
   if (f.direct) parts.push("direct");
   if (f.departMin !== "00:00" || f.departMax !== "23:59")
     parts.push(f.departMin + "–" + f.departMax);
@@ -376,10 +398,17 @@ function majListeCompagnies(listes) {
     });
 }
 
+function indexMoinsCher(liste) {
+  var meilleur = 0;
+  for (var i = 1; i < liste.length; i++)
+    if (liste[i].prixReel < liste[meilleur].prixReel) meilleur = i;
+  return meilleur;
+}
+
 function indexChoisi(liste, sens) {
   for (var i = 0; i < liste.length; i++)
     if (liste[i].vol.numero === choixMemorise[sens]) return i;
-  return 0; // à défaut, le moins cher au prix réel
+  return indexMoinsCher(liste); // à défaut, le moins cher au prix réel
 }
 
 function carteBillet(r, sens, index, choisi, options, moinsCher) {
@@ -544,8 +573,9 @@ function rendre(criteres, donneesAller, donneesRetour) {
   var allerFiltre = filtrer(toutAller);
   var retourFiltre = toutRetour ? filtrer(toutRetour) : null;
   var trop = (toutAller.length && !allerFiltre) || (toutRetour && toutRetour.length && !retourFiltre);
-  var listeAller = allerFiltre || toutAller;
+  var listeAller = trier(allerFiltre || toutAller, f.tri);
   var listeRetour = retourFiltre || toutRetour;
+  if (listeRetour) listeRetour = trier(listeRetour, f.tri);
 
   if (!listeAller.length) {
     document.getElementById("sommaire").innerHTML =
@@ -557,6 +587,9 @@ function rendre(criteres, donneesAller, donneesRetour) {
 
   var iAller = indexChoisi(listeAller, "aller");
   var iRetour = listeRetour && listeRetour.length ? indexChoisi(listeRetour, "retour") : null;
+  var moinsCherAller = listeAller[indexMoinsCher(listeAller)].vol.numero;
+  var moinsCherRetour = listeRetour && listeRetour.length
+    ? listeRetour[indexMoinsCher(listeRetour)].vol.numero : null;
   choixMemorise.aller = listeAller[iAller].vol.numero;
   choixMemorise.retour = iRetour === null ? null : listeRetour[iRetour].vol.numero;
 
@@ -584,14 +617,16 @@ function rendre(criteres, donneesAller, donneesRetour) {
   html += '<h2 class="titre-direction">Aller · ' + criteres.origine + ' → ' + criteres.destination +
     ' <span class="sous">' + dateTexte(criteres.dateAller) + '</span></h2><div class="liste-vols">';
   for (var i = 0; i < listeAller.length; i++)
-    html += carteBillet(listeAller[i], "aller", i, i === iAller, opt, i === 0);
+    html += carteBillet(listeAller[i], "aller", i, i === iAller, opt,
+                        listeAller[i].vol.numero === moinsCherAller);
   html += '</div>';
 
   if (listeRetour && listeRetour.length) {
     html += '<h2 class="titre-direction">Retour · ' + criteres.destination + ' → ' + criteres.origine +
       ' <span class="sous">' + dateTexte(criteres.dateRetour) + '</span></h2><div class="liste-vols">';
     for (var j = 0; j < listeRetour.length; j++)
-      html += carteBillet(listeRetour[j], "retour", j, j === iRetour, opt, j === 0);
+      html += carteBillet(listeRetour[j], "retour", j, j === iRetour, opt,
+                          listeRetour[j].vol.numero === moinsCherRetour);
     html += '</div>';
   }
 
