@@ -165,7 +165,10 @@ def create_app() -> Flask:
 
         def chiffrer(jour):
             try:
-                resultat = fournisseurs.rechercher(origine, destination, jour, voyageurs)
+                # Sans tarifs bagages : le calendrier ne compare que des prix
+                # d'appel, inutile de payer neuf appels par jour pour rien.
+                resultat = fournisseurs.rechercher(origine, destination, jour, voyageurs,
+                                                   tarifs_bagages=False)
             except Exception:
                 app.logger.exception("Calendrier : échec sur %s", jour)
                 return None

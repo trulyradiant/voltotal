@@ -95,7 +95,15 @@ def _voyageurs(options: OptionsVoyage) -> list[dict]:
     )
 
 
-def rechercher(origine: str, destination: str, jour: date, options: OptionsVoyage) -> list[Vol]:
+def rechercher(origine: str, destination: str, jour: date, options: OptionsVoyage,
+               tarifs_bagages: bool = True) -> list[Vol]:
+    """Vols du jour.
+
+    ``tarifs_bagages`` déclenche un appel supplémentaire par offre pour
+    obtenir le prix réel du bagage en soute. Le calendrier, qui ne cherche
+    que le prix le moins cher de chaque jour, s'en passe : chaque appel est
+    facturé et compté, et c'était neuf appels par jour pour rien.
+    """
     corps = json.dumps(
         {
             "data": {
@@ -120,7 +128,8 @@ def rechercher(origine: str, destination: str, jour: date, options: OptionsVoyag
     vols = [vol for vol in vols if vol is not None]
     vols.sort(key=lambda v: v.prix_affiche)
 
-    _completer_tarifs_bagages(vols[:_OFFRES_TARIFEES])
+    if tarifs_bagages:
+        _completer_tarifs_bagages(vols[:_OFFRES_TARIFEES])
     return vols
 
 

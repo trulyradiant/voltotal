@@ -592,3 +592,68 @@ class TestReservation(unittest.TestCase):
         self.assertTrue(vols)
         for vol in vols:
             self.assertIn("site", vol)
+
+
+class TestEconomieAppels(unittest.TestCase):
+    """En mode réel, chaque appel est facturé : le calendrier doit rester léger."""
+
+    def _appels_duffel(self, tarifs_bagages):
+        compteur = {"recherche": 0, "services": 0}
+        def faux_appel(url, corps=None, methode="GET"):
+            if "/air/offers/" in url:
+                compteur["services"] += 1
+                return {"data": {"available_services": [
+                    {"type": "baggage", "total_amount": "30.00", "quantity": 1,
+                     "metadata": {"type": "checked"}}]}}
+            compteur["recherche"] += 1
+            return {"data": {"offers": [OFFRE_DUFFEL]}}
+        with mock.patch.dict("os.environ", {"DUFFEL_TOKEN": "t"}), \
+             mock.patch.object(duffel, "_appeler", side_effect=faux_appel):
+            vols = duffel.rechercher("CDG", "BCN", date(2026, 9, 20), OptionsVoyage(),
+                                     tarifs_bagages=tarifs_bagages)
+        return compteur, vols
+
+    def test_recherche_complete_demande_les_tarifs(self):
+        compteur, vols = self._appels_duffel(True)
+        self.assertEqual(compteur, {"recherche": 1, "services": 1})
+        self.assertEqual(vols[0].prix_bagage_soute_annonce, 30.0)
+
+    def test_calendrier_se_passe_des_tarifs(self):
+        compteur, vols = self._appels_duffel(False)
+        self.assertEqual(compteur, {"recherche": 1, "services": 0})
+        self.assertIsNone(vols[0].prix_bagage_soute_annonce)
+
+    def test_resultat_allege_ne_se_fait_pas_passer_pour_complet(self):
+        """Un cache alimenté par le calendrier ne doit pas priver la recherche
+        principale des tarifs bagages."""
+        from voltotal import fournisseurs
+        fournisseurs._cache.clear()
+        appels = []
+        def espion(o, d, j, opt, tarifs_bagages=True):
+            appels.append(tarifs_bagages)
+            v = vol_simple("FR", prix_bagage_soute_annonce=45.0 if tarifs_bagages else None)
+            v.source = "duffel"
+            return [v]
+        with mock.patch.object(duffel, "configure", return_value=True), \
+             mock.patch.object(duffel, "rechercher", side_effect=espion):
+            leger = fournisseurs.rechercher("CDG", "BCN", date(2026, 9, 25), OptionsVoyage(),
+                                            tarifs_bagages=False)
+            complet = fournisseurs.rechercher("CDG", "BCN", date(2026, 9, 25), OptionsVoyage())
+        self.assertEqual(appels, [False, True])  # la seconde a bien rappelé l'API
+        self.assertIsNone(leger.vols[0].prix_bagage_soute_annonce)
+        self.assertEqual(complet.vols[0].prix_bagage_soute_annonce, 45.0)
+
+    def test_resultat_complet_sert_le_calendrier(self):
+        """L'inverse est légitime : un résultat complet est strictement plus riche."""
+        from voltotal import fournisseurs
+        fournisseurs._cache.clear()
+        appels = []
+        def espion(o, d, j, opt, tarifs_bagages=True):
+            appels.append(tarifs_bagages)
+            v = vol_simple("FR"); v.source = "duffel"; return [v]
+        with mock.patch.object(duffel, "configure", return_value=True), \
+             mock.patch.object(duffel, "rechercher", side_effect=espion):
+            fournisseurs.rechercher("CDG", "BCN", date(2026, 9, 26), OptionsVoyage())
+            fournisseurs.rechercher("CDG", "BCN", date(2026, 9, 26), OptionsVoyage(),
+                                    tarifs_bagages=False)
+        self.assertEqual(appels, [True])  # un seul appel : le cache complet a servi

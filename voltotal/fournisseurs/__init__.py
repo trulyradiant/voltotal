@@ -64,23 +64,28 @@ def source_active() -> str:
 
 
 def rechercher(origine: str, destination: str, jour: date,
-               options: OptionsVoyage) -> ResultatRecherche:
+               options: OptionsVoyage, tarifs_bagages: bool = True) -> ResultatRecherche:
     # La composition des voyageurs entre dans la clé : un tarif enfant n'est
     # pas un tarif adulte, le résultat mis en cache n'est pas interchangeable.
-    cle = (origine.upper(), destination.upper(), jour.isoformat(),
-           options.adultes, tuple(options.enfants), options.bebes)
+    base = (origine.upper(), destination.upper(), jour.isoformat(),
+            options.adultes, tuple(options.enfants), options.bebes)
+    cle = base + (tarifs_bagages,)
     with _verrou:
-        entree = _cache.get(cle)
-        if entree and time.time() - entree[0] < _DUREE_CACHE:
-            vols = entree[1]
-            return ResultatRecherche(vols, vols[0].source if vols else "demo")
+        # Un résultat complet (avec tarifs bagages) sert aussi une demande
+        # allégée : il est strictement plus riche. L'inverse est faux — un
+        # résultat allégé ne doit jamais se faire passer pour complet.
+        for candidate in ((base + (True,), cle) if not tarifs_bagages else (cle,)):
+            entree = _cache.get(candidate)
+            if entree and time.time() - entree[0] < _DUREE_CACHE:
+                vols = entree[1]
+                return ResultatRecherche(vols, vols[0].source if vols else "demo")
 
     avertissement = None
     nom = source_active()
     if nom in _SOURCES:
         module = _SOURCES[nom]
         try:
-            vols = module.rechercher(origine, destination, jour, options)
+            vols = module.rechercher(origine, destination, jour, options, tarifs_bagages)
             if vols:
                 _memoriser(cle, vols)
                 return ResultatRecherche(vols, nom)

@@ -96,7 +96,8 @@ def _requete_json(chemin: str, params: dict) -> dict:
 # --- Recherche de vols -----------------------------------------------------
 
 
-def rechercher(origine: str, destination: str, jour: date, options: OptionsVoyage) -> list[Vol]:
+def rechercher(origine: str, destination: str, jour: date, options: OptionsVoyage,
+               tarifs_bagages: bool = True) -> list[Vol]:
     parametres = {
         "originLocationCode": origine.upper(),
         "destinationLocationCode": destination.upper(),
@@ -118,7 +119,8 @@ def rechercher(origine: str, destination: str, jour: date, options: OptionsVoyag
     vols = [vol for vol in vols if vol is not None]
     vols.sort(key=lambda v: v.prix_affiche)
 
-    _completer_tarifs_bagages(vols[:_OFFRES_TARIFEES], offres, payants)
+    if tarifs_bagages:
+        _completer_tarifs_bagages(vols[:_OFFRES_TARIFEES], offres, payants)
     return vols
 
 

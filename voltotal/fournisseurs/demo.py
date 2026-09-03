@@ -20,7 +20,8 @@ _COMPAGNIES = {
 _LOW_COST = {"FR", "U2", "VY", "TO", "V7", "W6"}
 
 
-def rechercher(origine: str, destination: str, jour: date, options: OptionsVoyage) -> list[Vol]:
+def rechercher(origine: str, destination: str, jour: date, options: OptionsVoyage,
+               tarifs_bagages: bool = True) -> list[Vol]:
     graine = f"{origine.upper()}-{destination.upper()}-{jour.isoformat()}"
     alea = random.Random(hashlib.sha256(graine.encode()).hexdigest())
 

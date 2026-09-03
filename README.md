@@ -48,6 +48,11 @@ volontairement étroite (`CALENDRIER_JOURS`, ±3 jours par défaut) et partage
 le cache des recherches normales. Mettez-la à `0` pour n'afficher que le jour
 choisi.
 
+Le calendrier se passe des tarifs bagages détaillés : il ne compare que le
+prix le moins cher de chaque jour. En mode réel, où **chaque appel est
+facturé et compté**, c'est ce qui ramène une ouverture de page de 144 appels
+Duffel à 32.
+
 Ces recherches sont menées **en parallèle** (`CALENDRIER_PARALLELE`, 4 par
 défaut). En série, chaque jour ajoutait sa latence à celle du précédent :
 avec un fournisseur réel à une seconde par appel, sept jours prenaient sept
@@ -196,7 +201,7 @@ dans les Variables du service pour activer le temps réel. Vérifiez ensuite
 python -m unittest discover -t . -s voltotal
 ```
 
-60 tests, sans aucun appel réseau : les réponses des API sont simulées.
+64 tests, sans aucun appel réseau : les réponses des API sont simulées.
 
 ## Filtrer
 
@@ -238,6 +243,19 @@ proposées une fois le vol choisi :
 
 Ces liens sortent vers des sites tiers : leur bon fonctionnement dépend de
 ces sites et ne peut pas être couvert par les tests.
+
+## Coût en appels d'API (mode réel)
+
+Une ouverture de page en aller-retour déclenche environ **32 appels**
+Duffel : 2 recherches de vols, 16 tarifications bagages (les 8 offres les
+moins chères de chaque sens, réglable par `DUFFEL_OFFRES_TARIFEES`) et 14
+recherches de calendrier (±3 jours par sens, réglable par
+`CALENDRIER_JOURS`). Cocher une option ne coûte rien : le calcul se fait
+dans le navigateur. Les résultats sont mis en cache 5 minutes
+(`VOLS_CACHE_SECONDES`).
+
+Pour réduire la facture : `CALENDRIER_JOURS=1` divise le calendrier par
+trois, `DUFFEL_OFFRES_TARIFEES=4` divise les tarifications par deux.
 
 ## Limites connues
 
