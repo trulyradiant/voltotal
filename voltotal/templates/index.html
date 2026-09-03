@@ -16,15 +16,17 @@
     <div class="accroche">bagages et frais inclus</div>
   </header>
 
-  <!-- Le prix précède le formulaire : sur un téléphone, il ne doit jamais
-       falloir faire défiler l'écran pour voir combien on paie vraiment. -->
-  <section id="sommaire" aria-live="polite">
-    <div class="panne">Recherche des vols…</div>
-  </section>
-
   <noscript>
     <div class="panne">Cette page a besoin de JavaScript pour calculer les prix.</div>
   </noscript>
+
+  <!-- Après la première recherche, le formulaire se replie en une ligne :
+       sur un téléphone, il occupait tout l'écran en permanence. -->
+  <button type="button" class="resume-recherche" id="resume_recherche" hidden>
+    <span class="rr-trajet" id="rr_trajet"></span>
+    <span class="rr-detail" id="rr_detail"></span>
+    <span class="rr-modifier">Modifier</span>
+  </button>
 
   <form id="recherche" class="carte" novalidate>
     <div class="type-trajet" role="group" aria-label="Type de trajet">
@@ -62,19 +64,6 @@
       <div class="champ" id="champ_retour">
         <label for="date_retour">Retour</label>
         <input type="date" id="date_retour" value="{{ date_retour }}" min="{{ aujourdhui }}">
-      </div>
-    </div>
-
-    <!-- Bandes de prix par jour : le vrai prix tout compris, jour par jour,
-         pour voir d'un coup d'œil si décaler d'un jour fait gagner 40 €. -->
-    <div class="calendriers">
-      <div class="calendrier" id="cal_aller" data-sens="aller">
-        <div class="cal-titre">Aller — prix réel par jour</div>
-        <div class="cal-bande" role="group" aria-label="Prix par jour à l'aller"></div>
-      </div>
-      <div class="calendrier" id="cal_retour" data-sens="retour">
-        <div class="cal-titre">Retour — prix réel par jour</div>
-        <div class="cal-bande" role="group" aria-label="Prix par jour au retour"></div>
       </div>
     </div>
 
@@ -153,18 +142,40 @@
       </div>
     </details>
 
+
+    <div id="avertissement" class="avertissement" hidden></div>
+    <button type="button" class="principal" id="btn_voir">Voir les vols</button>
+  </form>
+
+  <!-- Bandes de prix par jour : le vrai prix tout compris, jour par jour,
+       pour voir d'un coup d'œil si décaler d'un jour fait gagner 40 €. -->
+  <div class="calendriers" id="calendriers" hidden>
+    <div class="calendrier" id="cal_aller" data-sens="aller">
+      <div class="cal-titre">Aller</div>
+      <div class="cal-bande" role="group" aria-label="Prix par jour à l'aller"></div>
+    </div>
+    <div class="calendrier" id="cal_retour" data-sens="retour">
+      <div class="cal-titre">Retour</div>
+      <div class="cal-bande" role="group" aria-label="Prix par jour au retour"></div>
+    </div>
+  </div>
+
+  <!-- Onglets de tri : chacun affiche la valeur qu'il promet, comme chez
+       les comparateurs — on sait avant de toucher ce qu'on va gagner. -->
+  <div class="tris" id="tris" role="tablist" hidden>
+    <button type="button" role="tab" data-tri="prix" aria-selected="true">
+      <span class="tri-nom">Le moins cher</span><strong class="tri-valeur" id="tri_prix">—</strong></button>
+    <button type="button" role="tab" data-tri="duree" aria-selected="false">
+      <span class="tri-nom">Le plus rapide</span><strong class="tri-valeur" id="tri_duree">—</strong></button>
+    <button type="button" role="tab" data-tri="depart" aria-selected="false">
+      <span class="tri-nom">Le plus tôt</span><strong class="tri-valeur" id="tri_depart">—</strong></button>
+  </div>
+
+  <div class="filtres-hors-form" id="zone_filtres" hidden>
     <details class="volet" id="volet_filtres">
       <summary><span class="volet-titre">Filtres</span>
         <span class="volet-resume" id="resume_filtres">aucun</span></summary>
       <div class="volet-corps">
-        <div class="ligne-compteur">
-          <div><span class="nom">Trier par</span></div>
-          <select id="f_tri" class="filtre-heure">
-            <option value="prix">Prix réel</option>
-            <option value="depart">Heure de départ</option>
-            <option value="duree">Durée</option>
-          </select>
-        </div>
         <label class="ligne-case">
           <span><span class="nom">Vols directs seulement</span></span>
           <input type="checkbox" id="f_direct">
@@ -190,8 +201,11 @@
       </div>
     </details>
 
-    <div id="avertissement" class="avertissement" hidden></div>
-  </form>
+  </div>
+
+  <section id="sommaire" aria-live="polite">
+    <div class="panne">Recherche des vols…</div>
+  </section>
 
   <section id="resultats" aria-live="polite"></section>
 
@@ -327,11 +341,12 @@ function preparerResultats(vols, options) {
    une recherche ne doit pas coûter un appel reseau de plus. Les compagnies
    exclues sont memorisees par code, pour survivre a un changement de date. */
 var compagniesExclues = {};
+var triActif = "prix";
 
 function lireFiltres() {
   var duree = valeur("f_duree");
   return {
-    tri: document.getElementById("f_tri").value,
+    tri: triActif,
     direct: document.getElementById("f_direct").checked,
     departMin: document.getElementById("f_depart_min").value || "00:00",
     departMax: document.getElementById("f_depart_max").value || "23:59",
@@ -464,38 +479,51 @@ function lienComparateur(c) {
 }
 
 /* --- Le bandeau de prix, en tête de page --- */
+/* Pastille de compagnie : une couleur stable dérivée du code, faute de
+   logo. Deux lettres dans un rond suffisent à reconnaître une compagnie
+   d'un coup d'œil dans une liste. */
+function pastille(code) {
+  var h = 0;
+  for (var i = 0; i < code.length; i++) h = (h * 31 + code.charCodeAt(i)) % 360;
+  return '<span class="pastille" style="background:hsl(' + h + ',55%,42%)">' +
+    echapper(code) + '</span>';
+}
+
+function ligneSelection(r, de, vers, jour) {
+  var v = r.vol, h = Math.floor(v.duree_minutes / 60), m = v.duree_minutes % 60;
+  return '<div class="sel-vol">' + pastille(v.compagnie) +
+    '<div class="sel-corps">' +
+      '<div class="sel-heures">' + heureTexte(v.depart) + ' → ' + heureTexte(v.arrivee) +
+        ' <span class="sel-jour">' + dateTexte(jour) + '</span></div>' +
+      // La compagnie d'abord : c'est elle qu'on lit en premier, et c'est la fin
+      // de ligne qui se tronque sur un petit écran.
+      '<div class="sel-meta">' + echapper(v.nom) + ' · ' + de + ' – ' + vers + ' · ' +
+        h + ' h ' + (m < 10 ? "0" : "") + m + ' · ' +
+        (v.escales === 0 ? "direct" : v.escales + " escale") + '</div>' +
+    '</div>' +
+    '<div class="sel-prix">' + euros(r.prixReel) + '</div></div>';
+}
+
 function rendreSommaire(aller, retour, criteres) {
   var options = criteres.options;
   var total = Math.round((aller.prixReel + (retour ? retour.prixReel : 0)) * 100) / 100;
   var frais = Math.round((aller.surcouts.total + (retour ? retour.surcouts.total : 0)) * 100) / 100;
-  function trajet(sens, r, de, vers) {
-    return '<div class="trajet-resume">' +
-      '<span class="sens">' + sens + '</span>' +
-      '<span class="details">' +
-        '<span class="cie">' + echapper(r.vol.nom) + '</span>' +
-        '<span class="route">' + de + ' → ' + vers + ' · ' +
-          heureTexte(r.vol.depart) + '–' + heureTexte(r.vol.arrivee) + '</span>' +
-      '</span>' +
-      '<span class="montant mono">' + euros(r.prixReel) + '</span></div>';
-  }
+  var confirme = aller.surcouts.confirme && (!retour || retour.surcouts.confirme);
   document.getElementById("sommaire").innerHTML =
-    '<div class="bandeau">' +
-      '<div class="bandeau-haut">' +
-        '<div class="intitule">Prix réel</div>' +
-        '<div class="somme mono">' + euros(total) + '</div>' +
-      '</div>' +
-      '<div class="bandeau-sous">' + (retour ? "Aller-retour" : "Aller simple") +
-        ' · ' + echapper(options.resume) +
-        (frais > 0 ? ' · dont <strong>' + euros(frais) + '</strong> de suppléments'
-                   : ' · aucun supplément avec vos options ✔') + '</div>' +
-      '<div class="bandeau-trajets">' +
-        trajet("Aller", aller, criteres.origine, criteres.destination) +
-        (retour ? trajet("Retour", retour, criteres.destination, criteres.origine) : "") +
+    '<div class="selection">' +
+      '<div class="sel-titre">Votre sélection</div>' +
+      ligneSelection(aller, criteres.origine, criteres.destination, criteres.dateAller) +
+      (retour ? ligneSelection(retour, criteres.destination, criteres.origine, criteres.dateRetour) : "") +
+      '<div class="sel-pied">' +
+        '<div class="sel-options">' + echapper(options.resume) +
+          (frais > 0 ? ' · dont ' + euros(frais) + ' de suppléments' +
+                       (confirme ? ' <span class="ok">tarif compagnie ✔</span>' : ' <span class="est">estimés</span>')
+                     : ' · aucun supplément ✔') + '</div>' +
+        '<div class="sel-total"><span class="montant">' + euros(total) + '</span>' +
+          '<span class="mention">tout compris</span></div>' +
       '</div>' +
       '<a class="reserver" href="' + lienComparateur(criteres) +
-        '" target="_blank" rel="noopener noreferrer">Voir les offres et réserver ↗</a>' +
-      '<div class="reserver-note">VolTotal compare et calcule ; la réservation se fait ' +
-        'chez la compagnie. Vérifiez que les options facturées correspondent.</div>' +
+        '" target="_blank" rel="noopener noreferrer">Réserver ↗</a>' +
     '</div>';
 }
 
@@ -555,6 +583,61 @@ function majCalendriers(criteres) {
       .then(function (d) { rendreCalendrier("retour", d, criteres); }).catch(function () {});
 }
 
+/* Chaque onglet annonce ce qu'il donnera : le prix du moins cher, la durée
+   du plus court, l'heure du plus matinal — calculés sur la liste de l'aller
+   après filtres. */
+function majOnglets(liste) {
+  if (!liste.length) return;
+  var moinsCher = liste[indexMoinsCher(liste)];
+  var plusCourt = liste.reduce(function (a, b) { return b.vol.duree_minutes < a.vol.duree_minutes ? b : a; });
+  var plusTot = liste.reduce(function (a, b) { return b.vol.depart < a.vol.depart ? b : a; });
+  var h = Math.floor(plusCourt.vol.duree_minutes / 60), m = plusCourt.vol.duree_minutes % 60;
+  document.getElementById("tri_prix").textContent = eurosCourt(moinsCher.prixReel);
+  document.getElementById("tri_duree").textContent = h + " h " + (m < 10 ? "0" : "") + m;
+  document.getElementById("tri_depart").textContent = heureTexte(plusTot.vol.depart);
+  document.getElementById("tris").hidden = false;
+  document.getElementById("zone_filtres").hidden = false;
+  document.getElementById("calendriers").hidden = false;
+}
+
+/* Le formulaire ne se replie qu'à deux moments : le premier chargement et
+   « Voir les vols ». Pas à chaque recalcul — sinon, ouvert pour modifier,
+   il se refermerait dès le premier réglage touché. */
+var replierAuProchainRendu = true;
+function replierFormulaire(criteres) {
+  var o = criteres.options;
+  document.getElementById("rr_trajet").textContent = criteres.origine + " → " + criteres.destination;
+  document.getElementById("rr_detail").textContent =
+    dateTexte(criteres.dateAller) + (criteres.dateRetour ? " – " + dateTexte(criteres.dateRetour) : "") +
+    " · " + o.resume;
+  if (!replierAuProchainRendu) return;
+  replierAuProchainRendu = false;
+  document.getElementById("recherche").hidden = true;
+  document.getElementById("resume_recherche").hidden = false;
+}
+function deplierFormulaire() {
+  replierAuProchainRendu = false;
+  document.getElementById("recherche").hidden = false;
+  document.getElementById("resume_recherche").hidden = true;
+  document.getElementById("recherche").scrollIntoView({ block: "start", behavior: "smooth" });
+}
+document.getElementById("resume_recherche").addEventListener("click", deplierFormulaire);
+document.getElementById("btn_voir").addEventListener("click", function () {
+  replierAuProchainRendu = true;
+  actualiser();
+  document.getElementById("resume_recherche").scrollIntoView({ block: "start", behavior: "smooth" });
+});
+var onglets = document.querySelectorAll("#tris [data-tri]");
+for (var o = 0; o < onglets.length; o++)
+  onglets[o].addEventListener("click", function () {
+    triActif = this.getAttribute("data-tri");
+    for (var k = 0; k < onglets.length; k++)
+      onglets[k].setAttribute("aria-selected", String(onglets[k] === this));
+    actualiser();
+  });
+// Les filtres vivent hors du formulaire : ils ont leur propre écouteur.
+document.getElementById("zone_filtres").addEventListener("change", function () { actualiser(); });
+
 function rendre(criteres, donneesAller, donneesRetour) {
   var opt = criteres.options;
   var toutAller = preparerResultats(donneesAller.vols, opt);
@@ -576,6 +659,8 @@ function rendre(criteres, donneesAller, donneesRetour) {
   var listeAller = trier(allerFiltre || toutAller, f.tri);
   var listeRetour = retourFiltre || toutRetour;
   if (listeRetour) listeRetour = trier(listeRetour, f.tri);
+  majOnglets(allerFiltre || toutAller);
+  replierFormulaire(criteres);
 
   if (!listeAller.length) {
     document.getElementById("sommaire").innerHTML =

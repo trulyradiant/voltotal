@@ -91,6 +91,30 @@ navigateur ou un téléphone, uniquement en mode démonstration. C'est un
 saisie par ville, ni les voyageurs détaillés, ni la bande de prix par jour,
 qui demandent toutes un serveur.
 
+## Structure de la page
+
+Calquée sur ce que font les comparateurs sur mobile :
+
+1. **Résumé de recherche replié** — après la première recherche, le
+   formulaire se replie en une ligne (« PAR → BCN · 4–11 sept. · 2 adultes »),
+   tapable pour modifier. Il ne se replie qu'à deux moments, le premier
+   chargement et le bouton « Voir les vols » : ouvert pour modifier, il ne se
+   referme pas au premier réglage touché.
+2. **Bandes de prix par jour**, aller et retour.
+3. **Onglets de tri qui annoncent leur valeur** — « Le moins cher 147 € · Le
+   plus rapide 1 h 52 · Le plus tôt 11:00 » — calculée sur la liste de l'aller
+   après filtres. On sait avant de toucher ce qu'on va obtenir.
+4. **Filtres**, repliés.
+5. **La sélection**, présentée comme une carte de vol : pastille de compagnie,
+   les deux trajets, un total tout compris et le bouton Réserver. Le badge
+   « prix le plus bas » et la sélection par défaut se déterminent par le prix,
+   jamais par la position dans la liste.
+6. Les listes aller et retour.
+
+Faute de logos, chaque compagnie a une **pastille** de deux lettres dont la
+couleur est dérivée de son code : stable d'une recherche à l'autre, et
+suffisante pour repérer une compagnie d'un coup d'œil dans une liste.
+
 ## Habillage
 
 L'interface suit les conventions de **Material Design**, la langue visuelle

@@ -406,3 +406,89 @@ footer {
   padding: .9rem; border-radius: 8px; background: var(--ambre-fond);
   color: var(--ambre); font-size: .875rem;
 }
+
+/* --- Résumé de recherche replié ------------------------------------------- */
+.resume-recherche {
+  display: flex; align-items: center; gap: .6rem; width: 100%;
+  padding: .7rem .9rem; margin-bottom: .6rem;
+  background: var(--surface); border: 1px solid var(--ligne); border-radius: 8px;
+  box-shadow: var(--ombre-1); font: inherit; color: var(--encre);
+  text-align: left; cursor: pointer; min-height: 52px;
+}
+.rr-trajet { font-weight: 500; font-size: .9375rem; white-space: nowrap; }
+.rr-detail { flex: 1; min-width: 0; font-size: .8125rem; color: var(--sourdine);
+             white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rr-modifier { font-size: .8125rem; font-weight: 500; color: var(--accent); white-space: nowrap; }
+
+button.principal {
+  display: block; width: 100%; margin-top: .9rem; padding: .75rem 1rem;
+  border: 0; border-radius: 4px; background: var(--accent); color: var(--accent-encre);
+  font: inherit; font-size: .9375rem; font-weight: 500; cursor: pointer; min-height: 44px;
+}
+button.principal:active { background: var(--accent-fonce); }
+
+/* --- Onglets de tri -------------------------------------------------------- */
+.tris {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  background: var(--surface); border-radius: 8px; box-shadow: var(--ombre-1);
+  margin: .6rem 0; overflow: hidden;
+}
+.tris button {
+  display: flex; flex-direction: column; align-items: center; gap: .1rem;
+  padding: .55rem .3rem; min-height: 56px; border: 0; border-bottom: 2px solid transparent;
+  background: none; font: inherit; color: var(--sourdine); cursor: pointer;
+}
+.tris button + button { border-left: 1px solid var(--ligne-douce); }
+.tris button[aria-selected="true"] { color: var(--accent); border-bottom-color: var(--accent); }
+.tri-nom { font-size: .75rem; }
+.tri-valeur { font-size: .9375rem; font-weight: 500; color: var(--encre); font-variant-numeric: tabular-nums; }
+.tris button[aria-selected="true"] .tri-valeur { color: var(--accent); }
+
+.filtres-hors-form .volet { margin: 0 0 .6rem; }
+
+/* --- Sélection : une carte de vol, pas un ticket de caisse ---------------- */
+.selection {
+  background: var(--surface); border-radius: 8px; box-shadow: var(--ombre-1);
+  padding: .8rem .9rem .9rem; margin-bottom: .75rem;
+  border-left: 3px solid var(--accent);
+}
+.sel-titre {
+  font-size: .6875rem; font-weight: 500; letter-spacing: .06em;
+  text-transform: uppercase; color: var(--accent); margin-bottom: .5rem;
+}
+.sel-vol { display: flex; align-items: center; gap: .7rem; padding: .45rem 0; }
+.sel-vol + .sel-vol { border-top: 1px solid var(--ligne-douce); }
+.pastille {
+  flex-shrink: 0; width: 34px; height: 34px; border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  color: #fff; font-size: .75rem; font-weight: 500; letter-spacing: .02em;
+}
+.sel-corps { flex: 1; min-width: 0; }
+.sel-heures { font-size: 1rem; font-weight: 500; font-variant-numeric: tabular-nums; }
+.sel-jour { font-size: .75rem; font-weight: 400; color: var(--sourdine); margin-left: .3rem; }
+.sel-meta { font-size: .78rem; color: var(--sourdine);
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sel-prix { font-size: .9375rem; font-weight: 500; font-variant-numeric: tabular-nums; flex-shrink: 0; }
+.sel-pied {
+  display: flex; justify-content: space-between; align-items: flex-end; gap: .8rem;
+  margin-top: .6rem; padding-top: .65rem; border-top: 1px solid var(--ligne);
+}
+.sel-options { font-size: .78rem; color: var(--sourdine); line-height: 1.4; }
+.sel-options .ok { color: var(--vert); font-weight: 500; }
+.sel-options .est { color: var(--ambre); }
+.sel-total { text-align: right; flex-shrink: 0; }
+.sel-total .montant { display: block; color: var(--vert); font-size: 1.5rem; font-weight: 500;
+                      letter-spacing: -.02em; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.sel-total .mention { font-size: .6875rem; color: var(--sourdine); }
+.selection .reserver {
+  display: block; margin-top: .75rem; padding: .7rem 1rem; min-height: 44px; box-sizing: border-box;
+  border-radius: 4px; background: var(--accent); color: var(--accent-encre);
+  font-size: .9375rem; font-weight: 500; text-align: center; text-decoration: none;
+}
+.selection .reserver:active { background: var(--accent-fonce); }
+
+/* Le calendrier n'est plus dans la carte du formulaire : il a sa propre surface. */
+#calendriers {
+  background: var(--surface); border-radius: 8px; box-shadow: var(--ombre-1);
+  padding: .7rem .9rem .5rem; margin: 0 0 .6rem;
+}
